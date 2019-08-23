@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package stock_testing;
+
+option java_package = "com.chi.ssetest.protos";
+option java_outer_classname = "SetupConfig";
+
+enum SDKPermissions {
+	LEVEL_1 = 0;
+	LEVEL_2 = 1;
+	HK10 = 2;
+	HKA1 = 3;
+	HKD1 = 4;
+	SHHK1 = 5;
+	SHHK5 = 6;
+	SZHK1 = 7;
+	SZHK5 = 8;
+}
+
+message SDKConfig {
+	string appKey = 1;
+	SDKPermissions sdkLevel = 2;
+	SDKPermissions sdkSseLevel = 3;
+	repeated SDKPermissions hkPerms = 4;
+}
+
+message TestcaseConfig {
+	string testcaseID = 1;
+	int32 executionTimes = 2;
+	bool continueWhenFailed = 3;
+	string paramStr = 4;
+}
+
+message RunnerConfig {
+	string jobID = 1;
+	string runnerID = 2;
+	SDKConfig sdkConfig = 3;
+	repeated TestcaseConfig casesConfig = 4;
+}
