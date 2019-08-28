@@ -1,5 +1,6 @@
 .idea/
 plugins/java_gen/
+plugins/swift_gen/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

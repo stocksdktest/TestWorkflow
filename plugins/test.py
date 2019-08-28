@@ -4,7 +4,7 @@ import threading
 
 from utils import generate_id, base64_encode
 from adb_utils import exec_adb_cmd
-from protos_gen.config_pb2 import RunnerConfig, TestcaseConfig, SDKPermissions
+from protos_gen.config_pb2 import RunnerConfig, TestcaseConfig
 
 if __name__ == '__main__':
     runner_conf = RunnerConfig()
@@ -12,9 +12,17 @@ if __name__ == '__main__':
     runner_conf.runnerID = generate_id('RUN-A')
 
     runner_conf.sdkConfig.appKey = 'J6IPlk5AEU+2/Yi59rfYnsFQtdtOgAo9GAzysx8ciOM='
-    runner_conf.sdkConfig.sdkLevel = SDKPermissions.LEVEL_2
-    runner_conf.sdkConfig.sdkSseLevel = SDKPermissions.LEVEL_2
-    runner_conf.sdkConfig.hkPerms.extend([SDKPermissions.HK10])
+    runner_conf.sdkConfig.serverSites["shl2"] = "http://114.80.155.50:22016"
+
+    runner_conf.sdkConfig.marketPerm.Level = "2"
+    runner_conf.sdkConfig.marketPerm.SseLevel = "2"
+    runner_conf.sdkConfig.marketPerm.CffLevel = "2"
+    runner_conf.sdkConfig.marketPerm.DceLevel = "2"
+    runner_conf.sdkConfig.marketPerm.CzceLevel = "2"
+    runner_conf.sdkConfig.marketPerm.FeLevel = "2"
+    runner_conf.sdkConfig.marketPerm.GILevel = "2"
+    runner_conf.sdkConfig.marketPerm.ShfeLevel = "2"
+    runner_conf.sdkConfig.marketPerm.HKPerms.extend(["hk10", "hka1"])
 
     case_conf = TestcaseConfig()
     case_conf.testcaseID = 'TESTCASE_0'
@@ -22,7 +30,6 @@ if __name__ == '__main__':
     case_conf.continueWhenFailed = False
     case_conf.paramStr = json.dumps({
         'QUOTE_NUMBERS': '600000.sh'
-        # 'QUOTE_NUMBERS': '600028.sh'
     })
 
     runner_conf.casesConfig.extend([case_conf])
