@@ -13,6 +13,7 @@ def exec_adb_cmd(args, serial=None, logger=None):
 	adb_env = os.environ.copy()
 	if serial:
 		adb_env['ANDROID_SERIAL'] = serial
+	# TODO replace ADB_EXEC_PATH
 	process = subprocess.Popen(args, executable=ADB_EXEC_PATH, stdout=subprocess.PIPE, env=adb_env)
 	while True:
 		line = process.stdout.readline()
