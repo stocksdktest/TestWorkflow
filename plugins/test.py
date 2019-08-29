@@ -26,11 +26,16 @@ if __name__ == '__main__':
 
     case_conf = TestcaseConfig()
     case_conf.testcaseID = 'TESTCASE_0'
-    case_conf.executionTimes = 1
     case_conf.continueWhenFailed = False
-    case_conf.paramStr = json.dumps({
-        'QUOTE_NUMBERS': '600000.sh'
-    })
+    case_conf.roundIntervalSec = 3
+    case_conf.paramStrs.extend([
+        json.dumps({
+            'QUOTE_NUMBERS': '600000.sh'
+        }),
+        json.dumps({
+            'QUOTE_NUMBERS': '600028.sh'
+        })
+    ])
 
     runner_conf.casesConfig.extend([case_conf])
 

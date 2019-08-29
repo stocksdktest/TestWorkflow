@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='stock_testing',
   syntax='proto3',
   serialized_options=_b('\n\026com.chi.ssetest.protosB\013SetupConfig'),
-  serialized_pb=_b('\n\x0c\x63onfig.proto\x12\rstock_testing\"\xc2\x01\n\x10MarketPermission\x12\r\n\x05Level\x18\x01 \x01(\t\x12\x10\n\x08SseLevel\x18\x02 \x01(\t\x12\x10\n\x08\x43\x66\x66Level\x18\x03 \x01(\t\x12\x10\n\x08\x44\x63\x65Level\x18\x04 \x01(\t\x12\x11\n\tCzceLevel\x18\x05 \x01(\t\x12\x0f\n\x07\x46\x65Level\x18\x06 \x01(\t\x12\x0f\n\x07GILevel\x18\x07 \x01(\t\x12\x11\n\tShfeLevel\x18\x08 \x01(\t\x12\x10\n\x08IneLevel\x18\t \x01(\t\x12\x0f\n\x07HKPerms\x18\n \x03(\t\"\xc4\x01\n\tSDKConfig\x12\x0e\n\x06\x61ppKey\x18\x01 \x01(\t\x12>\n\x0bserverSites\x18\x02 \x03(\x0b\x32).stock_testing.SDKConfig.ServerSitesEntry\x12\x33\n\nmarketPerm\x18\x03 \x01(\x0b\x32\x1f.stock_testing.MarketPermission\x1a\x32\n\x10ServerSitesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"j\n\x0eTestcaseConfig\x12\x12\n\ntestcaseID\x18\x01 \x01(\t\x12\x16\n\x0e\x65xecutionTimes\x18\x02 \x01(\x05\x12\x1a\n\x12\x63ontinueWhenFailed\x18\x03 \x01(\x08\x12\x10\n\x08paramStr\x18\x04 \x01(\t\"\x90\x01\n\x0cRunnerConfig\x12\r\n\x05jobID\x18\x01 \x01(\t\x12\x10\n\x08runnerID\x18\x02 \x01(\t\x12+\n\tsdkConfig\x18\x03 \x01(\x0b\x32\x18.stock_testing.SDKConfig\x12\x32\n\x0b\x63\x61sesConfig\x18\x04 \x03(\x0b\x32\x1d.stock_testing.TestcaseConfigB%\n\x16\x63om.chi.ssetest.protosB\x0bSetupConfigb\x06proto3')
+  serialized_pb=_b('\n\x0c\x63onfig.proto\x12\rstock_testing\"\xc2\x01\n\x10MarketPermission\x12\r\n\x05Level\x18\x01 \x01(\t\x12\x10\n\x08SseLevel\x18\x02 \x01(\t\x12\x10\n\x08\x43\x66\x66Level\x18\x03 \x01(\t\x12\x10\n\x08\x44\x63\x65Level\x18\x04 \x01(\t\x12\x11\n\tCzceLevel\x18\x05 \x01(\t\x12\x0f\n\x07\x46\x65Level\x18\x06 \x01(\t\x12\x0f\n\x07GILevel\x18\x07 \x01(\t\x12\x11\n\tShfeLevel\x18\x08 \x01(\t\x12\x10\n\x08IneLevel\x18\t \x01(\t\x12\x0f\n\x07HKPerms\x18\n \x03(\t\"\xc4\x01\n\tSDKConfig\x12\x0e\n\x06\x61ppKey\x18\x01 \x01(\t\x12>\n\x0bserverSites\x18\x02 \x03(\x0b\x32).stock_testing.SDKConfig.ServerSitesEntry\x12\x33\n\nmarketPerm\x18\x03 \x01(\x0b\x32\x1f.stock_testing.MarketPermission\x1a\x32\n\x10ServerSitesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"m\n\x0eTestcaseConfig\x12\x12\n\ntestcaseID\x18\x01 \x01(\t\x12\x1a\n\x12\x63ontinueWhenFailed\x18\x02 \x01(\x08\x12\x18\n\x10roundIntervalSec\x18\x03 \x01(\x03\x12\x11\n\tparamStrs\x18\x04 \x03(\t\"\x90\x01\n\x0cRunnerConfig\x12\r\n\x05jobID\x18\x01 \x01(\t\x12\x10\n\x08runnerID\x18\x02 \x01(\t\x12+\n\tsdkConfig\x18\x03 \x01(\x0b\x32\x18.stock_testing.SDKConfig\x12\x32\n\x0b\x63\x61sesConfig\x18\x04 \x03(\x0b\x32\x1d.stock_testing.TestcaseConfigB%\n\x16\x63om.chi.ssetest.protosB\x0bSetupConfigb\x06proto3')
 )
 
 
@@ -217,23 +217,23 @@ _TESTCASECONFIG = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='executionTimes', full_name='stock_testing.TestcaseConfig.executionTimes', index=1,
-      number=2, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='continueWhenFailed', full_name='stock_testing.TestcaseConfig.continueWhenFailed', index=2,
-      number=3, type=8, cpp_type=7, label=1,
+      name='continueWhenFailed', full_name='stock_testing.TestcaseConfig.continueWhenFailed', index=1,
+      number=2, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='paramStr', full_name='stock_testing.TestcaseConfig.paramStr', index=3,
-      number=4, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      name='roundIntervalSec', full_name='stock_testing.TestcaseConfig.roundIntervalSec', index=2,
+      number=3, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='paramStrs', full_name='stock_testing.TestcaseConfig.paramStrs', index=3,
+      number=4, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -250,7 +250,7 @@ _TESTCASECONFIG = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=427,
-  serialized_end=533,
+  serialized_end=536,
 )
 
 
@@ -301,8 +301,8 @@ _RUNNERCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=536,
-  serialized_end=680,
+  serialized_start=539,
+  serialized_end=683,
 )
 
 _SDKCONFIG_SERVERSITESENTRY.containing_type = _SDKCONFIG

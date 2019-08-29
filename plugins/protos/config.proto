@@ -26,9 +26,9 @@ message SDKConfig {
 
 message TestcaseConfig {
 	string testcaseID = 1;
-	int32 executionTimes = 2;
-	bool continueWhenFailed = 3;
-	string paramStr = 4;
+	bool continueWhenFailed = 2;
+	int64 roundIntervalSec = 3;
+	repeated string paramStrs = 4;
 }
 
 message RunnerConfig {
