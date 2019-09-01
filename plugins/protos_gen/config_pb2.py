@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='stock_testing',
   syntax='proto3',
   serialized_options=_b('\n\026com.chi.ssetest.protosB\013SetupConfig'),
-  serialized_pb=_b('\n\x0c\x63onfig.proto\x12\rstock_testing\"\xc2\x01\n\x10MarketPermission\x12\r\n\x05Level\x18\x01 \x01(\t\x12\x10\n\x08SseLevel\x18\x02 \x01(\t\x12\x10\n\x08\x43\x66\x66Level\x18\x03 \x01(\t\x12\x10\n\x08\x44\x63\x65Level\x18\x04 \x01(\t\x12\x11\n\tCzceLevel\x18\x05 \x01(\t\x12\x0f\n\x07\x46\x65Level\x18\x06 \x01(\t\x12\x0f\n\x07GILevel\x18\x07 \x01(\t\x12\x11\n\tShfeLevel\x18\x08 \x01(\t\x12\x10\n\x08IneLevel\x18\t \x01(\t\x12\x0f\n\x07HKPerms\x18\n \x03(\t\"\xc4\x01\n\tSDKConfig\x12\x0e\n\x06\x61ppKey\x18\x01 \x01(\t\x12>\n\x0bserverSites\x18\x02 \x03(\x0b\x32).stock_testing.SDKConfig.ServerSitesEntry\x12\x33\n\nmarketPerm\x18\x03 \x01(\x0b\x32\x1f.stock_testing.MarketPermission\x1a\x32\n\x10ServerSitesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"m\n\x0eTestcaseConfig\x12\x12\n\ntestcaseID\x18\x01 \x01(\t\x12\x1a\n\x12\x63ontinueWhenFailed\x18\x02 \x01(\x08\x12\x18\n\x10roundIntervalSec\x18\x03 \x01(\x03\x12\x11\n\tparamStrs\x18\x04 \x03(\t\"\x90\x01\n\x0cRunnerConfig\x12\r\n\x05jobID\x18\x01 \x01(\t\x12\x10\n\x08runnerID\x18\x02 \x01(\t\x12+\n\tsdkConfig\x18\x03 \x01(\x0b\x32\x18.stock_testing.SDKConfig\x12\x32\n\x0b\x63\x61sesConfig\x18\x04 \x03(\x0b\x32\x1d.stock_testing.TestcaseConfigB%\n\x16\x63om.chi.ssetest.protosB\x0bSetupConfigb\x06proto3')
+  serialized_pb=_b('\n\x0c\x63onfig.proto\x12\rstock_testing\"\xb0\x01\n\x10MarketPermission\x12\r\n\x05Level\x18\x01 \x01(\t\x12\x10\n\x08\x43\x66\x66Level\x18\x02 \x01(\t\x12\x10\n\x08\x44\x63\x65Level\x18\x03 \x01(\t\x12\x11\n\tCzceLevel\x18\x04 \x01(\t\x12\x0f\n\x07\x46\x65Level\x18\x05 \x01(\t\x12\x0f\n\x07GILevel\x18\x06 \x01(\t\x12\x11\n\tShfeLevel\x18\x07 \x01(\t\x12\x10\n\x08IneLevel\x18\x08 \x01(\t\x12\x0f\n\x07HKPerms\x18\t \x03(\t\"\x13\n\x04Site\x12\x0b\n\x03ips\x18\x01 \x03(\t\"\xf3\x01\n\tSDKConfig\x12\x15\n\rappKeyAndroid\x18\x01 \x01(\t\x12\x11\n\tappKeyIOS\x18\x02 \x01(\t\x12>\n\x0bserverSites\x18\x03 \x03(\x0b\x32).stock_testing.SDKConfig.ServerSitesEntry\x12\x33\n\nmarketPerm\x18\x04 \x01(\x0b\x32\x1f.stock_testing.MarketPermission\x1aG\n\x10ServerSitesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.stock_testing.Site:\x02\x38\x01\"m\n\x0eTestcaseConfig\x12\x12\n\ntestcaseID\x18\x01 \x01(\t\x12\x1a\n\x12\x63ontinueWhenFailed\x18\x02 \x01(\x08\x12\x18\n\x10roundIntervalSec\x18\x03 \x01(\x03\x12\x11\n\tparamStrs\x18\x04 \x03(\t\"\x90\x01\n\x0cRunnerConfig\x12\r\n\x05jobID\x18\x01 \x01(\t\x12\x10\n\x08runnerID\x18\x02 \x01(\t\x12+\n\tsdkConfig\x18\x03 \x01(\x0b\x32\x18.stock_testing.SDKConfig\x12\x32\n\x0b\x63\x61sesConfig\x18\x04 \x03(\x0b\x32\x1d.stock_testing.TestcaseConfigB%\n\x16\x63om.chi.ssetest.protosB\x0bSetupConfigb\x06proto3')
 )
 
 
@@ -41,64 +41,57 @@ _MARKETPERMISSION = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='SseLevel', full_name='stock_testing.MarketPermission.SseLevel', index=1,
+      name='CffLevel', full_name='stock_testing.MarketPermission.CffLevel', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='CffLevel', full_name='stock_testing.MarketPermission.CffLevel', index=2,
+      name='DceLevel', full_name='stock_testing.MarketPermission.DceLevel', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='DceLevel', full_name='stock_testing.MarketPermission.DceLevel', index=3,
+      name='CzceLevel', full_name='stock_testing.MarketPermission.CzceLevel', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='CzceLevel', full_name='stock_testing.MarketPermission.CzceLevel', index=4,
+      name='FeLevel', full_name='stock_testing.MarketPermission.FeLevel', index=4,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='FeLevel', full_name='stock_testing.MarketPermission.FeLevel', index=5,
+      name='GILevel', full_name='stock_testing.MarketPermission.GILevel', index=5,
       number=6, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='GILevel', full_name='stock_testing.MarketPermission.GILevel', index=6,
+      name='ShfeLevel', full_name='stock_testing.MarketPermission.ShfeLevel', index=6,
       number=7, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='ShfeLevel', full_name='stock_testing.MarketPermission.ShfeLevel', index=7,
+      name='IneLevel', full_name='stock_testing.MarketPermission.IneLevel', index=7,
       number=8, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='IneLevel', full_name='stock_testing.MarketPermission.IneLevel', index=8,
-      number=9, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='HKPerms', full_name='stock_testing.MarketPermission.HKPerms', index=9,
-      number=10, type=9, cpp_type=9, label=3,
+      name='HKPerms', full_name='stock_testing.MarketPermission.HKPerms', index=8,
+      number=9, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -116,7 +109,38 @@ _MARKETPERMISSION = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=32,
-  serialized_end=226,
+  serialized_end=208,
+)
+
+
+_SITE = _descriptor.Descriptor(
+  name='Site',
+  full_name='stock_testing.Site',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='ips', full_name='stock_testing.Site.ips', index=0,
+      number=1, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=210,
+  serialized_end=229,
 )
 
 
@@ -136,8 +160,8 @@ _SDKCONFIG_SERVERSITESENTRY = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='stock_testing.SDKConfig.ServerSitesEntry.value', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -153,8 +177,8 @@ _SDKCONFIG_SERVERSITESENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=375,
-  serialized_end=425,
+  serialized_start=404,
+  serialized_end=475,
 )
 
 _SDKCONFIG = _descriptor.Descriptor(
@@ -165,22 +189,29 @@ _SDKCONFIG = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='appKey', full_name='stock_testing.SDKConfig.appKey', index=0,
+      name='appKeyAndroid', full_name='stock_testing.SDKConfig.appKeyAndroid', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='serverSites', full_name='stock_testing.SDKConfig.serverSites', index=1,
-      number=2, type=11, cpp_type=10, label=3,
+      name='appKeyIOS', full_name='stock_testing.SDKConfig.appKeyIOS', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='serverSites', full_name='stock_testing.SDKConfig.serverSites', index=2,
+      number=3, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='marketPerm', full_name='stock_testing.SDKConfig.marketPerm', index=2,
-      number=3, type=11, cpp_type=10, label=1,
+      name='marketPerm', full_name='stock_testing.SDKConfig.marketPerm', index=3,
+      number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -197,8 +228,8 @@ _SDKCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=229,
-  serialized_end=425,
+  serialized_start=232,
+  serialized_end=475,
 )
 
 
@@ -249,8 +280,8 @@ _TESTCASECONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=427,
-  serialized_end=536,
+  serialized_start=477,
+  serialized_end=586,
 )
 
 
@@ -301,16 +332,18 @@ _RUNNERCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=539,
-  serialized_end=683,
+  serialized_start=589,
+  serialized_end=733,
 )
 
+_SDKCONFIG_SERVERSITESENTRY.fields_by_name['value'].message_type = _SITE
 _SDKCONFIG_SERVERSITESENTRY.containing_type = _SDKCONFIG
 _SDKCONFIG.fields_by_name['serverSites'].message_type = _SDKCONFIG_SERVERSITESENTRY
 _SDKCONFIG.fields_by_name['marketPerm'].message_type = _MARKETPERMISSION
 _RUNNERCONFIG.fields_by_name['sdkConfig'].message_type = _SDKCONFIG
 _RUNNERCONFIG.fields_by_name['casesConfig'].message_type = _TESTCASECONFIG
 DESCRIPTOR.message_types_by_name['MarketPermission'] = _MARKETPERMISSION
+DESCRIPTOR.message_types_by_name['Site'] = _SITE
 DESCRIPTOR.message_types_by_name['SDKConfig'] = _SDKCONFIG
 DESCRIPTOR.message_types_by_name['TestcaseConfig'] = _TESTCASECONFIG
 DESCRIPTOR.message_types_by_name['RunnerConfig'] = _RUNNERCONFIG
@@ -322,6 +355,13 @@ MarketPermission = _reflection.GeneratedProtocolMessageType('MarketPermission', 
   # @@protoc_insertion_point(class_scope:stock_testing.MarketPermission)
   ))
 _sym_db.RegisterMessage(MarketPermission)
+
+Site = _reflection.GeneratedProtocolMessageType('Site', (_message.Message,), dict(
+  DESCRIPTOR = _SITE,
+  __module__ = 'config_pb2'
+  # @@protoc_insertion_point(class_scope:stock_testing.Site)
+  ))
+_sym_db.RegisterMessage(Site)
 
 SDKConfig = _reflection.GeneratedProtocolMessageType('SDKConfig', (_message.Message,), dict(
 
