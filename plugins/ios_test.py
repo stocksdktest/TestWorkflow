@@ -29,16 +29,28 @@ if __name__ == '__main__':
     case_conf.roundIntervalSec = 3
     case_conf.paramStrs.extend([
         json.dumps({
-            'QUOTE_NUMBERS': '600028.sh'
+            'QUOTE_NUMBERS': '600000.sh'
         })
     ])
 
     runner_conf.casesConfig.extend([case_conf])
 
+    case_conf = TestcaseConfig()
+    case_conf.testcaseID = 'TESTCASE_1'
+    case_conf.continueWhenFailed = False
+    case_conf.roundIntervalSec = 3
+    case_conf.paramStrs.extend([
+        json.dumps({
+            'QUOTE_NUMBERS': '600000.sh'
+        })
+    ])
+
+    runner_conf.casesConfig.extend([case_conf])
+
+    # TODO Do not edit!
     if not config_plist(base64_encode(runner_conf.SerializeToString())):
         print("Config Info.Plist error")
         exit(1)
-
 
     test_result = False
     def check_test_result(line):

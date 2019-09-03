@@ -5,34 +5,27 @@ from airflow.models import DAG
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.dummy_operator import DummyOperator
 
-from protos_gen.config_pb2 import RunnerConfig, TestcaseConfig, SDKPermissions
+from protos_gen.config_pb2 import RunnerConfig, TestcaseConfig
 from operators.android_operator import AndroidStockOperator
 
 # TODO init RunnerConfig
 runner_conf = RunnerConfig()
 
-runner_conf.sdkConfig.appKey = 'J6IPlk5AEU+2/Yi59rfYnsFQtdtOgAo9GAzysx8ciOM='
-runner_conf.sdkConfig.sdkLevel = SDKPermissions.LEVEL_2
-runner_conf.sdkConfig.sdkSseLevel = SDKPermissions.LEVEL_2
-runner_conf.sdkConfig.hkPerms.extend([SDKPermissions.HK10])
+runner_conf.sdkConfig.appKeyIOS = 'VVW0Fno7BEZt1a/y6KLM36uj9qcjw7CAHDwWZKDlWDs='
+runner_conf.sdkConfig.appKeyAndroid = 'J6IPlk5AEU+2/Yi59rfYnsFQtdtOgAo9GAzysx8ciOM='
+runner_conf.sdkConfig.marketPerm.Level = "2"
 
 case_conf = TestcaseConfig()
 case_conf.testcaseID = 'TESTCASE_0'
-case_conf.executionTimes = 1
 case_conf.continueWhenFailed = False
-case_conf.paramStr = json.dumps({
-	'QUOTE_NUMBERS': '600028.sh,600000.sh,688001.sh'
-})
+case_conf.roundIntervalSec = 3
+case_conf.paramStrs.extend([
+    json.dumps({
+        'QUOTE_NUMBERS': '600028.sh'
+    })
+])
 
-case_conf_2 = TestcaseConfig()
-case_conf_2.testcaseID = 'TESTCASE_1'
-case_conf_2.executionTimes = 1
-case_conf_2.continueWhenFailed = False
-case_conf_2.paramStr = json.dumps({
-	'QUOTE_NUMBERS': '600028.sh'
-})
-
-runner_conf.casesConfig.extend([case_conf, case_conf_2])
+runner_conf.casesConfig.extend([case_conf])
 
 with DAG(
     dag_id='android_test',

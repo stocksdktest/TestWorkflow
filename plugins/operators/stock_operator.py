@@ -2,7 +2,6 @@ from airflow.exceptions import AirflowException
 from airflow.utils.decorators import apply_defaults
 from airflow.models import BaseOperator
 
-from hooks.fluentd_hook import FluentdHook
 from utils import generate_id
 
 class StockOperator(BaseOperator):
@@ -12,7 +11,6 @@ class StockOperator(BaseOperator):
 	@apply_defaults
 	def __init__(self, queue, runner_conf, *args, **kwargs):
 		super(StockOperator, self).__init__(queue=queue, *args, **kwargs)
-		self.recorder = FluentdHook(conn_id='fluentd_default').get_conn()
 		self.runner_conf = runner_conf
 
 	def pre_execute(self, context):

@@ -2,6 +2,8 @@ import subprocess
 import os
 import platform
 
+PLISTBUDDY_PATH=r'/usr/libexec/PlistBuddy'
+XCTOOL_PATH=r'/usr/local/bin/xctool'
 PROJECT_PATH=r'/Users/lxs/Documents/StockTesting/IOSTestRunner'
 
 """
@@ -9,7 +11,7 @@ PROJECT_PATH=r'/Users/lxs/Documents/StockTesting/IOSTestRunner'
 :return bool
 """
 def config_plist(serialize_config):
-    cmd = '/usr/libexec/PlistBuddy -c "Delete :runner_config" ' \
+    cmd = PLISTBUDDY_PATH + ' -c "Delete :runner_config" ' \
           './Build/Products/Release-iphonesimulator/IOSTestRunner.app/Info.plist'
     # ignore return code
     subprocess.call(cmd, cwd=PROJECT_PATH, shell=True)
@@ -22,7 +24,7 @@ def config_plist(serialize_config):
     return process.returncode == 0
 
 def xctest_cmd(reporter='pretty', logger=None):
-    cmd ='/usr/local/bin/xctool -workspace IOSTestRunner.xcworkspace -scheme IOSTestRunner ' \
+    cmd = XCTOOL_PATH + ' -workspace IOSTestRunner.xcworkspace -scheme IOSTestRunner ' \
          '-configuration Release -sdk iphonesimulator11.2 -reporter %s ' \
          '-destination "platform=iOS Simulator,name=iPhone 8 Plus" run-tests -only IOSTestRunnerTests' % reporter
 
