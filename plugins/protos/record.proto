@@ -13,8 +13,9 @@ message TestExecutionRecord {
 	bool isPass = 5;
 	int64 startTime = 6;
 	int64 endTime = 7;
-	string resultStr = 8;
-	string exceptionStr = 9;
+	string paramStr = 8;
+	string resultStr = 9;
+	string exceptionStr = 10;
 }
 
 message RunnerExecutionRecord {

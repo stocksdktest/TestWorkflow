@@ -35,7 +35,17 @@ if __name__ == '__main__':
         })
     ])
 
-    runner_conf.casesConfig.extend([case_conf])
+    case_conf_2 = TestcaseConfig()
+    case_conf_2.testcaseID = 'TESTCASE_0'
+    case_conf_2.continueWhenFailed = False
+    case_conf_2.roundIntervalSec = 3
+    case_conf_2.paramStrs.extend([
+        json.dumps({
+            'QUOTE_NUMBERS': '600028.sh'
+        })
+    ])
+
+    runner_conf.casesConfig.extend([case_conf, case_conf_2])
 
     print(base64_encode(runner_conf.SerializeToString()))
 
