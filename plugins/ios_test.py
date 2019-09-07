@@ -1,8 +1,9 @@
 import json
 
-from ios_utils import config_plist, xctest_cmd
-from utils import generate_id, base64_encode
+from ios_utils import config_plist, xctest_cmd, spawn_xcrun_log, parse_data_from_log
+from utils import generate_id, base64_encode, LogChunkCache
 from protos_gen.config_pb2 import RunnerConfig, TestcaseConfig, Site
+from protos_gen.record_pb2 import TestExecutionRecord
 
 if __name__ == '__main__':
     runner_conf = RunnerConfig()
@@ -24,18 +25,6 @@ if __name__ == '__main__':
     # runner_conf.sdkConfig.marketPerm.HKPerms.extend(["hk10", "hka1"])
 
     case_conf = TestcaseConfig()
-    case_conf.testcaseID = 'TESTCASE_0'
-    case_conf.continueWhenFailed = False
-    case_conf.roundIntervalSec = 3
-    case_conf.paramStrs.extend([
-        json.dumps({
-            'QUOTE_NUMBERS': '600000.sh'
-        })
-    ])
-
-    runner_conf.casesConfig.extend([case_conf])
-
-    case_conf = TestcaseConfig()
     case_conf.testcaseID = 'TESTCASE_1'
     case_conf.continueWhenFailed = False
     case_conf.roundIntervalSec = 3
@@ -47,10 +36,36 @@ if __name__ == '__main__':
 
     runner_conf.casesConfig.extend([case_conf])
 
+    # case_conf = TestcaseConfig()
+    # case_conf.testcaseID = 'TESTCASE_1'
+    # case_conf.continueWhenFailed = False
+    # case_conf.roundIntervalSec = 3
+    # case_conf.paramStrs.extend([
+    #     json.dumps({
+    #         'QUOTE_NUMBERS': '600000.sh'
+    #     })
+    # ])
+    #
+    # runner_conf.casesConfig.extend([case_conf])
+
     # TODO Do not edit!
+    print(base64_encode(runner_conf.SerializeToString()))
     if not config_plist(base64_encode(runner_conf.SerializeToString())):
         print("Config Info.Plist error")
         exit(1)
+
+    chunk_cache = LogChunkCache()
+    def read_record(record_str):
+        record = TestExecutionRecord()
+        data = parse_data_from_log(chunk_cache, record_str)
+        if data:
+            record.ParseFromString(data)
+        if len(record.ListFields()) > 0:
+            print("*************************")
+            print(record)
+            print("*************************")
+
+    spawn_xcrun_log(logger=read_record)
 
     test_result = False
     def check_test_result(line):

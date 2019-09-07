@@ -1,10 +1,10 @@
 import json
 import re
-import threading
 
-from utils import generate_id, base64_encode
-from adb_utils import exec_adb_cmd
+from utils import generate_id, base64_encode, LogChunkCache
+from adb_utils import exec_adb_cmd, spawn_logcat, parse_data_from_logcat
 from protos_gen.config_pb2 import RunnerConfig, TestcaseConfig, Site
+from protos_gen.record_pb2 import TestExecutionRecord
 
 if __name__ == '__main__':
     runner_conf = RunnerConfig()
@@ -32,11 +32,14 @@ if __name__ == '__main__':
     case_conf.paramStrs.extend([
         json.dumps({
             'QUOTE_NUMBERS': '600028.sh'
+        }),
+        json.dumps({
+            'QUOTE_NUMBERS': '600000.sh'
         })
     ])
 
     case_conf_2 = TestcaseConfig()
-    case_conf_2.testcaseID = 'TESTCASE_0'
+    case_conf_2.testcaseID = 'TESTCASE_2'
     case_conf_2.continueWhenFailed = False
     case_conf_2.roundIntervalSec = 3
     case_conf_2.paramStrs.extend([
@@ -48,26 +51,39 @@ if __name__ == '__main__':
     runner_conf.casesConfig.extend([case_conf, case_conf_2])
 
     print(base64_encode(runner_conf.SerializeToString()))
+    chunk_cache = LogChunkCache()
+    def read_record(record_str):
+        # print(record_str)
+        record = TestExecutionRecord()
+        data = parse_data_from_logcat(chunk_cache, record_str)
+        if data:
+            record.ParseFromString(data)
+        if len(record.ListFields()) > 0:
+            print("*************************")
+            print(record)
+            print("*************************")
 
-    # test_status_code = []
-    # def check_test_result(line):
-    #     global test_result
-    #     if 'INSTRUMENTATION_STATUS_CODE' in line:
-    #         # find number in string, https://stackoverflow.com/a/29581287/9797889
-    #         codes = re.findall("[-+]?[.]?[\d]+(?:,\d\d\d)*[\.]?\d*(?:[eE][-+]?\d+)?", line)
-    #         # check whether code ONLY contains '0' or '1'
-    #         test_status_code.extend(codes)
-    #
-    # cmd_code = exec_adb_cmd([
-    #     'adb', 'shell', 'am', 'instrument', '-w', '-r',
-    #     '-e', 'debug', 'false',
-    #     '-e', 'filter', 'com.chi.ssetest.TestcaseFilter',
-    #     '-e', 'listener', 'com.chi.ssetest.TestcaseExecutionListener',
-    #     '-e', 'collector_file', 'test.log',
-    #     '-e', 'runner_config', base64_encode(runner_conf.SerializeToString()),
-    #     'com.chi.ssetest.test/android.support.test.runner.AndroidJUnitRunner'
-    # ], serial='ZX1G22DBHC', logger=check_test_result)
-    #
-    # print("status: ", (cmd_code == 0) and \
-		# 	   len(test_status_code) > 0 and \
-		# 	   (test_status_code.count('0') + test_status_code.count('1') == len(test_status_code)))
+    spawn_logcat(serial='ZX1G22DBHC', logger=read_record)
+
+    test_status_code = []
+    def check_test_result(line):
+        global test_result
+        if 'INSTRUMENTATION_STATUS_CODE' in line:
+            # find number in string, https://stackoverflow.com/a/29581287/9797889
+            codes = re.findall("[-+]?[.]?[\d]+(?:,\d\d\d)*[\.]?\d*(?:[eE][-+]?\d+)?", line)
+            # check whether code ONLY contains '0' or '1'
+            test_status_code.extend(codes)
+
+    cmd_code = exec_adb_cmd([
+        'adb', 'shell', 'am', 'instrument', '-w', '-r',
+        '-e', 'debug', 'false',
+        '-e', 'filter', 'com.chi.ssetest.TestcaseFilter',
+        '-e', 'listener', 'com.chi.ssetest.TestcaseExecutionListener',
+        '-e', 'collector_file', 'test.log',
+        '-e', 'runner_config', base64_encode(runner_conf.SerializeToString()),
+        'com.chi.ssetest.test/android.support.test.runner.AndroidJUnitRunner'
+    ], serial='ZX1G22DBHC', logger=check_test_result)
+
+    print("status: ", (cmd_code == 0) and \
+			   len(test_status_code) > 0 and \
+			   (test_status_code.count('0') + test_status_code.count('1') == len(test_status_code)))

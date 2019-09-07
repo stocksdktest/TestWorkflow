@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='stock_testing',
   syntax='proto3',
   serialized_options=_b('\n\026com.chi.ssetest.protosB\nTestRecord'),
-  serialized_pb=_b('\n\x0crecord.proto\x12\rstock_testing\"\xcb\x01\n\x13TestExecutionRecord\x12\r\n\x05jobID\x18\x01 \x01(\t\x12\x10\n\x08runnerID\x18\x02 \x01(\t\x12\x12\n\ntestcaseID\x18\x03 \x01(\t\x12\x10\n\x08recordID\x18\x04 \x01(\t\x12\x0e\n\x06isPass\x18\x05 \x01(\x08\x12\x11\n\tstartTime\x18\x06 \x01(\x03\x12\x0f\n\x07\x65ndTime\x18\x07 \x01(\x03\x12\x10\n\x08paramStr\x18\x08 \x01(\t\x12\x11\n\tresultStr\x18\t \x01(\t\x12\x14\n\x0c\x65xceptionStr\x18\n \x01(\t\"q\n\x15RunnerExecutionRecord\x12\r\n\x05jobID\x18\x01 \x01(\t\x12\x10\n\x08runnerID\x18\x02 \x01(\t\x12\x10\n\x08runCount\x18\x03 \x01(\x05\x12\x14\n\x0c\x66\x61ilureCount\x18\x04 \x01(\x05\x12\x0f\n\x07runTime\x18\x05 \x01(\x03\x42$\n\x16\x63om.chi.ssetest.protosB\nTestRecordb\x06proto3')
+  serialized_pb=_b('\n\x0crecord.proto\x12\rstock_testing\"\xce\x01\n\x13TestExecutionRecord\x12\r\n\x05jobID\x18\x01 \x01(\t\x12\x10\n\x08runnerID\x18\x02 \x01(\t\x12\x12\n\ntestcaseID\x18\x03 \x01(\t\x12\x10\n\x08recordID\x18\x04 \x01(\t\x12\x0e\n\x06isPass\x18\x05 \x01(\x08\x12\x11\n\tstartTime\x18\x06 \x01(\x03\x12\x0f\n\x07\x65ndTime\x18\x07 \x01(\x03\x12\x11\n\tparamData\x18\x08 \x01(\x0c\x12\x12\n\nresultData\x18\t \x01(\x0c\x12\x15\n\rexceptionData\x18\n \x01(\x0c\"q\n\x15RunnerExecutionRecord\x12\r\n\x05jobID\x18\x01 \x01(\t\x12\x10\n\x08runnerID\x18\x02 \x01(\t\x12\x10\n\x08runCount\x18\x03 \x01(\x05\x12\x14\n\x0c\x66\x61ilureCount\x18\x04 \x01(\x05\x12\x0f\n\x07runTime\x18\x05 \x01(\x03\x42$\n\x16\x63om.chi.ssetest.protosB\nTestRecordb\x06proto3')
 )
 
 
@@ -83,23 +83,23 @@ _TESTEXECUTIONRECORD = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='paramStr', full_name='stock_testing.TestExecutionRecord.paramStr', index=7,
-      number=8, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      name='paramData', full_name='stock_testing.TestExecutionRecord.paramData', index=7,
+      number=8, type=12, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='resultStr', full_name='stock_testing.TestExecutionRecord.resultStr', index=8,
-      number=9, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      name='resultData', full_name='stock_testing.TestExecutionRecord.resultData', index=8,
+      number=9, type=12, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='exceptionStr', full_name='stock_testing.TestExecutionRecord.exceptionStr', index=9,
-      number=10, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      name='exceptionData', full_name='stock_testing.TestExecutionRecord.exceptionData', index=9,
+      number=10, type=12, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -116,7 +116,7 @@ _TESTEXECUTIONRECORD = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=32,
-  serialized_end=235,
+  serialized_end=238,
 )
 
 
@@ -174,8 +174,8 @@ _RUNNEREXECUTIONRECORD = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=237,
-  serialized_end=350,
+  serialized_start=240,
+  serialized_end=353,
 )
 
 DESCRIPTOR.message_types_by_name['TestExecutionRecord'] = _TESTEXECUTIONRECORD
