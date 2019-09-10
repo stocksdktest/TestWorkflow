@@ -4,7 +4,7 @@ import platform
 import threading
 import binascii
 
-from utils import base64_decode
+from . import base
 
 ADB_EXEC_PATH = '/usr/local/bin/adb' if platform.system() == 'Darwin' else '/usr/bin/adb'
 
@@ -18,15 +18,25 @@ def exec_adb_cmd(args, serial=None, logger=None):
 	if serial:
 		adb_env['ANDROID_SERIAL'] = serial
 	# TODO replace ADB_EXEC_PATH
-	process = subprocess.Popen(args, executable=ADB_EXEC_PATH, stdout=subprocess.PIPE, env=adb_env)
-	while True:
-		line = process.stdout.readline()
-		if not line:
-			break
-		if logger and callable(logger):
-			logger(str(line))
-		os.write(1, line)
-	process.wait()
+	with subprocess.Popen(args, executable=ADB_EXEC_PATH, stdout=subprocess.PIPE, env=adb_env) as process:
+		def timeout_callback():
+			print('process has timeout')
+			process.kill()
+
+		# kill process in timeout seconds unless the timer is restarted
+		watchdog = base.WatchdogTimer(timeout=30, callback=timeout_callback, daemon=True)
+		watchdog.start()
+		for line in process.stdout:
+			# don't invoke the watcthdog callback if do_something() takes too long
+			with watchdog.blocked:
+				if not line:
+					process.kill()
+					break
+				if logger and callable(logger):
+					logger(str(line))
+				os.write(1, line)
+				watchdog.restart()
+		watchdog.cancel()
 	return process.returncode
 
 def spawn_logcat(serial=None, logger=None):
@@ -38,25 +48,23 @@ def spawn_logcat(serial=None, logger=None):
 		# ignore return code
 		subprocess.call(args=["adb", "logcat", "-c"], executable=ADB_EXEC_PATH, env=adb_env)
 
-		args = [
+		process = subprocess.Popen([
 			"adb", "logcat",
 			"-v", "tag",
 			"-s", "TestResult.TestExecutionRecord"
-		]
-		process = subprocess.Popen(args, executable=ADB_EXEC_PATH, stdout=subprocess.PIPE, env=adb_env)
+		], executable=ADB_EXEC_PATH, stdout=subprocess.PIPE, env=adb_env)
 		while True:
 			line = process.stdout.readline()
 			if not line:
 				continue
 			if logger and callable(logger):
 				logger(str(line, encoding='utf-8'))
-		process.wait()
 
 	t = threading.Thread(target=read_log, daemon=True)
 	t.start()
 
 
-def parse_data_from_logcat(chunk_cache, log):
+def parse_logcat(chunk_cache, log):
 	idx = log.find('TestResult.TestExecutionRecord')
 	if idx == -1:
 		return None
@@ -70,7 +78,7 @@ def parse_data_from_logcat(chunk_cache, log):
 
 	print('data_str: ' + data_str)
 	try:
-		return base64_decode(data_str)
+		return base.base64_decode(data_str)
 	except binascii.Error as e:
 		print('Decode base64 data error: ' + str(e))
 		return None

@@ -1,10 +1,10 @@
 import json
 import re
 
-from utils import generate_id, base64_encode, LogChunkCache
-from adb_utils import exec_adb_cmd, spawn_logcat, parse_data_from_logcat
-from protos_gen.config_pb2 import RunnerConfig, TestcaseConfig, Site
+from protos_gen.config_pb2 import RunnerConfig, TestcaseConfig
 from protos_gen.record_pb2 import TestExecutionRecord
+from utils.base import LogChunkCache, base64_encode, generate_id
+from utils.adb import exec_adb_cmd, parse_logcat, spawn_logcat
 
 if __name__ == '__main__':
     runner_conf = RunnerConfig()
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     def read_record(record_str):
         # print(record_str)
         record = TestExecutionRecord()
-        data = parse_data_from_logcat(chunk_cache, record_str)
+        data = parse_logcat(chunk_cache, record_str)
         if data:
             record.ParseFromString(data)
         if len(record.ListFields()) > 0:

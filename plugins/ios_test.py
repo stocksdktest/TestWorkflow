@@ -1,9 +1,9 @@
 import json
 
-from ios_utils import config_plist, xctest_cmd, spawn_xcrun_log, parse_data_from_log
-from utils import generate_id, base64_encode, LogChunkCache
-from protos_gen.config_pb2 import RunnerConfig, TestcaseConfig, Site
+from protos_gen.config_pb2 import RunnerConfig, TestcaseConfig
 from protos_gen.record_pb2 import TestExecutionRecord
+from utils.base import generate_id, base64_encode, LogChunkCache
+from utils.ios import config_plist, xctest_cmd, spawn_xcrun_log, parse_sim_log
 
 if __name__ == '__main__':
     runner_conf = RunnerConfig()
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     chunk_cache = LogChunkCache()
     def read_record(record_str):
         record = TestExecutionRecord()
-        data = parse_data_from_log(chunk_cache, record_str)
+        data = parse_sim_log(chunk_cache, record_str)
         if data:
             record.ParseFromString(data)
         if len(record.ListFields()) > 0:

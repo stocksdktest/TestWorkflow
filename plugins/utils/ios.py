@@ -3,7 +3,7 @@ import os
 import threading
 import binascii
 
-from utils import base64_decode
+from . import base
 
 IPHONE_SDK_VERSION='11.2'
 PLISTBUDDY_PATH=r'/usr/libexec/PlistBuddy'
@@ -33,16 +33,24 @@ def xctest_cmd(reporter='pretty', logger=None):
          '-configuration Debug -sdk iphonesimulator%s -reporter %s ' \
          '-destination "platform=iOS Simulator,name=iPhone 8 Plus" run-tests -only IOSTestRunnerTests' % (IPHONE_SDK_VERSION, reporter)
 
-    process = subprocess.Popen(cmd, cwd=PROJECT_PATH, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-    while True:
-        line = process.stdout.readline()
-        if not line:
-            break
-        if logger and callable(logger):
-            logger(str(line))
-        os.write(1, line)
-    process.wait()
+    with subprocess.Popen(cmd, cwd=PROJECT_PATH, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
+        def timeout_callback():
+            print('process has timeout')
+            process.kill()
+        # kill process in timeout seconds unless the timer is restarted
+        watchdog = base.WatchdogTimer(timeout=30, callback=timeout_callback, daemon=True)
+        watchdog.start()
+        for line in process.stdout:
+            # don't invoke the watcthdog callback if do_something() takes too long
+            with watchdog.blocked:
+                if not line:
+                    process.kill()
+                    break
+                if logger and callable(logger):
+                    logger(str(line, encoding='utf-8'))
+                os.write(1, line)
+                watchdog.restart()
+        watchdog.cancel()
     return process.returncode
 
 def spawn_xcrun_log(logger=None):
@@ -57,13 +65,11 @@ def spawn_xcrun_log(logger=None):
                 continue
             if logger and callable(logger):
                 logger(str(line, encoding='utf-8'))
-        process.wait()
-        return process.returncode
 
     t = threading.Thread(target=read_log, daemon=True)
     t.start()
 
-def parse_data_from_log(chunk_cache, log):
+def parse_sim_log(chunk_cache, log):
     idx = log.find('[com.chi.ssetest:record]')
     if idx == -1:
         return None
@@ -75,7 +81,7 @@ def parse_data_from_log(chunk_cache, log):
         return None
     print("data_str: " + data_str)
     try:
-        return base64_decode(data_str)
+        return base.base64_decode(data_str)
     except binascii.Error as e:
         print('Decode base64 data error: ' + str(e))
         return None
