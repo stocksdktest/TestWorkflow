@@ -1,12 +1,43 @@
 import subprocess
 import os
+import re
+import time
 import platform
 import threading
 import binascii
 
-from . import base
+from utils import base
 
 ADB_EXEC_PATH = '/usr/local/bin/adb' if platform.system() == 'Darwin' else '/usr/bin/adb'
+
+def scan_local_device():
+	device_serial = None
+	def parse_serial(line):
+		global device_serial
+		reg_obj = re.search(r'(emulator-\d+)', line)
+		if reg_obj:
+			device_serial = reg_obj.groups()[0]
+
+	if exec_adb_cmd(['adb', 'devices'], logger=parse_serial) != 0:
+		return None
+	return device_serial
+
+def connect_to_device(serial):
+	connection = {
+		'status': False
+	}
+	def parse_connection_status(line):
+		reg_obj = re.search(r'connected to', line)
+		connection['status'] |= (reg_obj is not None)
+
+	if exec_adb_cmd(['adb', 'connect', serial], logger=parse_connection_status) != 0 or not connection['status']:
+		return False
+	# TODO
+	# prevent adb response with 'device offline'
+	time.sleep(2)
+	if exec_adb_cmd(['adb', 'shell', 'echo', 'ok'], serial=serial) != 0:
+		return False
+	return True
 
 """
 :param args: [str]
@@ -83,6 +114,18 @@ def parse_logcat(chunk_cache, log):
 		print('Decode base64 data error: ' + str(e))
 		return None
 
+def get_app_version(serial, app_id):
+	cur_apk_version = None
+	def check_apk_version(line):
+		global cur_apk_version
+		reg_obj = re.search(r'versionName=(\d{8}_\d{4}_[0-9a-z]{7})', line)
+		if reg_obj:
+			cur_apk_version = reg_obj.groups()[0]
+
+	exec_adb_cmd([
+		'adb', 'shell', 'dumpsys', 'package',app_id
+	], serial=serial, logger=check_apk_version)
+	return cur_apk_version
 
 if __name__ == '__main__':
 	exec_adb_cmd([

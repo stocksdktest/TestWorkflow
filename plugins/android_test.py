@@ -67,7 +67,6 @@ if __name__ == '__main__':
 
     test_status_code = []
     def check_test_result(line):
-        global test_result
         if 'INSTRUMENTATION_STATUS_CODE' in line:
             # find number in string, https://stackoverflow.com/a/29581287/9797889
             codes = re.findall("[-+]?[.]?[\d]+(?:,\d\d\d)*[\.]?\d*(?:[eE][-+]?\d+)?", line)

@@ -6,7 +6,8 @@ from airflow.operators.bash_operator import BashOperator
 from airflow.operators.dummy_operator import DummyOperator
 
 from protos_gen.config_pb2 import RunnerConfig, TestcaseConfig
-from operators.android_operator import AndroidStockOperator
+from operators.android_runner_operator import AndroidRunnerOperator
+from operators.android_release_operator import AndroidReleaseOperator
 
 # TODO init RunnerConfig
 runner_conf = RunnerConfig()
@@ -40,17 +41,24 @@ with DAG(
         queue='android'
     )
 
-    run_this = AndroidStockOperator(
-        task_id='adb_shell',
+    android_release = AndroidReleaseOperator(
+        task_id='android_release',
         provide_context=False,
-        apk_id='com.chi.ssetest',
-        apk_version='20190909_2031_1b8b37e',
-        apk_path='/usr/local/airflow/app-debug-androidTest.apk',
-        test_apk_path='/usr/local/airflow/app-debug.apk',
+        repo_name='stocksdktest/AndroidTestRunner',
+        tag_id='release-20191016-0.0.3',
+        tag_sha='16a5ad8d128df1b55f962b52e87bac481f98475f',
         runner_conf=runner_conf
     )
 
-    run_this >> run_this_last
+    android_tc = AndroidRunnerOperator(
+        task_id='adb_shell',
+        provide_context=False,
+        apk_id='com.chi.ssetest',
+        apk_version='release-20191016-0.0.3',
+        runner_conf=runner_conf
+    )
+
+    android_release >> android_tc >> run_this_last
 
 if __name__ == "__main__":
     dag.cli()

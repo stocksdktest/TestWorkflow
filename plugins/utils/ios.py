@@ -3,35 +3,42 @@ import os
 import threading
 import binascii
 
-from . import base
+from utils import base
 
 IPHONE_SDK_VERSION='11.2'
 PLISTBUDDY_PATH=r'/usr/libexec/PlistBuddy'
 XCTOOL_PATH=r'/usr/local/bin/xctool'
 XCRUN_PATH=r'/usr/bin/xcrun'
+APP_ID='com.chi.ssetest'
 PROJECT_PATH=r'/Users/lxs/Documents/StockTesting/IOSTestRunner'
 
 """
 :param serialize_config: str, BASE64 string
 :return bool
 """
-def config_plist(serialize_config):
+def config_plist(serialize_config, ssh_cmd=None):
     cmd = '%s -c "Delete :runner_config" ' \
           './Build/Products/Debug-iphonesimulator/IOSTestRunner.app/Info.plist' % PLISTBUDDY_PATH
+    if ssh_cmd is not None:
+        cmd = ssh_cmd + cmd
     # ignore return code
     subprocess.call(cmd, cwd=PROJECT_PATH, shell=True)
 
     cmd = """
     %s -c 'Add :runner_config string "%s"' ./Build/Products/Debug-iphonesimulator/IOSTestRunner.app/Info.plist
     """ % (PLISTBUDDY_PATH, serialize_config)
+    if ssh_cmd is not None:
+        cmd = ssh_cmd + cmd
     process = subprocess.Popen(cmd, cwd=PROJECT_PATH, shell=True)
     process.wait()
     return process.returncode == 0
 
-def xctest_cmd(reporter='pretty', logger=None):
+def xctest_cmd(reporter='pretty', ssh_cmd=None, logger=None):
     cmd = XCTOOL_PATH + ' -workspace IOSTestRunner.xcworkspace -scheme IOSTestRunner ' \
          '-configuration Debug -sdk iphonesimulator%s -reporter %s ' \
          '-destination "platform=iOS Simulator,name=iPhone 8 Plus" run-tests -only IOSTestRunnerTests' % (IPHONE_SDK_VERSION, reporter)
+    if ssh_cmd is not None:
+        cmd = ssh_cmd + cmd
 
     with subprocess.Popen(cmd, cwd=PROJECT_PATH, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
         def timeout_callback():
@@ -53,11 +60,13 @@ def xctest_cmd(reporter='pretty', logger=None):
         watchdog.cancel()
     return process.returncode
 
-def spawn_xcrun_log(logger=None):
+def spawn_xcrun_log(ssh_cmd=None, logger=None):
     def read_log():
         cmd = """
-        %s simctl spawn booted log stream --style compact --predicate 'subsystem == "com.chi.ssetest" and category == "record"'
-        """ % XCRUN_PATH
+        %s simctl spawn booted log stream --style compact --predicate 'subsystem == "%s" and category == "record"'
+        """ % (XCRUN_PATH, APP_ID)
+        if ssh_cmd is not None:
+            cmd = ssh_cmd + cmd
         process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
         while True:
             line = process.stdout.readline()
@@ -70,10 +79,11 @@ def spawn_xcrun_log(logger=None):
     t.start()
 
 def parse_sim_log(chunk_cache, log):
-    idx = log.find('[com.chi.ssetest:record]')
+    tag = '[%s:record]' % APP_ID
+    idx = log.find(tag)
     if idx == -1:
         return None
-    data_str = log[idx + len('[com.chi.ssetest:record]'):]
+    data_str = log[idx + len(tag):]
     data_str = data_str.strip()
 
     data_str = chunk_cache.parse_chunk_data(data_str)

@@ -1,4 +1,5 @@
 import re
+import urllib3
 
 from airflow.exceptions import AirflowException
 from airflow.utils.decorators import apply_defaults
@@ -9,45 +10,59 @@ from operators.stock_operator import StockOperator
 from protos_gen import *
 from utils import *
 
-class AndroidStockOperator(StockOperator):
+class AndroidRunnerOperator(StockOperator):
 
 	@apply_defaults
-	def __init__(self, apk_id, apk_version, apk_path, test_apk_path, runner_conf, *args, **kwargs):
-		super(AndroidStockOperator, self).__init__(queue='android', runner_conf=runner_conf, *args, **kwargs)
+	def __init__(self, apk_id, apk_version, runner_conf, target_device=None, *args, **kwargs):
+		super(AndroidRunnerOperator, self).__init__(queue='android', runner_conf=runner_conf, *args, **kwargs)
 		self.apk_id = apk_id
 		self.apk_version = apk_version
-		self.apk_path = apk_path
-		self.test_apk_path = test_apk_path
-		self.serial = None
+		self.apk_path = None
+		self.test_apk_path = None
+		self.serial = target_device
+
+	def install_apk(self, apk_files):
+		"""
+		:param apk_files:
+		:type apk_files: list(operators.release_ci_operator.ReleaseFile)
+		"""
+		http = urllib3.PoolManager()
+		for file in apk_files:
+			r = http.request('GET', file.url, preload_content=False)
+			path = '/tmp/' + file.name
+			with open(path, 'wb') as out:
+				while True:
+					data = r.read(65536)
+					if not data:
+						break
+					out.write(data)
+			r.release_conn()
+			if exec_adb_cmd(['adb', 'install', '-r', '-t', path], serial=self.serial) != 0:
+				raise AirflowException('Install apk from %s failed' % file)
 
 	def pre_execute(self, context):
-		super(AndroidStockOperator, self).pre_execute(context)
+		super(AndroidRunnerOperator, self).pre_execute(context)
 
-		def scan_device(line):
-			reg_obj = re.search(r'(emulator-\d+)', line)
-			if reg_obj:
-				self.serial = reg_obj.groups()[0]
-		if exec_adb_cmd(['adb', 'devices'], logger=scan_device) != 0:
-			raise AirflowException('ADB init failed')
 		if not self.serial:
-			raise AirflowException('Can not find android devices')
+			self.serial = scan_local_device()
+			if not self.serial:
+				raise AirflowException('can not scan device')
 
-		cur_apk_version = None
-		def check_apk_version(line):
-			global cur_apk_version
-			reg_obj = re.search(r'versionName=(\d{8}_\d{4}_[0-9a-z]{7})', line)
-			if reg_obj:
-				cur_apk_version = reg_obj.groups()[0]
-		exec_adb_cmd([
-			'adb', 'shell', 'dumpsys', 'package', self.apk_id
-		], serial=self.serial, logger=check_apk_version)
-		print('Verify App(%s) version: %s, cur is %s' % (self.apk_id, self.apk_version, cur_apk_version))
+		if not connect_to_device(self.serial):
+			raise AirflowException('can not connect to device "%s"' % self.serial)
 
-		if self.apk_version == cur_apk_version:
+		main_apk_version = get_app_version(self.serial, self.apk_id)
+		testing_apk_version = get_app_version(self.serial, '%s.test' % self.apk_id)
+		print('Verify App(%s) version: %s, main is %s, testing is %s' % (self.apk_id, self.apk_version,
+																		 main_apk_version, testing_apk_version))
+		if self.apk_version == main_apk_version and self.apk_version == testing_apk_version:
 			return
-		if exec_adb_cmd(['adb', 'install', '-r', '-t', self.apk_path], serial=self.serial) != 0 \
-				or exec_adb_cmd(['adb', 'install', '-r', '-t', self.test_apk_path], serial=self.serial) != 0:
-			raise AirflowException('Can not install App: %s, test App: %s' % (self.apk_path, self.test_apk_path))
+
+		release_files = self.xcom_pull(context, key='android_release')
+		print('release: %s' % release_files)
+		if release_files is None or not isinstance(release_files, list):
+			raise AirflowException('Can not get Android release assets: %s')
+		self.install_apk(release_files)
 
 	def execute(self, context):
 		chunk_cache = LogChunkCache()

@@ -25,7 +25,7 @@ if __name__ == '__main__':
     # runner_conf.sdkConfig.marketPerm.HKPerms.extend(["hk10", "hka1"])
 
     case_conf = TestcaseConfig()
-    case_conf.testcaseID = 'TESTCASE_1'
+    case_conf.testcaseID = 'TESTCASE_0'
     case_conf.continueWhenFailed = False
     case_conf.roundIntervalSec = 3
     case_conf.paramStrs.extend([
