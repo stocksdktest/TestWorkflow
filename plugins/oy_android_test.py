@@ -77,8 +77,8 @@ def testAndroidCases(case_conf, market_level, hk_perms, server_sites):
         'com.chi.ssetest.test/android.support.test.runner.AndroidJUnitRunner'
     ])
     # 将测试脚本push进设备并执行（因为binder传输1MB的限制）
-    cmd_code_push = exec_adb_cmd(args="adb push /home/test.sh /data/local/tmp/", serial=serial_str)
-    cmd_code_exec = exec_adb_cmd(args="adb shell sh /data/local/tmp/test.sh", serial=serial_str,
+    cmd_code_push = exec_adb_cmd(args=['adb', 'push', '/tmp/test.sh', '/data/local/tmp/'], serial=serial_str)
+    cmd_code_exec = exec_adb_cmd(args=['adb', 'shell', 'sh', '/data/local/tmp/test.sh'], serial=serial_str,
                                  logger=check_test_result)
 
     #
@@ -130,23 +130,21 @@ def testAll():
 
 def testOne():
     case_conf = TestcaseConfig()
-    case_conf.testcaseID = 'OHLCV3_4'
-    case_conf.continueWhenFailed = False
+    case_conf.testcaseID = 'OHLCTEST_1'
     case_conf.roundIntervalSec = 3
+    case_conf.continueWhenFailed = False
     case_conf.paramStrs.extend([
         json.dumps({
-            'CODES': '600000.sh',
-            'BeginDates': '20190812',
-            'EndDates': 'null',
-            'TYPES': 'monthk',
-            'FqTypes': '2'
+            'stk': '00700.hk',
+            'type': 'dayk'
         })
     ])
     server_sites = {}
+    server_sites['sh'] = ''
     testAndroidCases(
         case_conf= [case_conf],
         market_level="2",
-        hk_perms= ["hk10", "hka1"],
+        hk_perms= ["hk10"],
         server_sites = {}
     )
 
