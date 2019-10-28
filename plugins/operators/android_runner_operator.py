@@ -1,6 +1,9 @@
 import re
-import requests
-import shutil
+import sys
+
+import urllib3
+from airflow.contrib.hooks.mongo_hook import MongoHook
+import pymongo
 
 from airflow.exceptions import AirflowException
 from airflow.utils.decorators import apply_defaults
@@ -14,13 +17,18 @@ from utils import *
 class AndroidRunnerOperator(StockOperator):
 
 	@apply_defaults
-	def __init__(self, apk_id, apk_version, runner_conf, target_device=None, *args, **kwargs):
+	def __init__(self, apk_id, apk_version, runner_conf, uri = 'mongodb://locolhost:27017/',target_device=None, *args, **kwargs):
 		super(AndroidRunnerOperator, self).__init__(queue='android', runner_conf=runner_conf, *args, **kwargs)
 		self.apk_id = apk_id
 		self.apk_version = apk_version
 		self.apk_path = None
 		self.test_apk_path = None
 		self.serial = target_device
+		self.dict_list = []
+		self.mongo_hk = MongoHook()
+		self.mongo_hk.uri = uri  # if not assign,it will be mongodb://localhost:27017/None
+		self.conn = self.mongo_hk.get_conn()
+
 
 	def install_apk(self, apk_files):
 		"""
@@ -36,6 +44,8 @@ class AndroidRunnerOperator(StockOperator):
 	def pre_execute(self, context):
 		super(AndroidRunnerOperator, self).pre_execute(context)
 
+		# TODO: TO Debug, so annotate it and return
+		# it seems 2 apks have been installed and com.chi.ssetest too
 		if not start_adb_server():
 			raise AirflowException('ADB Server can not start')
 
@@ -45,6 +55,7 @@ class AndroidRunnerOperator(StockOperator):
 				raise AirflowException('can not scan device')
 
 		if not connect_to_device(self.serial):
+			print("serial",self.serial)
 			raise AirflowException('can not connect to device "%s"' % self.serial)
 
 		main_apk_version = get_app_version(self.serial, self.apk_id)
@@ -61,6 +72,32 @@ class AndroidRunnerOperator(StockOperator):
 		self.install_apk(release_files)
 
 	def execute(self, context):
+		def bytesToDict(bytes):
+			if bytes.__len__() == 0:
+				return
+			str1 = str(bytes, encoding="utf-8")
+			data = eval(str1)
+			return data
+
+		def TextExecutionRecordtoDict(record):
+			if record == None:
+				sys.stderr('TextExecutionRecordtoDict Type Error, param is NoneType')
+				return
+			if (type(record) != TestExecutionRecord):
+				sys.stderr('TextExecutionRecordtoDict Type Error, param is not TestExecutionRecord')
+				return
+			res = {}
+			res['jobID'] = record.jobID
+			res['runnerID'] = record.runnerID
+			res['testcaseID'] = record.testcaseID
+			res['recordID'] = record.recordID
+			res['isPass'] = record.isPass
+			res['startTime'] = record.startTime
+			res['paramData'] = bytesToDict(record.paramData)
+			res['resultData'] = bytesToDict(record.resultData)
+			res['exceptionData'] = bytesToDict(record.exceptionData)
+			return res
+
 		chunk_cache = LogChunkCache()
 
 		def read_record(record_str):
@@ -71,6 +108,7 @@ class AndroidRunnerOperator(StockOperator):
 			if len(record.ListFields()) > 0:
 				print("*************************")
 				print(record)
+				self.dict_list.append(TextExecutionRecordtoDict(record))
 				print("*************************")
 
 		spawn_logcat(serial=self.serial, logger=read_record)
@@ -94,6 +132,40 @@ class AndroidRunnerOperator(StockOperator):
 			'com.chi.ssetest.test/android.support.test.runner.AndroidJUnitRunner'
 		], serial=self.serial, logger=check_test_result)
 
+		# 生成含有ADB测试命令的shell脚本
+		# TODO(Ouyang): 将Shell脚本的存储位置作为参数
+		def gen_adbShell(args):
+			ADB_SHELL_PATH = '/tmp/test.sh'
+			with open(ADB_SHELL_PATH, 'w') as sh:
+				sh.write("#! /bin/bash\n")
+				sh.write(" ".join(args))
+				sh.close()
+
+		gen_adbShell(args=[
+			'am', 'instrument', '-w', '-r',
+			'-e', 'debug', 'false',
+			'-e', 'filter', 'com.chi.ssetest.TestcaseFilter',
+			'-e', 'listener', 'com.chi.ssetest.TestcaseExecutionListener',
+			'-e', 'collector_file', 'test.log',
+			'-e', 'runner_config', base64_encode(self.runner_conf.SerializeToString()),
+			'com.chi.ssetest.test/android.support.test.runner.AndroidJUnitRunner'
+		])
+		cmd_code_push = exec_adb_cmd(args=['adb', 'push', '/tmp/test.sh', '/data/local/tmp/'], serial=self.serial)
+		cmd_code_exec = exec_adb_cmd(args=['adb', 'shell', 'sh', '/data/local/tmp/test.sh'], serial=self.serial,
+									 logger=check_test_result)
+
 		if cmd_code != 0 or len(test_status_code) == 0 or \
 				(test_status_code.count('0') + test_status_code.count('1') < len(test_status_code)):
 			raise AirflowException('Android Test Failed')
+
+		# TODO: HOOK DATABASE CONNECT ERROR
+		# self.mongo_hk.insert_many(self.dict_list)
+
+		myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+		mydb = myclient["stockSdkTest"]
+		col = mydb[self.task_id]
+		print('Debug Airflow: dict_list:---------------')
+		print(self.dict_list)
+		col.insert_many(self.dict_list)
+		self.xcom_push(context,key=self.task_id, value=self.runner_conf.runnerID)
+
