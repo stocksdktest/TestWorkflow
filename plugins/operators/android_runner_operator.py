@@ -1,5 +1,6 @@
 import re
-import urllib3
+import requests
+import shutil
 
 from airflow.exceptions import AirflowException
 from airflow.utils.decorators import apply_defaults
@@ -26,17 +27,9 @@ class AndroidRunnerOperator(StockOperator):
 		:param apk_files:
 		:type apk_files: list(operators.release_ci_operator.ReleaseFile)
 		"""
-		http = urllib3.PoolManager()
 		for file in apk_files:
-			r = http.request('GET', file.url, preload_content=False)
 			path = '/tmp/' + file.name
-			with open(path, 'wb') as out:
-				while True:
-					data = r.read(65536)
-					if not data:
-						break
-					out.write(data)
-			r.release_conn()
+			download_file(file.url, path)
 			if exec_adb_cmd(['adb', 'install', '-r', '-t', path], serial=self.serial) != 0:
 				raise AirflowException('Install apk from %s failed' % file)
 

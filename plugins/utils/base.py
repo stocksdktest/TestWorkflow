@@ -1,8 +1,10 @@
 import uuid
 import base64
 import re
+import shutil
 from threading import Event, Lock, Thread
 from time import monotonic
+import requests
 
 def generate_id(prefix):
 	return prefix + '-' + str(uuid.uuid4())
@@ -15,6 +17,12 @@ def base64_decode(data_str):
 
 def test_base64_str(test_str):
 	return re.match(r'^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$', test_str)
+
+def download_file(url, file_path):
+	with requests.get(url, stream=True) as r:
+		with open(file_path, 'wb') as f:
+			shutil.copyfileobj(r.raw, f)
+	return file_path
 
 class LogChunkCache(object):
 	def __init__(self):
