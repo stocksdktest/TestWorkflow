@@ -43,6 +43,9 @@ class AndroidRunnerOperator(StockOperator):
 	def pre_execute(self, context):
 		super(AndroidRunnerOperator, self).pre_execute(context)
 
+		if not start_adb_server():
+			raise AirflowException('ADB Server can not start')
+
 		if not self.serial:
 			self.serial = scan_local_device()
 			if not self.serial:

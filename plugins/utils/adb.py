@@ -10,6 +10,9 @@ from utils import base
 
 ADB_EXEC_PATH = '/usr/local/bin/adb' if platform.system() == 'Darwin' else '/usr/bin/adb'
 
+def start_adb_server():
+	return exec_adb_cmd(['adb', 'start-server']) != 0
+
 def scan_local_device():
 	device_serial = None
 	def parse_serial(line):
