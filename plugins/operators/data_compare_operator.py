@@ -1,6 +1,5 @@
 from airflow.exceptions import AirflowException
 from airflow.models import BaseOperator
-import pymongo
 from airflow.utils.decorators import apply_defaults
 from airflow.operators.python_operator import PythonOperator
 from operators.stock_operator import StockOperator
@@ -11,12 +10,11 @@ from utils import *
 class DataCompareOperator(BaseOperator):
 
     @apply_defaults
-    def __init__(self, runner_conf, task_id_list,uri='mongodb://locolhost:27017/', *args, **kwargs):
+    def __init__(self, runner_conf, task_id_list, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.runner_conf = runner_conf
         self.task_id_list = task_id_list
         self.mongo_hk = MongoHook()
-        self.mongo_hk.uri = uri # if not assign,it will be mongodb://localhost:27017/None
         self.conn = self.mongo_hk.get_conn()
 
 
@@ -124,7 +122,7 @@ class DataCompareOperator(BaseOperator):
         return True
 
     def execute(self, context):
-        myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+        myclient = self.mongo_hk.client
         mydb = myclient["stockSdkTest"]
         col1 = mydb[self.task_id_list[0]]
         col2 = mydb[self.task_id_list[1]]
@@ -155,8 +153,10 @@ class DataCompareOperator(BaseOperator):
                     else:
                         if res == False and result[testcaseID] == True:
                             result[testcaseID] = res
+        print(result)   # {'OHLCV3_1': True, 'OHLCV3_2': True, 'OHLCV3_5': True}
+        col_res = mydb['test_result']
+        col_res.insert_one(result)
 
-        print(result)
 
 def genTwoCase():
     j1 = {
@@ -433,14 +433,15 @@ def genTwoCase():
 
 if __name__ == '__main__':
     mongo_hk = MongoHook()
-    mongo_hk.uri = 'mongodb://locolhost:27017/'
+    mongo_hk.uri = 'mongodb://localhost:27017/'
     r1,r2 = genTwoCase()
     a = DataCompareOperator(
 		runner_conf= '1',
-		task_id='11'
+		task_id='11',
+        task_id_list=['a','b']
 	)
     a.recordCompare(r1,r2)
-    myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+    # myclient = pymongo.MongoClient("mongodb://localhost:27017/")
 
 
 
