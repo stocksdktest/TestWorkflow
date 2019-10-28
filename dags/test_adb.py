@@ -45,8 +45,8 @@ with DAG(
         task_id='android_release',
         provide_context=False,
         repo_name='stocksdktest/AndroidTestRunner',
-        tag_id='release-20191016-0.0.3',
-        tag_sha='16a5ad8d128df1b55f962b52e87bac481f98475f',
+        tag_id='release-20191028-0.0.1',
+        tag_sha='83eab8326e7901d744599bff60defaea135f7bf0',
         runner_conf=runner_conf
     )
 
@@ -54,7 +54,7 @@ with DAG(
         task_id='adb_shell',
         provide_context=False,
         apk_id='com.chi.ssetest',
-        apk_version='release-20191016-0.0.3',
+        apk_version='release-20191028-0.0.1',
         runner_conf=runner_conf
     )
 

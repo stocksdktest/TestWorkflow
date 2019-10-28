@@ -1,6 +1,8 @@
 import uuid
 import base64
 import re
+import os
+import hashlib
 from threading import Event, Lock, Thread
 from time import monotonic
 import requests
@@ -17,7 +19,15 @@ def base64_decode(data_str):
 def test_base64_str(test_str):
 	return re.match(r'^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$', test_str)
 
-def download_file(url, file_path):
+def file_md5(file_path):
+	hash_md5 = hashlib.md5()
+	with open(file_path, "rb") as f:
+		for chunk in iter(lambda: f.read(4096), b""):
+			hash_md5.update(chunk)
+	return hash_md5.hexdigest()
+
+def download_file(url, file_path, md5=None):
+	os.makedirs(os.path.dirname(file_path), exist_ok=True)
 	with open(file_path, "wb") as f:
 		response = requests.get(url, stream=True)
 		total_length = response.headers.get('content-length')
@@ -30,7 +40,7 @@ def download_file(url, file_path):
 			for data in response.iter_content(chunk_size=65536):
 				download_length += len(data)
 				f.write(data)
-				print('Downloading %s...: %d' % (url, download_length / total_length))
+				print('Downloading %s ... %.3f' % (url, float(download_length) / total_length))
 	return file_path
 
 class LogChunkCache(object):
