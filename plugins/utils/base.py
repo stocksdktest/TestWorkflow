@@ -1,7 +1,6 @@
 import uuid
 import base64
 import re
-import shutil
 from threading import Event, Lock, Thread
 from time import monotonic
 import requests
@@ -19,9 +18,19 @@ def test_base64_str(test_str):
 	return re.match(r'^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$', test_str)
 
 def download_file(url, file_path):
-	with requests.get(url, stream=True) as r:
-		with open(file_path, 'wb') as f:
-			shutil.copyfileobj(r.raw, f)
+	with open(file_path, "wb") as f:
+		response = requests.get(url, stream=True)
+		total_length = response.headers.get('content-length')
+
+		if total_length is None:  # no content length header
+			f.write(response.content)
+		else:
+			download_length = 0
+			total_length = int(total_length)
+			for data in response.iter_content(chunk_size=65536):
+				download_length += len(data)
+				f.write(data)
+				print('Downloading %s...: %d' % (url, download_length / total_length))
 	return file_path
 
 class LogChunkCache(object):
