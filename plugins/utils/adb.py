@@ -27,18 +27,22 @@ def start_adb_server():
 		return True
 
 def scan_local_device():
-	device_serial = None
+	device = {
+		'serial': None
+	}
 	def parse_serial(line):
-		global device_serial
 		reg_obj = re.search(r'(emulator-\d+)', line)
 		if reg_obj:
-			device_serial = reg_obj.groups()[0]
+			device['serial'] = reg_obj.groups()[0]
 
 	if exec_adb_cmd(['adb', 'devices'], logger=parse_serial) != 0:
 		return None
-	return device_serial
+	return device['serial']
 
 def connect_to_device(serial):
+	# local device is already connected
+	if re.match(r'emulator-\d+', serial):
+		return True
 	connection = {
 		'status': False
 	}
