@@ -11,7 +11,20 @@ from utils import base
 ADB_EXEC_PATH = '/usr/local/bin/adb' if platform.system() == 'Darwin' else '/usr/bin/adb'
 
 def start_adb_server():
-	return exec_adb_cmd(['adb', 'start-server']) != 0
+	exec_adb_cmd(['adb', 'start-server'])
+	# wait adb server start
+	time.sleep(3)
+	server_status = {
+		'online': False
+	}
+	def check_online(line):
+		reg_obj = re.search(r'List of devices attached', line)
+		server_status['online'] |= (reg_obj is not None)
+
+	if exec_adb_cmd(['adb', 'devices'], logger=check_online) != 0 or not server_status['online']:
+		return False
+	else:
+		return True
 
 def scan_local_device():
 	device_serial = None
