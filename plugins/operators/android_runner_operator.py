@@ -16,15 +16,15 @@ from utils import *
 class AndroidRunnerOperator(StockOperator):
 
 	@apply_defaults
-	def __init__(self, apk_id, apk_version, runner_conf,target_device=None, *args, **kwargs):
+	def __init__(self, apk_id, apk_version, runner_conf, target_device=None, *args, **kwargs):
 		super(AndroidRunnerOperator, self).__init__(queue='android', runner_conf=runner_conf, *args, **kwargs)
 		self.apk_id = apk_id
 		self.apk_version = apk_version
 		self.apk_path = None
 		self.test_apk_path = None
 		self.serial = target_device
-		self.dict_list = []
-		self.mongo_hk = MongoHook()
+		self.mongo_hk = MongoHook(conn_id='stocksdktest_mongo')
+		print('mongo URI: %s' % self.mongo_hk.uri)
 		self.conn = self.mongo_hk.get_conn()
 
 
@@ -69,35 +69,29 @@ class AndroidRunnerOperator(StockOperator):
 			raise AirflowException('Can not get Android release assets: %s')
 		self.install_apk(release_files)
 
+	@staticmethod
+	def protobuf_record_to_dict(record):
+		if record is None:
+			sys.stderr('TextExecutionRecordtoDict Type Error, param is NoneType')
+			return
+		if type(record) != TestExecutionRecord:
+			sys.stderr('TextExecutionRecordtoDict Type Error, param is not TestExecutionRecord')
+			return
+		res = dict()
+		res['jobID'] = record.jobID
+		res['runnerID'] = record.runnerID
+		res['testcaseID'] = record.testcaseID
+		res['recordID'] = record.recordID
+		res['isPass'] = record.isPass
+		res['startTime'] = record.startTime
+		res['paramData'] = bytes_to_dict(record.paramData)
+		res['resultData'] = bytes_to_dict(record.resultData)
+		res['exceptionData'] = bytes_to_dict(record.exceptionData)
+		return res
+
 	def execute(self, context):
-		def bytesToDict(bytes):
-			if bytes.__len__() == 0:
-				return
-			str1 = str(bytes, encoding="utf-8")
-			data = eval(str1)
-			return data
-
-		def TextExecutionRecordtoDict(record):
-			if record == None:
-				sys.stderr('TextExecutionRecordtoDict Type Error, param is NoneType')
-				return
-			if (type(record) != TestExecutionRecord):
-				sys.stderr('TextExecutionRecordtoDict Type Error, param is not TestExecutionRecord')
-				return
-			res = {}
-			res['jobID'] = record.jobID
-			res['runnerID'] = record.runnerID
-			res['testcaseID'] = record.testcaseID
-			res['recordID'] = record.recordID
-			res['isPass'] = record.isPass
-			res['startTime'] = record.startTime
-			res['paramData'] = bytesToDict(record.paramData)
-			res['resultData'] = bytesToDict(record.resultData)
-			res['exceptionData'] = bytesToDict(record.exceptionData)
-			return res
-
+		record_dict_list = list()
 		chunk_cache = LogChunkCache()
-
 		def read_record(record_str):
 			record = TestExecutionRecord()
 			data = parse_logcat(chunk_cache, record_str)
@@ -106,7 +100,7 @@ class AndroidRunnerOperator(StockOperator):
 			if len(record.ListFields()) > 0:
 				print("*************************")
 				print(record)
-				self.dict_list.append(TextExecutionRecordtoDict(record))
+				record_dict_list.append(AndroidRunnerOperator.protobuf_record_to_dict(record))
 				print("*************************")
 
 		spawn_logcat(serial=self.serial, logger=read_record)
@@ -119,27 +113,7 @@ class AndroidRunnerOperator(StockOperator):
 				# check whether code ONLY contains '0' or '1'
 				test_status_code.extend(codes)
 
-		cmd_code = exec_adb_cmd([
-			'adb', 'shell', 'am', 'instrument', '-w', '-r',
-			'-e', 'debug', 'false',
-			'-e', 'filter', 'com.chi.ssetest.TestcaseFilter',
-			'-e', 'listener', 'com.chi.ssetest.TestcaseExecutionListener',
-			'-e', 'collector_file', 'test.log',
-			# android store env in string, can not contain some special char, encode to base64
-			'-e', 'runner_config', base64_encode(self.runner_conf.SerializeToString()),
-			'com.chi.ssetest.test/android.support.test.runner.AndroidJUnitRunner'
-		], serial=self.serial, logger=check_test_result)
-
-		# 生成含有ADB测试命令的shell脚本
-		# TODO(Ouyang): 将Shell脚本的存储位置作为参数
-		def gen_adbShell(args):
-			ADB_SHELL_PATH = '/tmp/test.sh'
-			with open(ADB_SHELL_PATH, 'w') as sh:
-				sh.write("#! /bin/bash\n")
-				sh.write(" ".join(args))
-				sh.close()
-
-		gen_adbShell(args=[
+		command_to_script(args=[
 			'am', 'instrument', '-w', '-r',
 			'-e', 'debug', 'false',
 			'-e', 'filter', 'com.chi.ssetest.TestcaseFilter',
@@ -147,22 +121,19 @@ class AndroidRunnerOperator(StockOperator):
 			'-e', 'collector_file', 'test.log',
 			'-e', 'runner_config', base64_encode(self.runner_conf.SerializeToString()),
 			'com.chi.ssetest.test/android.support.test.runner.AndroidJUnitRunner'
-		])
+		], script_path='/tmp/test.sh')
 		cmd_code_push = exec_adb_cmd(args=['adb', 'push', '/tmp/test.sh', '/data/local/tmp/'], serial=self.serial)
 		cmd_code_exec = exec_adb_cmd(args=['adb', 'shell', 'sh', '/data/local/tmp/test.sh'], serial=self.serial,
 									 logger=check_test_result)
 
-		# if cmd_code != 0 or len(test_status_code) == 0 or \
-		# 		(test_status_code.count('0') + test_status_code.count('1') < len(test_status_code)):
-		# 	raise AirflowException('Android Test Failed')
+		if cmd_code_push != 0 or cmd_code_exec != 0 or len(test_status_code) == 0 or \
+				(test_status_code.count('0') + test_status_code.count('1') < len(test_status_code)):
+			raise AirflowException('Android Test Failed')
 
-		# TODO: HOOK DATABASE CONNECT ERROR
-		# self.mongo_hk.insert_many(self.dict_list)
-
-		myclient = self.mongo_hk.client
-		mydb = myclient["stockSdkTest"]
-		col = mydb[self.task_id]
+		client = self.mongo_hk.client
+		db = client["stockSdkTest"]
+		col = db[self.task_id]
 		print('Debug Airflow: dict_list:---------------')
-		print(self.dict_list)
-		col.insert_many(self.dict_list)
-		self.xcom_push(context,key=self.task_id, value=self.runner_conf.runnerID)
+		print(record_dict_list)
+		col.insert_many(record_dict_list)
+		self.xcom_push(context, key=self.task_id, value=self.runner_conf.runnerID)

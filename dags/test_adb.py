@@ -193,7 +193,7 @@ with DAG(
 		dag=dag
 	)
 
-	start_task >> [android_a, android_b] >> android_cmp >> android_cmp2 >>run_this_last
+	start_task >> android_release >> [android_a, android_b] >> android_cmp >> android_cmp2 >>run_this_last
 
 if __name__ == "__main__":
 	dag.cli()

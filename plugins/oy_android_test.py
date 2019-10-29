@@ -3,8 +3,8 @@ import re
 import pickle
 from protos_gen.config_pb2 import RunnerConfig, TestcaseConfig, Site
 from protos_gen.record_pb2 import TestExecutionRecord
-from utils.base import LogChunkCache, base64_encode, generate_id
-from utils.adb import exec_adb_cmd, parse_logcat, spawn_logcat, gen_adbShell
+from utils.base import LogChunkCache, base64_encode, generate_id, command_to_script
+from utils.adb import exec_adb_cmd, parse_logcat, spawn_logcat
 from gen_testcase import get_case_list
 
 serial_str = '818fd179'
@@ -67,7 +67,7 @@ def testAndroidCases(case_conf, market_level, hk_perms, server_sites):
 
     # 生成含有ADB测试命令的shell脚本
     # TODO(Ouyang): 将Shell脚本的存储位置作为参数
-    gen_adbShell(args=[
+    command_to_script(args=[
         'am', 'instrument', '-w', '-r',
         '-e', 'debug', 'false',
         '-e', 'filter', 'com.chi.ssetest.TestcaseFilter',
@@ -75,7 +75,7 @@ def testAndroidCases(case_conf, market_level, hk_perms, server_sites):
         '-e', 'collector_file', 'test.log',
         '-e', 'runner_config', base64_encode(runner_conf.SerializeToString()),
         'com.chi.ssetest.test/android.support.test.runner.AndroidJUnitRunner'
-    ])
+    ], script_path='/tmp/test.sh')
     # 将测试脚本push进设备并执行（因为binder传输1MB的限制）
     cmd_code_push = exec_adb_cmd(args=['adb', 'push', '/tmp/test.sh', '/data/local/tmp/'], serial=serial_str)
     cmd_code_exec = exec_adb_cmd(args=['adb', 'shell', 'sh', '/data/local/tmp/test.sh'], serial=serial_str,

@@ -43,6 +43,20 @@ def download_file(url, file_path, md5=None):
 				print('Downloading %s ... %.3f' % (url, float(download_length) / total_length))
 	return file_path
 
+def bytes_to_dict(bytes_data):
+	if bytes_data.__len__() == 0:
+		return
+	str1 = str(bytes_data, encoding="utf-8")
+	data = eval(str1)
+	return data
+
+def command_to_script(args, script_path):
+	os.makedirs(os.path.dirname(script_path), exist_ok=True)
+	with open(script_path, 'w') as sh:
+		sh.write("#! /bin/bash\n")
+		sh.write(" ".join(args))
+		sh.close()
+
 class LogChunkCache(object):
 	def __init__(self):
 		# chunk_id: data_string
