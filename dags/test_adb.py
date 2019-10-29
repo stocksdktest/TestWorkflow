@@ -65,20 +65,20 @@ def initRunnerConfig():
 		])
 		case_list.append(case_conf)
 
-		case_conf = TestcaseConfig()
-		case_conf.testcaseID = 'CHARTSUB_2'
-		case_conf.roundIntervalSec = 3
-		case_conf.continueWhenFailed = False
-		case_conf.paramStrs.extend([
-			json.dumps({
-				'quoteitem':'600000.sh',
-				'type': 'ChartTypeOneDay',
-				'begin': '0',
-				'end': '100',
-				'select': 'time,ddx,ddy,ddz'
-			})
-		])
-		case_list.append(case_conf)
+		# case_conf = TestcaseConfig()
+		# case_conf.testcaseID = 'CHARTSUB_2'
+		# case_conf.roundIntervalSec = 3
+		# case_conf.continueWhenFailed = False
+		# case_conf.paramStrs.extend([
+		# 	json.dumps({
+		# 		'quoteitem':'600000.sh',
+		# 		'type': 'ChartTypeOneDay',
+		# 		'begin': '0',
+		# 		'end': '100',
+		# 		'select': 'time,ddx,ddy,ddz'
+		# 	})
+		# ])
+		# case_list.append(case_conf)
 
 		# 历史K线方法一
 		case_conf = TestcaseConfig()
@@ -140,11 +140,12 @@ with DAG(
 ) as dag:
 	start_task = DummyOperator(
 		task_id='run_this_first',
+		queue='worker'
 	)
 
 	run_this_last = DummyOperator(
 		task_id='run_this_last',
-		queue='android'
+		queue='worker'
 	)
 
 	runner_conf_list = initRunnerConfig()
@@ -193,7 +194,7 @@ with DAG(
 		dag=dag
 	)
 
-	start_task >> android_release >> [android_a, android_b] >> android_cmp >> android_cmp2 >>run_this_last
+	start_task >> android_release >> [android_a, android_b] >> android_cmp >> android_cmp2 >> run_this_last
 
 if __name__ == "__main__":
 	dag.cli()
