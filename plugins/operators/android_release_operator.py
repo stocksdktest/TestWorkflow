@@ -9,7 +9,7 @@ class AndroidReleaseOperator(ReleaseCIOperator):
             repo_name=repo_name,
             tag_id=tag_id,
             tag_sha=tag_sha,
-            queue='android',
+            queue='worker',
             runner_conf=runner_conf,
             release_xcom_key='android_release',
             *args,

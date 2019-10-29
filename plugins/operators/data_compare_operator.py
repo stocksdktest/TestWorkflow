@@ -14,7 +14,7 @@ class DataCompareOperator(BaseOperator):
         super().__init__(queue='worker', *args, **kwargs)
         self.runner_conf = runner_conf
         self.task_id_list = task_id_list
-        self.mongo_hk = MongoHook()
+        self.mongo_hk = MongoHook(conn_id='stocksdktest_mongo')
         self.conn = self.mongo_hk.get_conn()
 
 

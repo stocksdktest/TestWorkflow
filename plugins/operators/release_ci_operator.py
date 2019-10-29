@@ -51,12 +51,12 @@ class ReleaseCIOperator(StockOperator):
             if asset_item.name != 'md5sum.txt':
                 continue
             path = '/tmp/%s/md5sum.txt' % self.tag_sha
-            download_file(asset_item.browser_download_url, path)
+            download_file(url=asset_item.browser_download_url, file_path=path)
             with open(path) as checksum_file:
                 for line in checksum_file.readlines():
                     if not line or len(line) == 0:
                         continue
-                    name = line.split("/")[-1]
+                    name = line.split("/")[-1].strip()
                     checksum = line.split()[0]
                     asset_checksum[name] = checksum
 

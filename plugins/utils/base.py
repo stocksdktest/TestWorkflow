@@ -26,22 +26,33 @@ def file_md5(file_path):
 			hash_md5.update(chunk)
 	return hash_md5.hexdigest()
 
-def download_file(url, file_path, md5=None):
+def download_file(url, file_path, md5=None, retry=3):
 	os.makedirs(os.path.dirname(file_path), exist_ok=True)
-	with open(file_path, "wb") as f:
-		response = requests.get(url, stream=True)
-		total_length = response.headers.get('content-length')
+	if md5 is not None and file_md5(file_path) == md5:
+		print("file(%s) exist, md5(%s) match" % (file_path, md5))
+		return
 
-		if total_length is None:  # no content length header
-			f.write(response.content)
-		else:
-			download_length = 0
-			total_length = int(total_length)
-			for data in response.iter_content(chunk_size=65536):
-				download_length += len(data)
-				f.write(data)
-				print('Downloading %s ... %.3f' % (url, float(download_length) / total_length))
-	return file_path
+	with open(file_path, "wb") as f:
+		while retry > 0:
+			try:
+				response = requests.get(url, stream=True, timeout=120)
+				total_length = response.headers.get('content-length')
+
+				if total_length is None or int(total_length) < 65536:  # no content length header
+					f.write(response.content)
+				else:
+					download_length = 0
+					total_length = int(total_length)
+					for data in response.iter_content(chunk_size=65536):
+						download_length += len(data)
+						f.write(data)
+						print('Downloading %s ... %.3f' % (url, float(download_length) / total_length))
+				return
+			except requests.exceptions.Timeout as e:
+				retry -= 1
+				print("Download retry %d: %s" % (retry, e))
+				if retry <= 0:
+					raise Exception("Download %s timeout" % url)
 
 def bytes_to_dict(bytes_data):
 	if bytes_data.__len__() == 0:

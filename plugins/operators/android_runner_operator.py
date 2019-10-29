@@ -24,7 +24,6 @@ class AndroidRunnerOperator(StockOperator):
 		self.test_apk_path = None
 		self.serial = target_device
 		self.mongo_hk = MongoHook(conn_id='stocksdktest_mongo')
-		print('mongo URI: %s' % self.mongo_hk.uri)
 		self.conn = self.mongo_hk.get_conn()
 
 
@@ -35,7 +34,7 @@ class AndroidRunnerOperator(StockOperator):
 		"""
 		for file in apk_files:
 			path = '/tmp/' + file.name
-			download_file(file.url, path)
+			download_file(url=file.url, file_path=path, md5=file.md5sum)
 			if exec_adb_cmd(['adb', 'install', '-r', '-t', path], serial=self.serial) != 0:
 				raise AirflowException('Install apk from %s failed' % file)
 

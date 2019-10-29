@@ -185,16 +185,17 @@ with DAG(
 		dag=dag
 	)
 
-	android_cmp2 = DataCompareOperator(
-		task_id='data_compare2',
-		task_id_list=task_id_to_cmp_list,
-		retries=3,
-		provide_context=False,
-		runner_conf=RunnerConfig,
-		dag=dag
-	)
+	# android_cmp2 = DataCompareOperator(
+	# 	task_id='data_compare2',
+	# 	task_id_list=task_id_to_cmp_list,
+	# 	retries=3,
+	# 	provide_context=False,
+	# 	runner_conf=RunnerConfig,
+	# 	dag=dag
+	# )
 
-	start_task >> android_release >> [android_a, android_b] >> android_cmp >> android_cmp2 >> run_this_last
+	start_task >> android_release >> [android_a, android_b] >> android_cmp >> run_this_last
+	# start_task >> android_release >> android_a >> android_cmp >> run_this_last
 
 if __name__ == "__main__":
 	dag.cli()
