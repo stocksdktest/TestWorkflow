@@ -26,7 +26,6 @@ class AndroidRunnerOperator(StockOperator):
 		self.mongo_hk = MongoHook(conn_id='stocksdktest_mongo')
 		self.conn = self.mongo_hk.get_conn()
 
-
 	def install_apk(self, apk_files):
 		"""
 		:param apk_files:
@@ -56,17 +55,21 @@ class AndroidRunnerOperator(StockOperator):
 			raise AirflowException('can not connect to device "%s"' % self.serial)
 
 		main_apk_version = get_app_version(self.serial, self.apk_id)
-		testing_apk_version = get_app_version(self.serial, '%s.test' % self.apk_id)
-		print('Verify App(%s) version: %s, main is %s, testing is %s' % (self.apk_id, self.apk_version,
-																		 main_apk_version, testing_apk_version))
-		if self.apk_version == main_apk_version and self.apk_version == testing_apk_version:
+		print('Verify App(%s) version: %s, cur is %s' % (self.apk_id, self.apk_version, main_apk_version))
+		if self.apk_version == main_apk_version:
 			return
+		else:
+			if main_apk_version is not None:
+				# uninstall previous apk
+				if exec_adb_cmd(['adb', 'uninstall', self.apk_id], serial=self.serial) != 0 or\
+					exec_adb_cmd(['adb', 'uninstall', '%s.test' % self.apk_id], serial=self.serial) != 0:
+					raise AirflowException('Uninstall previous apk error')
 
-		release_files = self.xcom_pull(context, key='android_release')
-		print('release: %s' % release_files)
-		if release_files is None or not isinstance(release_files, list):
-			raise AirflowException('Can not get Android release assets: %s')
-		self.install_apk(release_files)
+			release_files = self.xcom_pull(context, key='android_release')
+			print('release: %s' % release_files)
+			if release_files is None or not isinstance(release_files, list):
+				raise AirflowException('Can not get Android release assets: %s')
+			self.install_apk(release_files)
 
 	@staticmethod
 	def protobuf_record_to_dict(record):
