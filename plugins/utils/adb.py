@@ -135,19 +135,20 @@ def parse_logcat(chunk_cache, log):
 		return None
 
 def get_app_version(serial, app_id):
-	cur_apk_version = None
+	cur_apk = {
+		'version': None
+	}
 	def check_apk_version(line):
-		global cur_apk_version
-		reg_obj = re.search(r'versionName=(\d{8}_\d{4}_[0-9a-z]{7})', line)
+		# print('"%s"' % line)
+		reg_obj = re.search(r'versionName=(release-\d{8}-[.0-9]+)', line)
 		if reg_obj:
-			cur_apk_version = reg_obj.groups()[0]
+			cur_apk['version'] = reg_obj.groups()[0]
 
 	exec_adb_cmd([
-		'adb', 'shell', 'dumpsys', 'package',app_id
+		'adb', 'shell', 'dumpsys', 'package', app_id
 	], serial=serial, logger=check_apk_version)
-	return cur_apk_version
+	return cur_apk['version']
 
 if __name__ == '__main__':
-	exec_adb_cmd([
-		'adb', 'devices'
-	])
+	version = get_app_version(serial='05849a9b', app_id='com.chi.ssetest')
+	print(version)
