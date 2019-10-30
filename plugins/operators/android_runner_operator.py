@@ -171,5 +171,11 @@ class AndroidRunnerOperator(StockOperator):
 		col = mydb[self.task_id]
 		print('Debug Airflow: dict_list:---------------')
 		print(self.dict_list)
-		col.insert_many(self.dict_list)
-		self.xcom_push(context,key=self.task_id, value=self.runner_conf.runnerID)
+		try:
+			col.insert_many(self.dict_list)
+		except TypeError as s:
+			print(s)
+		finally:
+			self.xcom_push(context, key=self.task_id, value=self.runner_conf.runnerID)
+
+
