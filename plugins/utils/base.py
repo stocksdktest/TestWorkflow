@@ -28,7 +28,7 @@ def file_md5(file_path):
 
 def download_file(url, file_path, md5=None, retry=3):
 	os.makedirs(os.path.dirname(file_path), exist_ok=True)
-	if md5 is not None and file_md5(file_path) == md5:
+	if md5 is not None and os.path.exists(file_path) and file_md5(file_path) == md5:
 		print("file(%s) exist, md5(%s) match" % (file_path, md5))
 		return
 
