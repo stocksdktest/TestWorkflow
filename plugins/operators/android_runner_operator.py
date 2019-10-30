@@ -1,7 +1,6 @@
 import re
 import sys
 
-import urllib3
 from airflow.contrib.hooks.mongo_hook import MongoHook
 
 from airflow.exceptions import AirflowException
@@ -136,6 +135,10 @@ class AndroidRunnerOperator(StockOperator):
 		db = client["stockSdkTest"]
 		col = db[self.task_id]
 		print('Debug Airflow: dict_list:---------------')
-		print(record_dict_list)
-		col.insert_many(record_dict_list)
-		self.xcom_push(context, key=self.task_id, value=self.runner_conf.runnerID)
+		print(self.dict_list)
+		try:
+			col.insert_many(self.dict_list)
+		except TypeError as s:
+			print(s)
+		finally:
+			self.xcom_push(context, key=self.task_id, value=self.runner_conf.runnerID)
