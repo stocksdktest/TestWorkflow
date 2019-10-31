@@ -135,9 +135,9 @@ class AndroidRunnerOperator(StockOperator):
 		db = client["stockSdkTest"]
 		col = db[self.task_id]
 		print('Debug Airflow: dict_list:---------------')
-		print(self.dict_list)
+		print(record_dict_list)
 		try:
-			col.insert_many(self.dict_list)
+			col.insert_many(record_dict_list)
 		except TypeError as s:
 			print(s)
 		finally:
