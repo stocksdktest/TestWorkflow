@@ -12,7 +12,7 @@ import jsonpatch
 class DataCompareOperator(BaseOperator):
 	@apply_defaults
 	def __init__(self, runner_conf, task_id_list, *args, **kwargs):
-		super().__init__(*args, **kwargs)
+		super().__init__(queue='worker', *args, **kwargs)
 		self.runner_conf = runner_conf
 		self.task_id_list = task_id_list
 		self.mongo_hk = MongoHook(conn_id='stocksdktest_mongo')
