@@ -18,7 +18,7 @@ def initRunnerConfig():
 
 		runner_conf.sdkConfig.appKeyIOS = 'VVW0Fno7BEZt1a/y6KLM36uj9qcjw7CAHDwWZKDlWDs='
 		runner_conf.sdkConfig.appKeyAndroid = 'J6IPlk5AEU+2/Yi59rfYnsFQtdtOgAo9GAzysx8ciOM='
-		runner_conf.sdkConfig.marketPerm.Level = "2"
+		runner_conf.sdkConfig.marketPerm.Level = "1"
 		runner_conf.sdkConfig.marketPerm.HKPerms.extend(["hk10"])
 
 		if i == 0:
