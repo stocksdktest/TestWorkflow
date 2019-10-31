@@ -12,10 +12,10 @@ import jsonpatch
 class DataCompareOperator(BaseOperator):
 	@apply_defaults
 	def __init__(self, runner_conf, task_id_list, *args, **kwargs):
-		super().__init__(*args, **kwargs)
+		super().__init__(queue='worker', *args, **kwargs)
 		self.runner_conf = runner_conf
 		self.task_id_list = task_id_list
-		self.mongo_hk = MongoHook()
+		self.mongo_hk = MongoHook(conn_id='stocksdktest_mongo')
 		self.conn = self.mongo_hk.get_conn()
 
 	def close_connection(self):
@@ -36,8 +36,7 @@ class DataCompareOperator(BaseOperator):
 			return obj
 
 	''' 返回两个记录的比较 '''
-
-	def recordCompare(self, record1, record2):
+	def record_compare(self, record1, record2):
 		res = (record1 == record2)
 		patches = []
 		if res == True:
@@ -247,7 +246,7 @@ class DataCompareOperator(BaseOperator):
 						resDBItem['Exception_Data_1'] = x['exceptionData']
 						resDBItem['Exception_Data_2'] = y['exceptionData']
 					else:
-						res = self.recordCompare(r1, r2)
+						res = self.record_compare(r1, r2)
 						print(res)
 						for k, v in res.items():
 							resDBItem[k] = v
@@ -550,6 +549,6 @@ if __name__ == '__main__':
 		task_id='11',
 		task_id_list=['a', 'b']
 	)
-	res = a.recordCompare(r1, r2)
+	res = a.record_compare(r1, r2)
 	print(res)
 # myclient = pymongo.MongoClient("mongodb://localhost:27017/")
