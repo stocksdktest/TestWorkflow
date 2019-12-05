@@ -1,3 +1,4 @@
+import datetime
 from airflow.exceptions import AirflowException
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
@@ -35,10 +36,29 @@ class DataCompareOperator(BaseOperator):
 		else:
 			return obj
 
+	def get_value_from_path(self, record, path):
+
+		# 字符串是否表示一个数字
+		def is_str_int(str):
+			return type(eval(str)) == int
+
+		path_list = path.lstrip('/').split('/')
+		src_a = record
+		for key in path_list:
+			# print('src_a:',src_a)
+			# print('key:',key)
+			if isinstance(src_a, list) and is_str_int(key):
+				src_a = src_a[int(key)]
+			elif isinstance(src_a, dict):
+				src_a = src_a[key]
+			else:
+				raise TypeError("Error in json path")
+		return src_a
+
 	''' 返回两个记录的比较 '''
 	def record_compare(self, record1, record2):
 		res = (record1 == record2)
-		patches = []
+		resInfo = []
 		if res == True:
 			print("Easy Json Dict , PASS")
 		else:
@@ -54,87 +74,79 @@ class DataCompareOperator(BaseOperator):
 					''' 如果出现不一致，就使用json_patch进行不一致的寻找'''
 					patch = jsonpatch.make_patch(record1, record2)
 					patches = patch.patch
-					resInfo = []
 					false_cnts = 0  # record the real false numbers
-					for item in patches:
-						# print("-----------There is a option " + item['op'])
-						if item['op'] == 'replace':
-							path_list = item['path'].lstrip('/').split('/')
-							src_a = record1
-							for key in path_list:
-								src_a = src_a[key]
-							src_b = item['value']
-
-							''' if it's numbers '''
-							# TODO: Now it's toy
-							numbers = False
-							try:
-								if isinstance(src_a, str) and isinstance(src_b, str):
-									t1 = type(eval(src_a.strip('%')))
-									t2 = type(eval(src_b.strip('%')))
-									if t1 == t2:
-										if t1 == int or t1 == float:
-											numbers = True
-							# print('Element val : ', src_a, src_b)
-							except SyntaxError as e1:
-								numbers = False
-							except NameError as e2:
-								numbers = False
-							finally:
-								if src_a != src_b:
-									false_cnts += 1
-
-							resInfo.append({
-								'type': 'Data Inconsistency',
-								'location': item['path'],
-								'src_a': src_a,
-								'src_b': src_b
-							})
-						elif item['op'] == 'add' or item['op'] == 'remove':
-							src_a = "not exist in src_a"
-							src_b = "nut exist in src_b"
-							# print(item)
-							if item['op'] == 'add':
+					try:
+						for item in patches:
+							# print("-----------There is a option " + item['op'])
+							if item['op'] == 'replace':
+								src_a = self.get_value_from_path(record1, item['path'])
 								src_b = item['value']
-							else:
-								path_list = item['path'].lstrip('/').split('/')
-								src_a = record1
-								for key in path_list:
-									src_a = src_a[key]
 
-							resInfo.append({
-								'type': 'Data Amount Inconsistency',
-								'location': item['path'],
-								'src_a': src_a,
-								'src_b': src_b
-							})
-							false_cnts += 1
-						elif item['op'] == 'move' or item['op'] == 'copy':
-							''' move equals remove and add'''
-							''' copy equals add the value in from to path '''
-							from_list = item['from'].lstrip('/').split('/')
-							src_a = record1
-							for key in from_list:
-								src_a = src_a[key]
-							src_b = "nut exist in src_b"
+								''' if it's numbers '''
+								# TODO: Now it's toy
+								numbers = False
+								try:
+									if isinstance(src_a, str) and isinstance(src_b, str):
+										t1 = type(eval(src_a.strip('%')))
+										t2 = type(eval(src_b.strip('%')))
+										if t1 == t2:
+											if t1 == int or t1 == float:
+												numbers = True
+								# print('Element val : ', src_a, src_b)
+								except SyntaxError as e1:
+									numbers = False
+								except NameError as e2:
+									numbers = False
+								finally:
+									if src_a != src_b:
+										false_cnts += 1
 
-							resInfo.append({
-								'type': 'Data Amount Inconsistency',
-								'location': item['from'],
-								'src_a': src_a,
-								'src_b': src_b
-							})
-							false_cnts += 1
-						elif item['op'] == 'test':
-							print("-----------There is a option Test TODO" + item['op'])
-					# false_cnts += 1
-					patches = resInfo
+								resInfo.append({
+									'type': 'Data Inconsistency',
+									'location': item['path'],
+									'src_a': src_a,
+									'src_b': src_b
+								})
+							elif item['op'] == 'add' or item['op'] == 'remove':
+								src_a = "not exist in src_a"
+								src_b = "nut exist in src_b"
+								# print(item)
+								if item['op'] == 'add':
+									src_b = item['value']
+								else:
+									src_a = self.get_value_from_path(record1, item['path'])
+
+								resInfo.append({
+									'type': 'Data Amount Inconsistency',
+									'location': item['path'],
+									'src_a': src_a,
+									'src_b': src_b
+								})
+								false_cnts += 1
+							elif item['op'] == 'move' or item['op'] == 'copy':
+								''' move equals remove and add'''
+								''' copy equals add the value in from to path '''
+								src_a = self.get_value_from_path(record1, item['from'])
+								src_b = "nut exist in src_b"
+
+								resInfo.append({
+									'type': 'Data Amount Inconsistency',
+									'location': item['from'],
+									'src_a': src_a,
+									'src_b': src_b
+								})
+								false_cnts += 1
+							elif item['op'] == 'test':
+								print("-----------There is a option Test TODO" + item['op'])
+					except TypeError as e:
+						resInfo = patches
 
 		result = {
 			"Consistency Result": res,
-			"More Infomations": patches
+			"More Infomations": resInfo
 		}
 		return result
+
 
 	def my_list_cmp(self, list1, list2):
 		if (list1.__len__() != list2.__len__()):
@@ -208,8 +220,8 @@ class DataCompareOperator(BaseOperator):
 	def execute(self, context):
 		myclient = self.mongo_hk.client
 		mydb = myclient["stockSdkTest"]
-		col1 = mydb[self.task_id_list[0]]
-		col2 = mydb[self.task_id_list[1]]
+		col1 = mydb[self.task_id_list[0] + datetime.date.today().__str__() ]
+		col2 = mydb[self.task_id_list[1] + datetime.date.today().__str__() ]
 
 		id1 = self.xcom_pull(context, key=self.task_id_list[0])
 		id2 = self.xcom_pull(context, key=self.task_id_list[1])
@@ -223,7 +235,8 @@ class DataCompareOperator(BaseOperator):
 			for y in col2.find():
 				if x['paramData'] != None and y['paramData'] != None \
 						and x['testcaseID'] == y['testcaseID'] \
-						and x['runnerID'] == id1 and y['runnerID'] == id2:
+						and x['runnerID'] == id1 and y['runnerID'] == id2\
+						and x['paramData'] == y['paramData']: # can use self.my_obj_cmp(x['paramData'], y['paramData']),but now is not necessary I think
 
 					testcaseID = x['testcaseID']
 					print(x)
@@ -257,9 +270,15 @@ class DataCompareOperator(BaseOperator):
 
 
 		print(result)  # {'OHLCV3_1': True, 'OHLCV3_2': True, 'OHLCV3_5': True}
-		col_res = mydb['test_result']
-		col_res.insert_one(result)
-
+		result_name = 'test_result' + datetime.date.today().__str__()
+		col_res = mydb[result_name]
+		try:
+			col_res.insert_one(result)
+		except TypeError as e:
+			print(e)
+		finally:
+			self.xcom_push(context, key=result_name, value=result)
+			print("over")
 
 def genTwoCase():
 	j1 = {

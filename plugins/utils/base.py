@@ -3,6 +3,7 @@ import base64
 import re
 import os
 import hashlib
+import json
 from threading import Event, Lock, Thread
 from time import monotonic
 import requests
@@ -55,10 +56,22 @@ def download_file(url, file_path, md5=None, retry=3):
 					raise Exception("Download %s timeout" % url)
 
 def bytes_to_dict(bytes_data):
-	if bytes_data.__len__() == 0:
+	bytes = bytes_data
+	if bytes.__len__() == 0:
 		return
-	str1 = str(bytes_data, encoding="utf-8")
-	data = eval(str1)
+	str1 = str(bytes, encoding="utf-8")
+	data = "raw data"
+	try:
+		data = eval(str1)
+		print("---------------data = eval(str1)----------------")
+	except NameError as ne:
+		try:
+			print("---------------data = json.loads(str1)----------------")
+			data = json.loads(str1)
+		except ValueError as ve:
+			print(ve)
+	finally:
+		print(data)
 	return data
 
 def command_to_script(args, script_path):

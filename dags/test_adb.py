@@ -8,7 +8,7 @@ from operators.data_compare_operator import DataCompareOperator
 from protos_gen.config_pb2 import RunnerConfig, TestcaseConfig, Site
 from operators.android_runner_operator import AndroidRunnerOperator
 from operators.android_release_operator import AndroidReleaseOperator
-
+#.全真和测试（新版SDK）对比
 # TODO init RunnerConfig
 def initRunnerConfig():
 	runner_conf_list = []
@@ -52,78 +52,28 @@ def initRunnerConfig():
 			runner_conf.sdkConfig.serverSites["hkaz"].CopyFrom(Site(ips=["http://114.80.155.133:22016"]))
 			runner_conf.sdkConfig.serverSites["hkdz"].CopyFrom(Site(ips=["http://114.80.155.133:22016"]))
 		case_list = []
-
-		# case_conf = TestcaseConfig()
-		# case_conf.testcaseID = 'OHLCTEST_1'
-		# case_conf.roundIntervalSec = 3
-		# case_conf.continueWhenFailed = False
-		# case_conf.paramStrs.extend([
-		# 	json.dumps({
-		# 		'stk': '00700.hk',
-		# 		'type': 'dayk'
-		# 	})
-		# ])
-		# case_list.append(case_conf)
-
+		
 		case_conf = TestcaseConfig()
-		case_conf.testcaseID = 'CHARTSUB_2'
+		case_conf.testcaseID = 'CATESORTING_2'
 		case_conf.roundIntervalSec = 3
 		case_conf.continueWhenFailed = False
 		case_conf.paramStrs.extend([
-			json.dumps({
-				'quoteitem':'600000.sh',
-				'type': 'ChartTypeOneDay',
-				'begin': '0',
-				'end': '100',
-				'select': 'time,ddx,ddy,ddz'
-			})
+			#066代码
+        	json.dumps({
+        		'id': 'SH1001',
+        		'param': '0,100,1,0,1',
+                'quoteCustom': '-1',
+        		'addvalueCustom': 'null',
+        	}),
+            #067
+            json.dumps({
+        		'id': 'SH1001',
+        		'param': '0,100,7,1,1',
+                'quoteCustom': '-1',
+        		'addvalueCustom': 'null',
+        	}),
 		])
 		case_list.append(case_conf)
-
-		# 历史K线方法一
-		# case_conf = TestcaseConfig()
-		# case_conf.testcaseID = 'OHLCV3_1'
-		# case_conf.continueWhenFailed = False
-		# case_conf.roundIntervalSec = 3
-		# case_conf.paramStrs.extend([
-		# 	json.dumps({
-		# 		'CODES': '00700.hk',
-		# 		'TYPES': 'dayk'
-		# 	})
-		# ])
-		# case_list.append(case_conf)
-
-		# 历史K线方法二
-		# case_conf = TestcaseConfig()
-		# case_conf.testcaseID = 'OHLCV3_2'
-		# case_conf.continueWhenFailed = False
-		# case_conf.roundIntervalSec = 3
-		# case_conf.paramStrs.extend([
-		# 	json.dumps({
-		# 		'CODES': '00700.hk',
-		# 		'TYPES': 'dayk',
-		# 		'FqTypes': '1',
-		# 		'DATES': 'null'
-		# 	})
-		# ])
-		# case_list.append(case_conf)
-
-		# 历史K线方法五
-		# case_conf = TestcaseConfig()
-		# case_conf.testcaseID = 'OHLCV3_5'
-		# case_conf.continueWhenFailed = False
-		# case_conf.roundIntervalSec = 3
-		# case_conf.paramStrs.extend([
-		# 	json.dumps({
-		# 		'CODES': '00700.hk',
-		# 		'TYPES': 'dayk',
-		# 		'FqTypes': '2',
-		# 		'Dates': 'null',
-		# 		'Numbers': '300'
-		# 	})
-		# ])
-		# case_list.append(case_conf)
-
 		runner_conf.casesConfig.extend(case_list)
 		print('i,case_list.length is ',case_list.__len__())
 		runner_conf_list.append(runner_conf)
@@ -155,8 +105,8 @@ with DAG(
 		task_id='android_release',
 		provide_context=False,
 		repo_name='stocksdktest/AndroidTestRunner',
-		tag_id='release-20191030-0.0.2',
-		tag_sha='91af71d21a42200c63ae4f37bd8f2bcf868866c5',
+		tag_id='release-20191204-0.0.1',
+		tag_sha='4579d4ee8b1ffc5b458dae829d90c1563bc066e5',
 		runner_conf=runner_conf_list[0]
 	)
 
@@ -164,7 +114,7 @@ with DAG(
 		task_id=task_id_to_cmp_list[0],
 		provide_context=False,
 		apk_id='com.chi.ssetest',
-		apk_version='release-20191030-0.0.2',
+		apk_version='release-20191204-0.0.1',
 		runner_conf=runner_conf_list[0]
 	)
 
@@ -172,7 +122,7 @@ with DAG(
 		task_id=task_id_to_cmp_list[1],
 		provide_context=False,
 		apk_id='com.chi.ssetest',
-		apk_version='release-20191030-0.0.2',
+		apk_version='release-20191204-0.0.1',
 		runner_conf=runner_conf_list[1]
 	)
 
