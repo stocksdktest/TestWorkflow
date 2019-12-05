@@ -154,7 +154,6 @@ class AndroidRunnerOperator(StockOperator):
 		db = client["stockSdkTest"]
 		col = db[self.task_id + datetime.date.today().__str__()]
 		print('Debug Airflow: dict_list:---------------')
-		record_dict_list =  self.pre_process_dot(record_dict_list)
 		print(record_dict_list)
 		try:
 			col.insert_many(record_dict_list)
