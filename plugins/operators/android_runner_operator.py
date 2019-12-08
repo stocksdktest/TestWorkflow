@@ -31,7 +31,7 @@ class AndroidRunnerOperator(StockOperator):
 		:type apk_files: list(operators.release_ci_operator.ReleaseFile)
 		"""
 		for file in apk_files:
-			path = '/tmp/' + file.name
+			path = '/tmp/%s/%s' % (file.md5sum, file.name)
 			download_file(url=file.url, file_path=path, md5=file.md5sum)
 			if exec_adb_cmd(['adb', 'install', '-r', '-t', path], serial=self.serial) != 0:
 				raise AirflowException('Install apk from %s failed' % file)

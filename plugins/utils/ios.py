@@ -5,9 +5,10 @@ import binascii
 
 from utils import base
 
-IPHONE_SDK_VERSION='11.2'
+IPHONE_SDK_VERSION='13.2'
 PLISTBUDDY_PATH=r'/usr/libexec/PlistBuddy'
 XCTOOL_PATH=r'/usr/local/bin/xctool'
+XCODEBUILD_PATH= r'/usr/bin/xcodebuild'
 XCRUN_PATH=r'/usr/bin/xcrun'
 APP_ID='com.chi.ssetest'
 PROJECT_PATH=r'/Users/lxs/Documents/StockTesting/IOSTestRunner'
@@ -32,6 +33,34 @@ def config_plist(serialize_config, ssh_cmd=None):
     process = subprocess.Popen(cmd, cwd=PROJECT_PATH, shell=True)
     process.wait()
     return process.returncode == 0
+
+def xcodebuild_test_cmd(ssh_cmd=None, logger=None):
+    cmd = XCODEBUILD_PATH + ' -workspace IOSTestRunner.xcworkspace -scheme IOSTestRunner ' \
+                            '-configuration Debug -sdk iphonesimulator%s ' \
+                            '-destination "platform=iOS Simulator,name=iPhone 8 Plus" test-without-building -only-testing IOSTestRunnerTests' % IPHONE_SDK_VERSION
+    if ssh_cmd is not None:
+        cmd = ssh_cmd + cmd
+
+    with subprocess.Popen(cmd, cwd=PROJECT_PATH, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
+        def timeout_callback():
+            print('process has timeout')
+            process.kill()
+
+        # kill process in timeout seconds unless the timer is restarted
+        watchdog = base.WatchdogTimer(timeout=30, callback=timeout_callback, daemon=True)
+        watchdog.start()
+        for line in process.stdout:
+            # don't invoke the watcthdog callback if do_something() takes too long
+            with watchdog.blocked:
+                if not line:
+                    process.kill()
+                    break
+                if logger and callable(logger):
+                    logger(str(line, encoding='utf-8'))
+                os.write(1, line)
+                watchdog.restart()
+        watchdog.cancel()
+    return process.returncode
 
 def xctest_cmd(reporter='pretty', ssh_cmd=None, logger=None):
     cmd = XCTOOL_PATH + ' -workspace IOSTestRunner.xcworkspace -scheme IOSTestRunner ' \

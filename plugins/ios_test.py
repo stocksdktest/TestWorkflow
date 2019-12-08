@@ -3,7 +3,7 @@ import json
 from protos_gen.config_pb2 import RunnerConfig, TestcaseConfig
 from protos_gen.record_pb2 import TestExecutionRecord
 from utils.base import generate_id, base64_encode, LogChunkCache
-from utils.ios import config_plist, xctest_cmd, spawn_xcrun_log, parse_sim_log
+from utils.ios import config_plist, xctest_cmd, xcodebuild_test_cmd, spawn_xcrun_log, parse_sim_log
 
 if __name__ == '__main__':
     runner_conf = RunnerConfig()
@@ -70,10 +70,10 @@ if __name__ == '__main__':
     test_result = False
     def check_test_result(line):
         global test_result
-        if 'RUN-TESTS FAILED' in line:
+        if 'TEST EXECUTE FAILED' in line:
             test_result = False
-        elif 'RUN-TESTS SUCCEEDED' in line:
+        elif 'TEST EXECUTE SUCCEEDED' in line:
             test_result = True
 
-    cmd_code = xctest_cmd(logger=check_test_result)
+    cmd_code = xcodebuild_test_cmd(logger=check_test_result)
     print("status: ", (cmd_code == 0) and test_result)
