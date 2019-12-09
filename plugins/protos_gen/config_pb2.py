@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='stock_testing',
   syntax='proto3',
   serialized_options=_b('\n\026com.chi.ssetest.protosB\013SetupConfig'),
-  serialized_pb=_b('\n\x0c\x63onfig.proto\x12\rstock_testing\"\xb0\x01\n\x10MarketPermission\x12\r\n\x05Level\x18\x01 \x01(\t\x12\x10\n\x08\x43\x66\x66Level\x18\x02 \x01(\t\x12\x10\n\x08\x44\x63\x65Level\x18\x03 \x01(\t\x12\x11\n\tCzceLevel\x18\x04 \x01(\t\x12\x0f\n\x07\x46\x65Level\x18\x05 \x01(\t\x12\x0f\n\x07GILevel\x18\x06 \x01(\t\x12\x11\n\tShfeLevel\x18\x07 \x01(\t\x12\x10\n\x08IneLevel\x18\x08 \x01(\t\x12\x0f\n\x07HKPerms\x18\t \x03(\t\"\x13\n\x04Site\x12\x0b\n\x03ips\x18\x01 \x03(\t\"\xf3\x01\n\tSDKConfig\x12\x15\n\rappKeyAndroid\x18\x01 \x01(\t\x12\x11\n\tappKeyIOS\x18\x02 \x01(\t\x12>\n\x0bserverSites\x18\x03 \x03(\x0b\x32).stock_testing.SDKConfig.ServerSitesEntry\x12\x33\n\nmarketPerm\x18\x04 \x01(\x0b\x32\x1f.stock_testing.MarketPermission\x1aG\n\x10ServerSitesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.stock_testing.Site:\x02\x38\x01\"m\n\x0eTestcaseConfig\x12\x12\n\ntestcaseID\x18\x01 \x01(\t\x12\x1a\n\x12\x63ontinueWhenFailed\x18\x02 \x01(\x08\x12\x18\n\x10roundIntervalSec\x18\x03 \x01(\x03\x12\x11\n\tparamStrs\x18\x04 \x03(\t\"\x90\x01\n\x0cRunnerConfig\x12\r\n\x05jobID\x18\x01 \x01(\t\x12\x10\n\x08runnerID\x18\x02 \x01(\t\x12+\n\tsdkConfig\x18\x03 \x01(\x0b\x32\x18.stock_testing.SDKConfig\x12\x32\n\x0b\x63\x61sesConfig\x18\x04 \x03(\x0b\x32\x1d.stock_testing.TestcaseConfigB%\n\x16\x63om.chi.ssetest.protosB\x0bSetupConfigb\x06proto3')
+  serialized_pb=_b('\n\x0c\x63onfig.proto\x12\rstock_testing\"\xb0\x01\n\x10MarketPermission\x12\r\n\x05Level\x18\x01 \x01(\t\x12\x10\n\x08\x43\x66\x66Level\x18\x02 \x01(\t\x12\x10\n\x08\x44\x63\x65Level\x18\x03 \x01(\t\x12\x11\n\tCzceLevel\x18\x04 \x01(\t\x12\x0f\n\x07\x46\x65Level\x18\x05 \x01(\t\x12\x0f\n\x07GILevel\x18\x06 \x01(\t\x12\x11\n\tShfeLevel\x18\x07 \x01(\t\x12\x10\n\x08IneLevel\x18\x08 \x01(\t\x12\x0f\n\x07HKPerms\x18\t \x03(\t\"\x13\n\x04Site\x12\x0b\n\x03ips\x18\x01 \x03(\t\"\xf3\x01\n\tSDKConfig\x12\x15\n\rappKeyAndroid\x18\x01 \x01(\t\x12\x11\n\tappKeyIOS\x18\x02 \x01(\t\x12>\n\x0bserverSites\x18\x03 \x03(\x0b\x32).stock_testing.SDKConfig.ServerSitesEntry\x12\x33\n\nmarketPerm\x18\x04 \x01(\x0b\x32\x1f.stock_testing.MarketPermission\x1aG\n\x10ServerSitesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.stock_testing.Site:\x02\x38\x01\"m\n\x0eTestcaseConfig\x12\x12\n\ntestcaseID\x18\x01 \x01(\t\x12\x1a\n\x12\x63ontinueWhenFailed\x18\x02 \x01(\x08\x12\x18\n\x10roundIntervalSec\x18\x03 \x01(\x03\x12\x11\n\tparamStrs\x18\x04 \x03(\t\"G\n\x0bStoreConfig\x12\x10\n\x08mongoUri\x18\x01 \x01(\t\x12\x0e\n\x06\x64\x62Name\x18\x02 \x01(\t\x12\x16\n\x0e\x63ollectionName\x18\x03 \x01(\t\"\xc1\x01\n\x0cRunnerConfig\x12\r\n\x05jobID\x18\x01 \x01(\t\x12\x10\n\x08runnerID\x18\x02 \x01(\t\x12+\n\tsdkConfig\x18\x03 \x01(\x0b\x32\x18.stock_testing.SDKConfig\x12\x32\n\x0b\x63\x61sesConfig\x18\x04 \x03(\x0b\x32\x1d.stock_testing.TestcaseConfig\x12/\n\x0bstoreConfig\x18\x05 \x01(\x0b\x32\x1a.stock_testing.StoreConfigB%\n\x16\x63om.chi.ssetest.protosB\x0bSetupConfigb\x06proto3')
 )
 
 
@@ -285,6 +285,51 @@ _TESTCASECONFIG = _descriptor.Descriptor(
 )
 
 
+_STORECONFIG = _descriptor.Descriptor(
+  name='StoreConfig',
+  full_name='stock_testing.StoreConfig',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='mongoUri', full_name='stock_testing.StoreConfig.mongoUri', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='dbName', full_name='stock_testing.StoreConfig.dbName', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='collectionName', full_name='stock_testing.StoreConfig.collectionName', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=588,
+  serialized_end=659,
+)
+
+
 _RUNNERCONFIG = _descriptor.Descriptor(
   name='RunnerConfig',
   full_name='stock_testing.RunnerConfig',
@@ -320,6 +365,13 @@ _RUNNERCONFIG = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='storeConfig', full_name='stock_testing.RunnerConfig.storeConfig', index=4,
+      number=5, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -332,8 +384,8 @@ _RUNNERCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=589,
-  serialized_end=733,
+  serialized_start=662,
+  serialized_end=855,
 )
 
 _SDKCONFIG_SERVERSITESENTRY.fields_by_name['value'].message_type = _SITE
@@ -342,10 +394,12 @@ _SDKCONFIG.fields_by_name['serverSites'].message_type = _SDKCONFIG_SERVERSITESEN
 _SDKCONFIG.fields_by_name['marketPerm'].message_type = _MARKETPERMISSION
 _RUNNERCONFIG.fields_by_name['sdkConfig'].message_type = _SDKCONFIG
 _RUNNERCONFIG.fields_by_name['casesConfig'].message_type = _TESTCASECONFIG
+_RUNNERCONFIG.fields_by_name['storeConfig'].message_type = _STORECONFIG
 DESCRIPTOR.message_types_by_name['MarketPermission'] = _MARKETPERMISSION
 DESCRIPTOR.message_types_by_name['Site'] = _SITE
 DESCRIPTOR.message_types_by_name['SDKConfig'] = _SDKCONFIG
 DESCRIPTOR.message_types_by_name['TestcaseConfig'] = _TESTCASECONFIG
+DESCRIPTOR.message_types_by_name['StoreConfig'] = _STORECONFIG
 DESCRIPTOR.message_types_by_name['RunnerConfig'] = _RUNNERCONFIG
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -384,6 +438,13 @@ TestcaseConfig = _reflection.GeneratedProtocolMessageType('TestcaseConfig', (_me
   # @@protoc_insertion_point(class_scope:stock_testing.TestcaseConfig)
   ))
 _sym_db.RegisterMessage(TestcaseConfig)
+
+StoreConfig = _reflection.GeneratedProtocolMessageType('StoreConfig', (_message.Message,), dict(
+  DESCRIPTOR = _STORECONFIG,
+  __module__ = 'config_pb2'
+  # @@protoc_insertion_point(class_scope:stock_testing.StoreConfig)
+  ))
+_sym_db.RegisterMessage(StoreConfig)
 
 RunnerConfig = _reflection.GeneratedProtocolMessageType('RunnerConfig', (_message.Message,), dict(
   DESCRIPTOR = _RUNNERCONFIG,

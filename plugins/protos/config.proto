@@ -35,9 +35,16 @@ message TestcaseConfig {
 	repeated string paramStrs = 4;
 }
 
+message StoreConfig {
+    string mongoUri = 1;
+    string dbName = 2;
+    string collectionName = 3;
+}
+
 message RunnerConfig {
 	string jobID = 1;
 	string runnerID = 2;
 	SDKConfig sdkConfig = 3;
 	repeated TestcaseConfig casesConfig = 4;
+	StoreConfig storeConfig = 5;
 }
