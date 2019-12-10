@@ -75,7 +75,7 @@ def exec_adb_cmd(args, serial=None, logger=None):
 			process.kill()
 
 		# kill process in timeout seconds unless the timer is restarted
-		watchdog = base.WatchdogTimer(timeout=30, callback=timeout_callback, daemon=True)
+		watchdog = base.WatchdogTimer(timeout=300, callback=timeout_callback, daemon=True)
 		watchdog.start()
 		for line in process.stdout:
 			# don't invoke the watcthdog callback if do_something() takes too long

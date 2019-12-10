@@ -4,14 +4,14 @@ from operators.release_ci_operator import ReleaseCIOperator
 
 class AndroidReleaseOperator(ReleaseCIOperator):
     @apply_defaults
-    def __init__(self, repo_name, tag_id, tag_sha, runner_conf, *args, **kwargs):
+    def __init__(self, repo_name, tag_id, tag_sha, runner_conf, release_xcom_key = "android_release",*args, **kwargs):
         super(AndroidReleaseOperator, self).__init__(
             repo_name=repo_name,
             tag_id=tag_id,
             tag_sha=tag_sha,
             queue='worker',
             runner_conf=runner_conf,
-            release_xcom_key='android_release',
+            release_xcom_key=release_xcom_key,
             *args,
             **kwargs
         )
