@@ -13,7 +13,7 @@ if __name__ == '__main__':
     runner_conf.storeConfig.mongoUri = 'mongodb://221.228.66.83:30617'
     runner_conf.storeConfig.dbName = 'stock'
     runner_conf.storeConfig.collectionName = 'test_adb'
-    runner_conf.storeConfig.restEndpoint = 'http://114.212.83.149:8000'
+    runner_conf.storeConfig.restEndpoint = 'http://mongo-python-eve.sdk-test.svc.cluster.local:80'
 
     runner_conf.sdkConfig.appKeyIOS = 'VVW0Fno7BEZt1a/y6KLM36uj9qcjw7CAHDwWZKDlWDs='
     runner_conf.sdkConfig.appKeyAndroid = 'J6IPlk5AEU+2/Yi59rfYnsFQtdtOgAo9GAzysx8ciOM='
