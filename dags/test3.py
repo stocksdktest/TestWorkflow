@@ -99,7 +99,7 @@ def initRunnerConfig():
         ])
         case_list.append(case_conf)
         #.................................445....................................
-		#分量区间统计请求
+		#分量区间统计请求--L2,只支持沪深
         case_conf = TestcaseConfig()
         case_conf.testcaseID = 'MOREVOLUMETEST_1'
         case_conf.roundIntervalSec = 3
@@ -303,12 +303,12 @@ def initRunnerConfig():
 			}),
 			# #006
 			# json.dumps({
-			# 	'code': '"601872.sh',
+			# 	'code': '601872.sh',
 			# 	'params': 'trade,notion'
 			# }),
 			# #007 
 			# json.dumps({
-			# 	'code': '"601872.sh',
+			# 	'code': '601872.sh',
 			# 	'params': 'trade_sw,notion_szyp,trade_sw1'
 			# }),
 			#008
@@ -376,10 +376,10 @@ def initRunnerConfig():
         case_conf.roundIntervalSec = 3
         case_conf.continueWhenFailed = False
         case_conf.paramStrs.extend([
-			# #010
-			# json.dumps({
-			# 	'code': '3950001.sz'
-			# }),	   
+			#010
+			json.dumps({
+				'code': '395001.sz'
+			}),	   
 		])
         case_list.append(case_conf)
 		#行情快照
@@ -392,7 +392,7 @@ def initRunnerConfig():
 			json.dumps({
 				'CODES': '395001.sz',
 				'COUNTS': '10',
-				'INTS1': 'null',
+				'INTS1': '-1',
 				'INTS2': 'null'
 			}),	   
 		])
@@ -403,17 +403,17 @@ def initRunnerConfig():
         case_conf.roundIntervalSec = 3
         case_conf.continueWhenFailed = False
         case_conf.paramStrs.extend([
-			# #008
-			# json.dumps({
-			# 	'CODES': '395001.sz',
-			# 	'INTS1': 'null',
-			# 	'INTS2': 'null'
-			# }),	 
-			# json.dumps({
-			# 	'CODES': '395002.sz',
-			# 	'INTS1': 'null',
-			# 	'INTS2': 'null'
-			# }),	  
+			#008
+			json.dumps({
+				'CODES': '395001.sz',
+				'INTS1': '-1',
+				'INTS2': 'null'
+			}),	 
+			json.dumps({
+				'CODES': '395002.sz',
+				'INTS1': '-1',
+				'INTS2': 'null'
+			}),	  
 		])
         case_list.append(case_conf)
 		#版块类股票行情
@@ -857,86 +857,86 @@ def initRunnerConfig():
                 'Dates': 'null',
                 'Numbers': '300',
             }),
-			#056
-            json.dumps({
-                'CODES': '399999.sz',
-                'TYPES': 'dayk',
-                'FqTypes': '2',
-                'Dates': 'null',
-                'Numbers': '300',
-            }),
-            #057
-            json.dumps({
-                'CODES': '399999.sz',
-                'TYPES': 'weekk',
-                'FqTypes': '2',
-                'Dates': 'null',
-                'Numbers': '300',
-            }),
-			#058
-            json.dumps({
-                'CODES': '399999.sz',
-                'TYPES': 'monthk',
-                'FqTypes': '2',
-                'Dates': 'null',
-                'Numbers': '300',
-            }),
-            #059
-            json.dumps({
-                'CODES': '399999.sz',
-                'TYPES': 'yeark',
-                'FqTypes': '2',
-                'Dates': 'null',
-                'Numbers': '300',
-            }),
-			#060
-            json.dumps({
-                'CODES': '399999.sz',
-                'TYPES': 'm1',
-                'FqTypes': '2',
-                'Dates': 'null',
-                'Numbers': '300',
-            }),
-            #061
-            json.dumps({
-                'CODES': '399999.sz',
-                'TYPES': 'm5',
-                'FqTypes': '2',
-                'Dates': 'null',
-                'Numbers': '300',
-            }),
-			#062
-            json.dumps({
-                'CODES': '399999.sz',
-                'TYPES': 'm15',
-                'FqTypes': '2',
-                'Dates': 'null',
-                'Numbers': '300',
-            }),
-            #063
-            json.dumps({
-                'CODES': '399999.sz',
-                'TYPES': 'm30',
-                'FqTypes': '2',
-                'Dates': 'null',
-                'Numbers': '300',
-            }),
-			#064
-            json.dumps({
-                'CODES': '399999.sz',
-                'TYPES': 'm60',
-                'FqTypes': '2',
-                'Dates': 'null',
-                'Numbers': '300',
-            }),
-            #065
-            json.dumps({
-                'CODES': '399999.sz',
-                'TYPES': 'm120',
-                'FqTypes': '2',
-                'Dates': 'null',
-                'Numbers': '300',
-            }),          
+			# #056
+            # json.dumps({
+            #     'CODES': '399999.sz',
+            #     'TYPES': 'dayk',
+            #     'FqTypes': '2',
+            #     'Dates': 'null',
+            #     'Numbers': '300',
+            # }),
+            # #057
+            # json.dumps({
+            #     'CODES': '399999.sz',
+            #     'TYPES': 'weekk',
+            #     'FqTypes': '2',
+            #     'Dates': 'null',
+            #     'Numbers': '300',
+            # }),
+			# #058
+            # json.dumps({
+            #     'CODES': '399999.sz',
+            #     'TYPES': 'monthk',
+            #     'FqTypes': '2',
+            #     'Dates': 'null',
+            #     'Numbers': '300',
+            # }),
+            # #059
+            # json.dumps({
+            #     'CODES': '399999.sz',
+            #     'TYPES': 'yeark',
+            #     'FqTypes': '2',
+            #     'Dates': 'null',
+            #     'Numbers': '300',
+            # }),
+			# #060
+            # json.dumps({
+            #     'CODES': '399999.sz',
+            #     'TYPES': 'm1',
+            #     'FqTypes': '2',
+            #     'Dates': 'null',
+            #     'Numbers': '300',
+            # }),
+            # #061
+            # json.dumps({
+            #     'CODES': '399999.sz',
+            #     'TYPES': 'm5',
+            #     'FqTypes': '2',
+            #     'Dates': 'null',
+            #     'Numbers': '300',
+            # }),
+			# #062
+            # json.dumps({
+            #     'CODES': '399999.sz',
+            #     'TYPES': 'm15',
+            #     'FqTypes': '2',
+            #     'Dates': 'null',
+            #     'Numbers': '300',
+            # }),
+            # #063
+            # json.dumps({
+            #     'CODES': '399999.sz',
+            #     'TYPES': 'm30',
+            #     'FqTypes': '2',
+            #     'Dates': 'null',
+            #     'Numbers': '300',
+            # }),
+			# #064
+            # json.dumps({
+            #     'CODES': '399999.sz',
+            #     'TYPES': 'm60',
+            #     'FqTypes': '2',
+            #     'Dates': 'null',
+            #     'Numbers': '300',
+            # }),
+            # #065
+            # json.dumps({
+            #     'CODES': '399999.sz',
+            #     'TYPES': 'm120',
+            #     'FqTypes': '2',
+            #     'Dates': 'null',
+            #     'Numbers': '300',
+            # }),          
         ])
 		#分类排行
         case_list.append(case_conf)
@@ -1074,14 +1074,14 @@ def initRunnerConfig():
             #084涨跌幅
         	json.dumps({
         		'id': 'SZ1400',
-        		'param': '0,100,-3,0,1',
+        		'param': '0,100,12,0,1',
                 'quoteCustom': '-1',
         		'addvalueCustom': 'null',
         	}),
             #085
             json.dumps({
         		'id': 'SZ1400',
-        		'param': '0,100,-3,1,1',
+        		'param': '0,100,12,1,1',
                 'quoteCustom': '-1',
         		'addvalueCustom': 'null',
         	}),
@@ -1337,299 +1337,299 @@ def initRunnerConfig():
                 'quoteCustom': '-1',
         		'addvalueCustom': 'null',
         	}),
-            #122大单净流入
+            #122超大单净流入
         	json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-19,0,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #123
             json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-19,1,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
 			#124大单净流入
         	json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-20,0,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #125
             json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-20,1,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
 			#126中单净流入
         	json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-21,0,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #127
             json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-21,1,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
 			#128小单净流入
         	json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-22,0,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #129
             json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-22,1,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #130大单净差
         	json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-34,0,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #131
             json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-34,1,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
 			#132五日大单净差
         	json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-35,0,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #133
             json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-35,1,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
 			#134十日大单净差
         	json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-36,0,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #135
             json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-36,1,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),	
 			#136主力动向
         	json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-37,0,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #137
             json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-37,1,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
 			#138五日主力动向
         	json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-38,0,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #139
             json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-38,1,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
 			#140十日主力动向
         	json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-39,0,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #141
             json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-39,1,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #142涨跌动因
         	json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-40,0,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #143
             json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-40,1,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
 			#144五日涨跌动因
         	json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-41,0,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #145
             json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-41,1,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
 			#146十日涨跌动因
         	json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-42,0,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #147
             json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-42,1,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
 			#148主力净流入
         	json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-47,0,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #149
             json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-47,1,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
-			#1505分钟涨跌幅
+			#150 5分钟涨跌幅
         	json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-48,0,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #151
             json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-48,1,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
-			#1525日主力净流入
+			#152 5日主力净流入
         	json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-58,0,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #153
             json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-58,1,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
-			#15410日主力净流入
+			#154 10日主力净流入
         	json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-59,0,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #155
             json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-59,1,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
-			#15620日主力净流入
+			#156 20日主力净流入
         	json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-60,0,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #157
             json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-60,1,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
-			#1585日主力净流入占比
+			#158 5日主力净流入占比
         	json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-61,0,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #159
             json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-61,1,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
-			#16010日主力净流入占比
+			#160 10日主力净流入占比
         	json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-62,0,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #161
             json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-62,1,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
-			#16220日主力净流入占比
+			#162 20日主力净流入占比
         	json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-63,0,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
             #163
             json.dumps({
         		'id': 'SZ1400',
         		'param': '0,100,-63,1,1',
                 'quoteCustom': '-1',
-        		'addvalueCustom': 'null',
+        		'addvalueCustom': '-1',
         	}),
 			#164代码
         	json.dumps({

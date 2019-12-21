@@ -16,5 +16,7 @@ class StockOperator(BaseOperator):
 	def pre_execute(self, context):
 		self.runner_conf.jobID = context.get('run_id') # dag_run_id
 		self.runner_conf.runnerID = generate_id('RUN-')
+		# if not self.runner_conf.storeConfig.HasField('collectionName'):
+		# 	self.runner_conf.storeConfig.collectionName = self.dag_id
 		if not self.runner_conf.IsInitialized():
 			raise AirflowException('RunnerConfig not init: %s' % str(self.runner_conf))

@@ -21,7 +21,11 @@ def initRunnerConfig():
         runner_conf.sdkConfig.appKeyAndroid = 'J6IPlk5AEU+2/Yi59rfYnsFQtdtOgAo9GAzysx8ciOM='
         runner_conf.sdkConfig.marketPerm.Level = "1"
         runner_conf.sdkConfig.marketPerm.HKPerms.extend(["hk10"])
-
+        # mongoDB位置，存储的数据库位置
+        runner_conf.storeConfig.mongoUri = "mongodb://221.228.66.83:30617"
+        runner_conf.storeConfig.dbName = "stockSdkTest"
+        runner_conf.storeConfig.collectionName = "debug"
+        
         if i == 0:
             runner_conf.sdkConfig.serverSites["sh"].CopyFrom(Site(ips=["http://114.80.155.134:22016"]))
             runner_conf.sdkConfig.serverSites["sz"].CopyFrom(Site(ips=["http://114.80.155.134:22016"]))

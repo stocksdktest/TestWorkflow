@@ -39,6 +39,7 @@ message StoreConfig {
     string mongoUri = 1;
     string dbName = 2;
     string collectionName = 3;
+    string restEndpoint = 4;
 }
 
 message RunnerConfig {

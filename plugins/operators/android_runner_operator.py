@@ -146,18 +146,19 @@ class AndroidRunnerOperator(StockOperator):
 									 logger=check_test_result)
 		# cmd_logcat = exec_adb_cmd(args=['adb','logcat','-c'], serial=self.serial)
 
-		if cmd_code_push != 0 or cmd_code_exec != 0 or len(test_status_code) == 0 or \
-				(test_status_code.count('0') + test_status_code.count('1') < len(test_status_code)):
-			raise AirflowException('Android Test Failed')
+		# TODO: 一次测试就报错的话，其他测试成功的结果就没用了
+		# if cmd_code_push != 0 or cmd_code_exec != 0 or len(test_status_code) == 0 or \
+		# 		(test_status_code.count('0') + test_status_code.count('1') < len(test_status_code)):
+		# 	raise AirflowException('Android Test Failed')
 
 		client = self.mongo_hk.client
 		db = client["stockSdkTest"]
 		col = db[self.task_id + datetime.date.today().__str__()]
 		print('Debug Airflow: dict_list:---------------')
 		record_dict_list =  self.pre_process_dot(record_dict_list)
-		print(record_dict_list)
 		try:
-			col.insert_many(record_dict_list)
+			print(record_dict_list)
+			# col.insert_many(record_dict_list)
 		except TypeError as s:
 			print(s)
 			self.xcom_push(context, key=self.task_id, value=s)

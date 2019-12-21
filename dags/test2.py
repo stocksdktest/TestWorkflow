@@ -22,6 +22,9 @@ def initRunnerConfig():
         runner_conf.sdkConfig.appKeyAndroid = 'J6IPlk5AEU+2/Yi59rfYnsFQtdtOgAo9GAzysx8ciOM='
         runner_conf.sdkConfig.marketPerm.Level = "1"
         runner_conf.sdkConfig.marketPerm.HKPerms.extend(["hk10"])
+        runner_conf.storeConfig.mongoUri = "mongodb://221.228.66.83:30617"
+        runner_conf.storeConfig.dbName = "stockSdkTest"
+        runner_conf.storeConfig.collectionName = "record"
         #环境配置
         if i == 0:
             runner_conf.sdkConfig.serverSites["sh"].CopyFrom(Site(ips=["http://114.80.155.134:22016"]))
@@ -83,21 +86,21 @@ def initRunnerConfig():
 
         #定义默认参数
 with DAG(
-       dag_id='android_test2',       #DAG名称
-		default_args={
-			'owner': 'test',     #流程所有者
-			'depends_on_past': False,   # 是否依赖上一个自己的执行状态                  
-            'email': ['wangzhenjun01@corp.netease.com'],  # 接收通知的email列表
-            'email_on_failure': True,  # 是否在任务执行失败时接收邮件
-            'email_on_retry': True,  # 是否在任务重试时接收邮件
-            'retries': 3,  # 失败重试次数
-            'retry_delay': timedelta(seconds=5), # 失败重试间隔   
-            'start_date': timezone.datetime(2019, 11, 23, 7, 20), # 调度时间，utl时间，为了方便测试，一般设置为当前时间减去执行周期
-			'end_date': timezone.datetime(2019, 11, 23, 7, 30), # 结束时间       
-		},
-		schedule_interval='@once', #执行周期，执行一次
-        #schedule_interval="00, *, *, *, *"  # 执行周期，依次是分，时，天，月，年，此处表示每个整点执行
-        #schedule_interval=timedelta(minutes=1)  # 执行周期，表示每分钟执行一次
+    dag_id='android_test2',       #DAG名称
+	default_args={
+		'owner': 'test',     #流程所有者
+		'depends_on_past': False,   # 是否依赖上一个自己的执行状态                  
+        'email': ['wangzhenjun01@corp.netease.com'],  # 接收通知的email列表
+        'email_on_failure': True,  # 是否在任务执行失败时接收邮件
+        'email_on_retry': True,  # 是否在任务重试时接收邮件
+        'retries': 3,  # 失败重试次数
+        'retry_delay': timedelta(seconds=5), # 失败重试间隔   
+        'start_date': timezone.datetime(2019, 11, 23, 7, 20), # 调度时间，utl时间，为了方便测试，一般设置为当前时间减去执行周期
+		'end_date': timezone.datetime(2019, 11, 23, 7, 30), # 结束时间       
+	},
+	schedule_interval='@once', #执行周期，执行一次
+    #schedule_interval="00, *, *, *, *"  # 执行周期，依次是分，时，天，月，年，此处表示每个整点执行
+    #schedule_interval=timedelta(minutes=1)  # 执行周期，表示每分钟执行一次
 ) as dag:
     start_task = DummyOperator(  
         task_id='run_this_first',

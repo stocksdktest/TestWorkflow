@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='stock_testing',
   syntax='proto3',
   serialized_options=_b('\n\026com.chi.ssetest.protosB\013SetupConfig'),
-  serialized_pb=_b('\n\x0c\x63onfig.proto\x12\rstock_testing\"\xb0\x01\n\x10MarketPermission\x12\r\n\x05Level\x18\x01 \x01(\t\x12\x10\n\x08\x43\x66\x66Level\x18\x02 \x01(\t\x12\x10\n\x08\x44\x63\x65Level\x18\x03 \x01(\t\x12\x11\n\tCzceLevel\x18\x04 \x01(\t\x12\x0f\n\x07\x46\x65Level\x18\x05 \x01(\t\x12\x0f\n\x07GILevel\x18\x06 \x01(\t\x12\x11\n\tShfeLevel\x18\x07 \x01(\t\x12\x10\n\x08IneLevel\x18\x08 \x01(\t\x12\x0f\n\x07HKPerms\x18\t \x03(\t\"\x13\n\x04Site\x12\x0b\n\x03ips\x18\x01 \x03(\t\"\xf3\x01\n\tSDKConfig\x12\x15\n\rappKeyAndroid\x18\x01 \x01(\t\x12\x11\n\tappKeyIOS\x18\x02 \x01(\t\x12>\n\x0bserverSites\x18\x03 \x03(\x0b\x32).stock_testing.SDKConfig.ServerSitesEntry\x12\x33\n\nmarketPerm\x18\x04 \x01(\x0b\x32\x1f.stock_testing.MarketPermission\x1aG\n\x10ServerSitesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.stock_testing.Site:\x02\x38\x01\"m\n\x0eTestcaseConfig\x12\x12\n\ntestcaseID\x18\x01 \x01(\t\x12\x1a\n\x12\x63ontinueWhenFailed\x18\x02 \x01(\x08\x12\x18\n\x10roundIntervalSec\x18\x03 \x01(\x03\x12\x11\n\tparamStrs\x18\x04 \x03(\t\"G\n\x0bStoreConfig\x12\x10\n\x08mongoUri\x18\x01 \x01(\t\x12\x0e\n\x06\x64\x62Name\x18\x02 \x01(\t\x12\x16\n\x0e\x63ollectionName\x18\x03 \x01(\t\"\xc1\x01\n\x0cRunnerConfig\x12\r\n\x05jobID\x18\x01 \x01(\t\x12\x10\n\x08runnerID\x18\x02 \x01(\t\x12+\n\tsdkConfig\x18\x03 \x01(\x0b\x32\x18.stock_testing.SDKConfig\x12\x32\n\x0b\x63\x61sesConfig\x18\x04 \x03(\x0b\x32\x1d.stock_testing.TestcaseConfig\x12/\n\x0bstoreConfig\x18\x05 \x01(\x0b\x32\x1a.stock_testing.StoreConfigB%\n\x16\x63om.chi.ssetest.protosB\x0bSetupConfigb\x06proto3')
+  serialized_pb=_b('\n\x0c\x63onfig.proto\x12\rstock_testing\"\xb0\x01\n\x10MarketPermission\x12\r\n\x05Level\x18\x01 \x01(\t\x12\x10\n\x08\x43\x66\x66Level\x18\x02 \x01(\t\x12\x10\n\x08\x44\x63\x65Level\x18\x03 \x01(\t\x12\x11\n\tCzceLevel\x18\x04 \x01(\t\x12\x0f\n\x07\x46\x65Level\x18\x05 \x01(\t\x12\x0f\n\x07GILevel\x18\x06 \x01(\t\x12\x11\n\tShfeLevel\x18\x07 \x01(\t\x12\x10\n\x08IneLevel\x18\x08 \x01(\t\x12\x0f\n\x07HKPerms\x18\t \x03(\t\"\x13\n\x04Site\x12\x0b\n\x03ips\x18\x01 \x03(\t\"\xf3\x01\n\tSDKConfig\x12\x15\n\rappKeyAndroid\x18\x01 \x01(\t\x12\x11\n\tappKeyIOS\x18\x02 \x01(\t\x12>\n\x0bserverSites\x18\x03 \x03(\x0b\x32).stock_testing.SDKConfig.ServerSitesEntry\x12\x33\n\nmarketPerm\x18\x04 \x01(\x0b\x32\x1f.stock_testing.MarketPermission\x1aG\n\x10ServerSitesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.stock_testing.Site:\x02\x38\x01\"m\n\x0eTestcaseConfig\x12\x12\n\ntestcaseID\x18\x01 \x01(\t\x12\x1a\n\x12\x63ontinueWhenFailed\x18\x02 \x01(\x08\x12\x18\n\x10roundIntervalSec\x18\x03 \x01(\x03\x12\x11\n\tparamStrs\x18\x04 \x03(\t\"]\n\x0bStoreConfig\x12\x10\n\x08mongoUri\x18\x01 \x01(\t\x12\x0e\n\x06\x64\x62Name\x18\x02 \x01(\t\x12\x16\n\x0e\x63ollectionName\x18\x03 \x01(\t\x12\x14\n\x0crestEndpoint\x18\x04 \x01(\t\"\xc1\x01\n\x0cRunnerConfig\x12\r\n\x05jobID\x18\x01 \x01(\t\x12\x10\n\x08runnerID\x18\x02 \x01(\t\x12+\n\tsdkConfig\x18\x03 \x01(\x0b\x32\x18.stock_testing.SDKConfig\x12\x32\n\x0b\x63\x61sesConfig\x18\x04 \x03(\x0b\x32\x1d.stock_testing.TestcaseConfig\x12/\n\x0bstoreConfig\x18\x05 \x01(\x0b\x32\x1a.stock_testing.StoreConfigB%\n\x16\x63om.chi.ssetest.protosB\x0bSetupConfigb\x06proto3')
 )
 
 
@@ -313,6 +313,13 @@ _STORECONFIG = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='restEndpoint', full_name='stock_testing.StoreConfig.restEndpoint', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -326,7 +333,7 @@ _STORECONFIG = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=588,
-  serialized_end=659,
+  serialized_end=681,
 )
 
 
@@ -384,8 +391,8 @@ _RUNNERCONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=662,
-  serialized_end=855,
+  serialized_start=684,
+  serialized_end=877,
 )
 
 _SDKCONFIG_SERVERSITESENTRY.fields_by_name['value'].message_type = _SITE

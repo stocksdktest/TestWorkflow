@@ -10,11 +10,10 @@ from utils import *
 import jsonpatch
 
 
-class DataCompareOperator(BaseOperator):
+class DataCompareOperator(StockOperator):
 	@apply_defaults
 	def __init__(self, runner_conf, task_id_list, *args, **kwargs):
-		super().__init__(queue='worker', *args, **kwargs)
-		self.runner_conf = runner_conf
+		super(DataCompareOperator, self).__init__(queue='android', runner_conf=runner_conf, *args, **kwargs)
 		self.task_id_list = task_id_list
 		self.mongo_hk = MongoHook(conn_id='stocksdktest_mongo')
 		self.conn = self.mongo_hk.get_conn()
@@ -84,22 +83,22 @@ class DataCompareOperator(BaseOperator):
 
 								''' if it's numbers '''
 								# TODO: Now it's toy
-								numbers = False
-								try:
-									if isinstance(src_a, str) and isinstance(src_b, str):
-										t1 = type(eval(src_a.strip('%')))
-										t2 = type(eval(src_b.strip('%')))
-										if t1 == t2:
-											if t1 == int or t1 == float:
-												numbers = True
-								# print('Element val : ', src_a, src_b)
-								except SyntaxError as e1:
-									numbers = False
-								except NameError as e2:
-									numbers = False
-								finally:
-									if src_a != src_b:
-										false_cnts += 1
+								# numbers = False
+								# try:
+								# 	if isinstance(src_a, str) and isinstance(src_b, str):
+								# 		t1 = type(eval(src_a.strip('%')))
+								# 		t2 = type(eval(src_b.strip('%')))
+								# 		if t1 == t2:
+								# 			if t1 == int or t1 == float:
+								# 				numbers = True
+								# # print('Element val : ', src_a, src_b)
+								# except SyntaxError as e1:
+								# 	numbers = False
+								# except NameError as e2:
+								# 	numbers = False
+								# finally:
+								# 	if src_a != src_b:
+								# 		false_cnts += 1
 
 								resInfo.append({
 									'type': 'Data Inconsistency',
@@ -139,6 +138,8 @@ class DataCompareOperator(BaseOperator):
 							elif item['op'] == 'test':
 								print("-----------There is a option Test TODO" + item['op'])
 					except TypeError as e:
+						resInfo = patches
+					except KeyError as e:
 						resInfo = patches
 
 		result = {
@@ -219,9 +220,8 @@ class DataCompareOperator(BaseOperator):
 
 	def execute(self, context):
 		myclient = self.mongo_hk.client
-		mydb = myclient["stockSdkTest"]
-		col1 = mydb[self.task_id_list[0] + datetime.date.today().__str__() ]
-		col2 = mydb[self.task_id_list[1] + datetime.date.today().__str__() ]
+		mydb = myclient[self.runner_conf.storeConfig.dbName]
+		col = mydb[self.runner_conf.storeConfig.collectionName]
 
 		id1 = self.xcom_pull(context, key=self.task_id_list[0])
 		id2 = self.xcom_pull(context, key=self.task_id_list[1])
@@ -229,56 +229,87 @@ class DataCompareOperator(BaseOperator):
 		print('xcom_pull', id1)
 		print('xcom_pull', id2)
 
-		result = {}
-		# TODO: Use Mongo To Selection, Maybe every DAG with a collection could be better?
-		for x in col1.find():
-			for y in col2.find():
-				if x['paramData'] != None and y['paramData'] != None \
-						and x['testcaseID'] == y['testcaseID'] \
-						and x['runnerID'] == id1 and y['runnerID'] == id2\
-						and x['paramData'] == y['paramData']: # can use self.my_obj_cmp(x['paramData'], y['paramData']),but now is not necessary I think
+		# 对于直接在安卓测试的扩充
+		print("-----------------------------Now Get Data From Mongo Directly--------------------------------")
+		new_result = dict()
+		cmp_result = dict()
+		error_result = list()
+		new_result['jobID'] = self.runner_conf.jobID
+		new_result['dagID'] = self.dag_id
+		new_result['compared'] = cmp_result
+		new_result['error'] = error_result
+		# 筛选规则
+		rule1 = {
+			'runnerID': id1,
+			'$or': [{'resultData': {'$ne': None}}, 	{'exceptionData': {'$ne': None}}]
+		}
+		rule2 = {
+			'runnerID': id2,
+			'$or': [{'resultData': {'$ne': None}}, 	{'exceptionData': {'$ne': None}}]
+		}
+
+		for x in col.find(rule1):
+			# x test failure
+			print('x', x)
+			if x['isPass'] == False:
+				print(id1,x['testcaseID'],'test failure')
+				print(x)
+				print('---------------------------')
+				error_result.append(x)
+				continue
+
+			for y in col.find(rule2):
+				# y test failure
+				print('y',y)
+				if y['isPass'] == False:
+					print(id2, y['testcaseID'], 'test failure')
+					print(y)
+					print('---------------------------')
+					error_result.append(y)
+					continue
+
+				# can use self.my_obj_cmp(x['paramData'], y['paramData']),but now is not necessary I think
+				# TODO: pramData的比较
+				# if case_equal(x['testcaseID'], y['testcaseID']) and x['paramData'] == y['paramData']:
+				if case_equal(x['testcaseID'], y['testcaseID']) :
+					
+					if x['testcaseID'] == y['testcaseID'] and x['paramData'] != y['paramData']:
+						continue
 
 					testcaseID = x['testcaseID']
-					print(x)
-					print(y)
+					print('testcaseID:', testcaseID)
+
+					print('Compared record1:', x)
+					print('Compared record2:', y)
+					print('---------------------------')
 					r1 = x['resultData']
 					r2 = y['resultData']
-					print(r1)
-					print(r2)
 
-					resDBItem = {}
-					resDBItem['Result_1'] = r1
-					resDBItem['RunnerID_1'] = id1
-					resDBItem['JobID_1'] = x['jobID']
-					resDBItem['Result_2'] = r2
-					resDBItem['RunnerID_2'] = id2
-					resDBItem['JobID_2'] = y['jobID']
+					resDBItem = dict()
+					resDBItem['jobID'] = x['jobID']
+					resDBItem['runnerID1'] = id1
+					resDBItem['runnerID2'] = id2
+					resDBItem['paramData'] = x['paramData'] 
+					resDBItem['result1'] = r1
+					resDBItem['result2'] = r2
 
-					if x['exceptionData'] != None or y['exceptionData']!=None:
-						print('Exception Explode in '+ testcaseID)
-						resDBItem['Exception_Data_1'] = x['exceptionData']
-						resDBItem['Exception_Data_2'] = y['exceptionData']
-					else:
-						res = self.record_compare(r1, r2)
-						print(res)
-						for k, v in res.items():
-							resDBItem[k] = v
+					res = self.record_compare(r1, r2)
+					print(res)
+					for k, v in res.items():
+						resDBItem[k] = v
 
-					if result.get(testcaseID) == None:
-						result[testcaseID] = []
-					result[testcaseID].append(resDBItem)
-
-
-		print(result)  # {'OHLCV3_1': True, 'OHLCV3_2': True, 'OHLCV3_5': True}
-		result_name = 'test_result' + datetime.date.today().__str__()
-		col_res = mydb[result_name]
+					if cmp_result.get(testcaseID) == None:
+						cmp_result[testcaseID] = []
+					cmp_result[testcaseID].append(resDBItem)
+		
+		col_res = mydb[self.runner_conf.storeConfig.collectionName + '_test_result']
 		try:
-			col_res.insert_one(result)
+			col_res.insert_one(new_result)
 		except TypeError as e:
 			print(e)
-		finally:
-			self.xcom_push(context, key=result_name, value=result)
-			print("over")
+
+		
+
 
 def genTwoCase():
 	j1 = {
