@@ -11,8 +11,8 @@ if __name__ == '__main__':
     runner_conf.runnerID = generate_id('RUN-A')
 
     runner_conf.storeConfig.mongoUri = 'mongodb://221.228.66.83:30617'
-    runner_conf.storeConfig.dbName = 'stock'
-    runner_conf.storeConfig.collectionName = 'test_adb'
+    runner_conf.storeConfig.dbName = 'stockSdkTest'
+    runner_conf.storeConfig.collectionName = 'test_result'
     runner_conf.storeConfig.restEndpoint = 'http://mongo-python-eve.sdk-test.svc.cluster.local:80'
 
     runner_conf.sdkConfig.appKeyIOS = 'VVW0Fno7BEZt1a/y6KLM36uj9qcjw7CAHDwWZKDlWDs='
@@ -55,7 +55,8 @@ if __name__ == '__main__':
 
     # TODO Do not edit!
     print(base64_encode(runner_conf.SerializeToString()))
-    if not config_plist(base64_encode(runner_conf.SerializeToString())):
+    ssh_cmd = 'ssh -p 30751 test-env@221.228.66.83'
+    if not config_plist(base64_encode(runner_conf.SerializeToString()), ssh_cmd=ssh_cmd):
         print("Config Info.Plist error")
         exit(1)
 
@@ -70,7 +71,7 @@ if __name__ == '__main__':
             print(record)
             print("*************************")
 
-    spawn_xcrun_log(logger=read_record)
+    spawn_xcrun_log(ssh_cmd=ssh_cmd, logger=read_record)
 
     test_result = False
     def check_test_result(line):
@@ -80,5 +81,5 @@ if __name__ == '__main__':
         elif 'TEST EXECUTE SUCCEEDED' in line:
             test_result = True
 
-    cmd_code = xcodebuild_test_cmd(logger=check_test_result)
+    cmd_code = xcodebuild_test_cmd(ssh_cmd=ssh_cmd, logger=check_test_result)
     print("status: ", (cmd_code == 0) and test_result)
