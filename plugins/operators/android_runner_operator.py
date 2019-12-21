@@ -41,7 +41,7 @@ class AndroidRunnerOperator(StockOperator):
 	def pre_execute(self, context):
 		super(AndroidRunnerOperator, self).pre_execute(context)
 
-		# TODO: TO Debug, so annotate it and return
+		# TODO: if one apk is installed successfully another failed, many throw exception about version unmattched
 		# it seems 2 apks have been installed and com.chi.ssetest too
 		if not start_adb_server():
 			raise AirflowException('ADB Server can not start')
@@ -72,56 +72,7 @@ class AndroidRunnerOperator(StockOperator):
 				raise AirflowException('Can not get Android release assets: %s')
 			self.install_apk(release_files)
 
-	@staticmethod
-	def protobuf_record_to_dict(record):
-		if record is None:
-			sys.stderr('TextExecutionRecordtoDict Type Error, param is NoneType')
-			return
-		if type(record) != TestExecutionRecord:
-			sys.stderr('TextExecutionRecordtoDict Type Error, param is not TestExecutionRecord')
-			return
-		res = dict()
-		res['jobID'] = record.jobID
-		res['runnerID'] = record.runnerID
-		res['testcaseID'] = record.testcaseID
-		res['recordID'] = record.recordID
-		res['isPass'] = record.isPass
-		res['startTime'] = record.startTime
-		res['paramData'] = bytes_to_dict(record.paramData)
-		res['resultData'] = bytes_to_dict(record.resultData)
-		res['exceptionData'] = bytes_to_dict(record.exceptionData)
-		return res
-
-	def pre_process_dot(self,record_dict_list):
-		for i in range(record_dict_list.__len__()):
-			resultData = record_dict_list[i]['resultData']
-			if resultData != None:
-				old_keys = []
-				for k in resultData.keys():
-					old_keys.append(k)
-				for old_key in old_keys:
-					new_key = old_key.replace('.', '_')
-					new_key = new_key.replace('$', '_')
-					print('old_key', old_key)
-					print('new_key', new_key)
-					resultData[new_key] = resultData.pop(old_key)
-		return record_dict_list
-
 	def execute(self, context):
-		record_dict_list = list()
-		chunk_cache = LogChunkCache()
-		def read_record(record_str):
-			record = TestExecutionRecord()
-			data = parse_logcat(chunk_cache, record_str)
-			if data:
-				record.ParseFromString(data)
-			if len(record.ListFields()) > 0:
-				print("*************************")
-				print(record)
-				record_dict_list.append(AndroidRunnerOperator.protobuf_record_to_dict(record))
-				print("*************************")
-
-		spawn_logcat(serial=self.serial, logger=read_record)
 
 		test_status_code = []
 		def check_test_result(line):
@@ -141,27 +92,16 @@ class AndroidRunnerOperator(StockOperator):
 			'com.chi.ssetest.test/android.support.test.runner.AndroidJUnitRunner'
 		], script_path='/tmp/test.sh')
 		cmd_code_push = exec_adb_cmd(args=['adb', 'push', '/tmp/test.sh', '/data/local/tmp/'], serial=self.serial)
-		cmd_logcat_clear = exec_adb_cmd(args=['adb', 'logcat', '-c'], serial=self.serial)
 		cmd_code_exec = exec_adb_cmd(args=['adb', 'shell', 'sh', '/data/local/tmp/test.sh'], serial=self.serial,
 									 logger=check_test_result)
-		# cmd_logcat = exec_adb_cmd(args=['adb','logcat','-c'], serial=self.serial)
+
+		if cmd_code_push != 0 and cmd_code_exec !=0:
+			raise AirflowException('Android ADB Failed')
+
 
 		# TODO: 一次测试就报错的话，其他测试成功的结果就没用了
 		# if cmd_code_push != 0 or cmd_code_exec != 0 or len(test_status_code) == 0 or \
 		# 		(test_status_code.count('0') + test_status_code.count('1') < len(test_status_code)):
 		# 	raise AirflowException('Android Test Failed')
 
-		client = self.mongo_hk.client
-		db = client["stockSdkTest"]
-		col = db[self.task_id + datetime.date.today().__str__()]
-		print('Debug Airflow: dict_list:---------------')
-		record_dict_list =  self.pre_process_dot(record_dict_list)
-		try:
-			print(record_dict_list)
-			# col.insert_many(record_dict_list)
-		except TypeError as s:
-			print(s)
-			self.xcom_push(context, key=self.task_id, value=s)
-		finally:
-			self.xcom_push(context, key=self.task_id, value=self.runner_conf.runnerID)
-			self.xcom_push(context, key=self.runner_conf.runnerID,  value=record_dict_list)
+		self.xcom_push(context, key=self.task_id, value=self.runner_conf.runnerID)

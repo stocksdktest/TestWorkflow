@@ -7,7 +7,7 @@ from airflow.operators.dummy_operator import DummyOperator
 
 from operators.android_runner_operator import AndroidRunnerOperator
 from operators.data_compare_operator import DataCompareOperator, generate_id
-from operators.ios_operator import IOSStockOperator
+from operators.ios_runner_operator import IOSRunnerOperator
 from operators.android_release_operator import AndroidReleaseOperator
 from protos_gen.config_pb2 import RunnerConfig, TestcaseConfig, Site
 
@@ -146,7 +146,7 @@ with DAG(
 		runner_conf=runner_conf_list[0]
 	)
 
-	ios = IOSStockOperator(
+	ios = IOSRunnerOperator(
 		task_id=task_id_to_cmp_list1[0],
 		provide_context=False,
 		app_id="2",

@@ -12,14 +12,23 @@ OSX_USER_ID = 'test-env'
 OSX_UESR_PWD = 'test-env'
 SSH_TIMEOUT = 20
 
+IPHONE_SDK_VERSION = '11.2'
+PLISTBUDDY_PATH = r'/usr/libexec/PlistBuddy'
+XCTOOL_PATH = r'/usr/local/bin/xctool'
+XCODEBUILD_PATH = r'/usr/bin/xcodebuild'
+XCRUN_PATH = r'/usr/bin/xcrun'
+APP_ID = 'com.chi.ssetest'
+PROJECT_PATH = r'/Users/test-env/stocksdktest/IOSTestRunner'
 
-IPHONE_SDK_VERSION='11.2'
-PLISTBUDDY_PATH=r'/usr/libexec/PlistBuddy'
-XCTOOL_PATH=r'/usr/local/bin/xctool'
-XCODEBUILD_PATH= r'/usr/bin/xcodebuild'
-XCRUN_PATH=r'/usr/bin/xcrun'
-APP_ID='com.chi.ssetest'
-PROJECT_PATH=r'/Users/test-env/stocksdktest/IOSTestRunner'
+
+# TODO: use hook
+def new_ssh_client():
+	ssh_client = paramiko.SSHClient()
+	ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+	ssh_client.connect(hostname=OSX_HOSTNAME, port=OSX_PORT, username=OSX_USER_ID, password=OSX_UESR_PWD,
+					   timeout=SSH_TIMEOUT)
+	return ssh_client
+
 
 """
 :param serialize_config: str, BASE64 string
@@ -28,232 +37,206 @@ PROJECT_PATH=r'/Users/test-env/stocksdktest/IOSTestRunner'
 
 
 def config_plist(serialize_config, ssh_cmd=None):
-    if ssh_cmd is not None:
+	if ssh_cmd is not None:
+		ssh_client = new_ssh_client()
 
-        ''''''
-        ssh_client = paramiko.SSHClient()
-        ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh_client.connect(hostname=OSX_HOSTNAME, port=OSX_PORT, username=OSX_USER_ID, password=OSX_UESR_PWD,
-                                timeout=SSH_TIMEOUT)
-        ''''''
+		cmd = '%s -c "Delete :runner_config" ' \
+			  '%s/Build/Products/Debug-iphonesimulator/IOSTestRunner.app/Info.plist' % (PLISTBUDDY_PATH, PROJECT_PATH)
+		print("con_plist  now_cmd1:", cmd)
 
-        # cmd = '%s -c \\\"Delete :runner_config\\\" ' \
-        #       '/Users/test-env/stocksdktest/IOSTestRunner/Build/Products/Debug-iphonesimulator/IOSTestRunner.app/Info.plist' % (PLISTBUDDY_PATH)
-        cmd = '%s -c "Delete :runner_config" ' \
-              '%s/Build/Products/Debug-iphonesimulator/IOSTestRunner.app/Info.plist' % (PLISTBUDDY_PATH, PROJECT_PATH)
+		stdin, stdout, stderr = ssh_client.exec_command(cmd)
+		print('stdout', stdout.read().decode())
+		print('stderr', stderr.read().decode())
+		print('return', stdout.channel.exit_status)
 
-        # cmd = ssh_cmd + " '" + cmd + "'"
-        # cmd = ssh_cmd + 'sh -c'
-        # print("use_ssh_in config_plist")
-        print("con_plist  now_cmd1:", cmd)
-        # process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)#, cwd=PROJECT_PATH
-        # # ignore return code
-        # print("process1:", process.stdout.read(), process.stderr.read(), process.returncode)
-
-        stdin, stdout, stderr = ssh_client.exec_command(cmd)
-        print('stdout',stdout.read().decode())
-        print('stderr', stderr.read().decode())
-        print('return',stdout.channel.exit_status)
-
-
-        # cmd =  '%s -c '%(PLISTBUDDY_PATH) + ' \'Add :runner_config string "%s"\''%(serialize_config) +' %s/Build/Products/Debug-iphonesimulator/IOSTestRunner.app/Info.plist'%(PROJECT_PATH)
-        cmd = """
+		cmd = """
         %s -c 'Add :runner_config string "%s"' %s/Build/Products/Debug-iphonesimulator/IOSTestRunner.app/Info.plist
-        """ % (PLISTBUDDY_PATH, serialize_config, PROJECT_PATH )
+        """ % (PLISTBUDDY_PATH, serialize_config, PROJECT_PATH)
+		print("con_plist  now_cmd2:", cmd)
 
-        # cmd = ssh_cmd + ' "' + cmd + '"'
-        print("con_plist  now_cmd2:", cmd)
-        # process = subpgrocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)#, cwd=PROJECT_PATH
-        # print("process2:", process.stdout.read(),process.stderr.read())
-        # process.wait()
-        # print("rcode:", process.returncode)
-        stdin, stdout, stderr = ssh_client.exec_command(cmd)
-        print('stdout',stdout.read().decode())
-        print('stderr',stdout.read().decode())
-        print('return',stdout.channel.exit_status)
+		stdin, stdout, stderr = ssh_client.exec_command(cmd)
+		print('stdout', stdout.read().decode())
+		print('stderr', stdout.read().decode())
+		print('return', stdout.channel.exit_status)
 
-        rcode = stdout.channel.exit_status
+		rcode = stdout.channel.exit_status
 
-        ssh_client.close()
+		ssh_client.close()
+		return rcode == 0
 
-        return rcode == 0
+	else:
+		cmd = '%s -c "Delete :runner_config" ' \
+			  './Build/Products/Debug-iphonesimulator/IOSTestRunner.app/Info.plist' % PLISTBUDDY_PATH
+		if ssh_cmd is not None:
+			cmd = ssh_cmd + cmd
+		# ignore return code
+		subprocess.call(cmd, cwd=PROJECT_PATH, shell=True)
 
-    else:
-
-        cmd = '%s -c "Delete :runner_config" ' \
-              './Build/Products/Debug-iphonesimulator/IOSTestRunner.app/Info.plist' % PLISTBUDDY_PATH
-        if ssh_cmd is not None:
-            cmd = ssh_cmd + cmd
-        # ignore return code
-        subprocess.call(cmd, cwd=PROJECT_PATH, shell=True)
-
-        cmd = """
+		cmd = """
         %s -c 'Add :runner_config string "%s"' ./Build/Products/Debug-iphonesimulator/IOSTestRunner.app/Info.plist
         """ % (PLISTBUDDY_PATH, serialize_config)
-        if ssh_cmd is not None:
-            cmd = ssh_cmd + cmd
-        process = subprocess.Popen(cmd, cwd=PROJECT_PATH, shell=True)
-        process.wait()
-        return process.returncode == 0
+		if ssh_cmd is not None:
+			cmd = ssh_cmd + cmd
+		process = subprocess.Popen(cmd, cwd=PROJECT_PATH, shell=True)
+		process.wait()
+		return process.returncode == 0
+
 
 def xcodebuild_test_cmd(ssh_cmd=None, logger=None):
 
-    ssh_client = paramiko.SSHClient()
-    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh_client.connect(hostname=OSX_HOSTNAME, port=OSX_PORT, username=OSX_USER_ID, password=OSX_UESR_PWD,
-                       timeout=SSH_TIMEOUT)
+	cmd = XCODEBUILD_PATH + ' -workspace IOSTestRunner.xcworkspace -scheme IOSTestRunner ' \
+							'-configuration Debug -sdk iphonesimulator%s ' \
+							'-destination "platform=iOS Simulator,name=iPhone 8 Plus" test-without-building -only-testing:IOSTestRunnerTests' % IPHONE_SDK_VERSION
+	Start_Path = PROJECT_PATH
+
+	if ssh_cmd is not None:
+		ssh_client = new_ssh_client()
+
+		cmd = "cd %s" % PROJECT_PATH + ";" + "pwd;" + cmd
+		print("xcodebuild_test_cmd:", cmd)
+
+		stdin, stdout, stderr = ssh_client.exec_command(command=cmd, get_pty=True)
+		print('stdout', stdout.read().decode())
+		print('stderr', stderr.read().decode())
+		print('return', stdout.channel.exit_status)
+		for line in stdout.read().decode().split('\n'):
+			if logger and callable(logger):
+				logger(str(line))
+
+		recode = stdout.channel.exit_status
+		ssh_client.close()
+		return recode
 
 
-    cmd = XCODEBUILD_PATH + ' -workspace IOSTestRunner.xcworkspace -scheme IOSTestRunner ' \
-                            '-configuration Debug -sdk iphonesimulator%s ' \
-                            '-destination "platform=iOS Simulator,name=iPhone 8 Plus" test-without-building -only-testing:IOSTestRunnerTests' % IPHONE_SDK_VERSION
-    Start_Path = PROJECT_PATH
+	else:
+		print("xcodebuild_test_cmd:", cmd)
+		with subprocess.Popen(cmd, cwd=Start_Path, shell=True, stdout=subprocess.PIPE,
+							  stderr=subprocess.PIPE) as process:
+			def timeout_callback():
+				print('process has timeout')
+				process.kill()
 
-    if ssh_cmd is not None:
-        cmd = "cd %s" % PROJECT_PATH + ";" + "pwd;" + cmd
-        print("xcodebuild_test_cmd:", cmd)
+			# kill process in timeout seconds unless the timer is restarted
+			watchdog = base.WatchdogTimer(timeout=30, callback=timeout_callback, daemon=True)
+			watchdog.start()
+			for line in process.stdout:
+				# don't invoke the watcthdog callback if do_something() takes too long
+				with watchdog.blocked:
+					if not line:
+						process.kill()
+						break
+					if logger and callable(logger):
+						logger(str(line, encoding='utf-8'))
+					os.write(1, line)
+					watchdog.restart()
+			watchdog.cancel()
+		return process.returncode
 
-        stdin, stdout, stderr = ssh_client.exec_command(command=cmd, get_pty=True)
-        print('stdout', stdout.read().decode())
-        print('stderr', stderr.read().decode())
-        print('return', stdout.channel.exit_status)
-        for line in stdout.read().decode().split('\n'):
-            if logger and callable(logger):
-                logger(str(line))
-
-        recode = stdout.channel.exit_status
-        ssh_client.close()
-        return recode
-
-
-    else:
-        print("xcodebuild_test_cmd:", cmd)
-        with subprocess.Popen(cmd, cwd=Start_Path, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
-            def timeout_callback():
-                print('process has timeout')
-                process.kill()
-
-
-            # kill process in timeout seconds unless the timer is restarted
-            watchdog = base.WatchdogTimer(timeout=30, callback=timeout_callback, daemon=True)
-            watchdog.start()
-            for line in process.stdout:
-                # don't invoke the watcthdog callback if do_something() takes too long
-                with watchdog.blocked:
-                    if not line:
-                        process.kill()
-                        break
-                    if logger and callable(logger):
-                        logger(str(line, encoding='utf-8'))
-                    os.write(1, line)
-                    watchdog.restart()
-            watchdog.cancel()
-        return process.returncode
 
 @DeprecationWarning
 def xctest_cmd(reporter='pretty', ssh_cmd=None, logger=None):
+	cmd = XCTOOL_PATH + ' -workspace IOSTestRunner.xcworkspace -scheme IOSTestRunner ' \
+						'-configuration Debug -sdk iphonesimulator%s -reporter %s ' \
+						'-destination "platform=iOS Simulator,name=iPhone 8 Plus" run-tests -only IOSTestRunnerTests' % (
+			  IPHONE_SDK_VERSION, reporter)
 
-    cmd = XCTOOL_PATH + ' -workspace IOSTestRunner.xcworkspace -scheme IOSTestRunner ' \
-                        '-configuration Debug -sdk iphonesimulator%s -reporter %s ' \
-                        '-destination "platform=iOS Simulator,name=iPhone 8 Plus" run-tests -only IOSTestRunnerTests' % (
-              IPHONE_SDK_VERSION, reporter)
+	if ssh_cmd is not None:
+		cmd = ssh_cmd + "'cd {};".format(PROJECT_PATH) + cmd + "'"
+		print("use_ssh_in xctest_cmd")
 
-    if ssh_cmd is not None:
-        cmd = ssh_cmd + "'cd {};".format(PROJECT_PATH) + cmd + "'"
-        print("use_ssh_in xctest_cmd")
+	print("ccccmd2:", cmd)
 
-    print("ccccmd2:",cmd)
+	with subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
+						  stderr=subprocess.PIPE) as process:  # cwd=PROJECT_PATH,
+		def timeout_callback():
+			print('process has timeout')
+			process.kill()
 
-    with subprocess.Popen(cmd,  shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process: #cwd=PROJECT_PATH,
-        def timeout_callback():
-            print('process has timeout')
-            process.kill()
-        # kill process in timeout seconds unless the timer is restarted
-        watchdog = base.WatchdogTimer(timeout=30, callback=timeout_callback, daemon=True)
-        watchdog.start()
-        for line in process.stdout:
-            # don't invoke the watcthdog callback if do_something() takes too long
-            with watchdog.blocked:
-                if not line:
-                    process.kill()
-                    break
-                if logger and callable(logger):
-                    logger(str(line, encoding='utf-8'))
-                os.write(1, line)
-                watchdog.restart()
-        watchdog.cancel()
-    return process.returncode
+		# kill process in timeout seconds unless the timer is restarted
+		watchdog = base.WatchdogTimer(timeout=30, callback=timeout_callback, daemon=True)
+		watchdog.start()
+		for line in process.stdout:
+			# don't invoke the watcthdog callback if do_something() takes too long
+			with watchdog.blocked:
+				if not line:
+					process.kill()
+					break
+				if logger and callable(logger):
+					logger(str(line, encoding='utf-8'))
+				os.write(1, line)
+				watchdog.restart()
+		watchdog.cancel()
+	return process.returncode
+
 
 def spawn_xcrun_log(ssh_cmd=None, logger=None):
-    def read_log():
-        #print("spawn_xcrun_log:ssh_md:",ssh_cmd)
-        if ssh_cmd is None:
-            cmd = """
+	def read_log():
+		# print("spawn_xcrun_log:ssh_md:",ssh_cmd)
+		if ssh_cmd is None:
+			cmd = """
                             %s simctl spawn booted log stream --style compact --predicate 'subsystem == "%s" and category == "record"'
                             """ % (XCRUN_PATH, APP_ID)
 
-        else:
-            #print("use_ssh_in spawn_xcrun_log")
-            # cmd = "{} simctl spawn booted log stream --style compact --predicate \"subsystem == \\\"{}\\\" and category == \\\"record\\\"\"".format(
-            #     XCRUN_PATH, APP_ID)
-            # cmd = ssh_cmd + "'" + cmd + "'"
-            cmd = '{} simctl spawn booted log stream --style compact --predicate \'subsystem == \\\"{}\\\" and category == \\\"record\\\"\''.format(
-                XCRUN_PATH, APP_ID)
-            cmd = ssh_cmd + ' "' + cmd + '"'
-            print("1111spawn_xcrun_log cmd:", cmd)
+		else:
+			# print("use_ssh_in spawn_xcrun_log")
+			# cmd = "{} simctl spawn booted log stream --style compact --predicate \"subsystem == \\\"{}\\\" and category == \\\"record\\\"\"".format(
+			#     XCRUN_PATH, APP_ID)
+			# cmd = ssh_cmd + "'" + cmd + "'"
+			cmd = '{} simctl spawn booted log stream --style compact --predicate \'subsystem == \\\"{}\\\" and category == \\\"record\\\"\''.format(
+				XCRUN_PATH, APP_ID)
+			cmd = ssh_cmd + ' "' + cmd + '"'
+			print("1111spawn_xcrun_log cmd:", cmd)
 
-        print("hhhh")
-        process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		print("hhhh")
+		process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-        while True:
-            line = process.stdout.readline()
+		while True:
+			line = process.stdout.readline()
 
-            if not line:
-                continue
-            if logger and callable(logger):
-                print("line:",line)
-                logger(str(line, encoding='utf-8'))
+			if not line:
+				continue
+			if logger and callable(logger):
+				print("line:", line)
+				logger(str(line, encoding='utf-8'))
 
-    t = threading.Thread(target=read_log, daemon=True)
-    t.start()
+	t = threading.Thread(target=read_log, daemon=True)
+	t.start()
+
 
 def parse_sim_log(chunk_cache, log):
-    #print("llllog:",log)
-    tag = '[%s:record]' % APP_ID
-    idx = log.find(tag)
-    if idx == -1:
-        #print("from herre")
-        return None
-    data_str = log[idx + len(tag):]
-    data_str = data_str.strip()
+	# print("llllog:",log)
+	tag = '[%s:record]' % APP_ID
+	idx = log.find(tag)
+	if idx == -1:
+		# print("from herre")
+		return None
+	data_str = log[idx + len(tag):]
+	data_str = data_str.strip()
 
-    data_str = chunk_cache.parse_chunk_data(data_str)
-    if not data_str:
-        return None
-    print("data_str: " + data_str)
-    try:
-        return base.base64_decode(data_str)
-    except binascii.Error as e:
-        print('Decode base64 data error: ' + str(e))
-        return None
+	data_str = chunk_cache.parse_chunk_data(data_str)
+	if not data_str:
+		return None
+	print("data_str: " + data_str)
+	try:
+		return base.base64_decode(data_str)
+	except binascii.Error as e:
+		print('Decode base64 data error: ' + str(e))
+		return None
+
 
 if __name__ == '__main__':
-    ssh_client = paramiko.SSHClient()
-    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh_client.connect(hostname=OSX_HOSTNAME, port=OSX_PORT, username=OSX_USER_ID, password=OSX_UESR_PWD,
-                       timeout=SSH_TIMEOUT)
+	ssh_client = new_ssh_client()
 
-    cmd = XCODEBUILD_PATH + ' -workspace IOSTestRunner.xcworkspace -scheme IOSTestRunner ' \
-                            '-configuration Debug -sdk iphonesimulator%s ' \
-                            '-destination "platform=iOS Simulator,name=iPhone 8 Plus" test-without-building -only-testing:IOSTestRunnerTests' % IPHONE_SDK_VERSION
-    Start_Path = PROJECT_PATH
-    cmd = "cd %s" % PROJECT_PATH + ";" + "pwd;" + cmd
-    print("xcodebuild_test_cmd:", cmd)
+	cmd = XCODEBUILD_PATH + ' -workspace IOSTestRunner.xcworkspace -scheme IOSTestRunner ' \
+							'-configuration Debug -sdk iphonesimulator%s ' \
+							'-destination "platform=iOS Simulator,name=iPhone 8 Plus" test-without-building -only-testing:IOSTestRunnerTests' % IPHONE_SDK_VERSION
+	Start_Path = PROJECT_PATH
+	cmd = "cd %s" % PROJECT_PATH + ";" + "pwd;" + cmd
+	print("xcodebuild_test_cmd:", cmd)
 
-    stdin, stdout, stderr = ssh_client.exec_command(cmd)
-    # print('stdout', stdout.read().decode())
-    print('stderr', stderr.read().decode())
-    print('return', stdout.channel.exit_status)
+	stdin, stdout, stderr = ssh_client.exec_command(cmd)
+	print('stdout', stdout.read().decode())
+	print('stderr', stderr.read().decode())
+	print('return', stdout.channel.exit_status)
 
-    ssh_client.close()
-
+	ssh_client.close()

@@ -1,21 +1,14 @@
-import re
-import os
-import sys
-
 import paramiko
 import json
 
-from airflow.contrib.hooks.mongo_hook import MongoHook
 from airflow.exceptions import AirflowException
 from airflow.utils.decorators import apply_defaults
-
 from operators.stock_operator import StockOperator
 
 # TODO only this import style can work on airflow
 from protos_gen import *
 from protos_gen.config_pb2 import Site
 from utils import *
-from utils.base import bytes_to_dict
 from utils.ios import xcodebuild_test_cmd
 
 OSX_HOSTNAME = '192.168.100.2'
@@ -26,60 +19,32 @@ SSH_TIMEOUT = 20
 IOS_REPO_PATH = '/Users/test-env/stocksdktest/IOSTestRunner'
 
 
-class IOSStockOperator(StockOperator):
+class IOSRunnerOperator(StockOperator):
 	@apply_defaults
 	def __init__(self, app_id, project_path, runner_conf, *args, **kwargs):
-		super(IOSStockOperator, self).__init__(queue='osx', runner_conf=runner_conf, *args, **kwargs)
-		# super(IOSStockOperator, self).__init__(queue='worker', runner_conf=runner_conf, *args, **kwargs)
+		super(IOSRunnerOperator, self).__init__(queue='osx', runner_conf=runner_conf, *args, **kwargs)
 		self.ssh_key_path = '/root/.ssh/id_rsa'
 		self.app_id = app_id
 		self.project_path = project_path
-		# TODO:  annotate it to test local iOS simulator
 		self.ssh_cmd = 'ssh -p %s %s@%s ' % (OSX_PORT, OSX_USER_ID, OSX_HOSTNAME)
-		# self.ssh_cmd = None
 		self.ssh_client = paramiko.SSHClient()
-		self.mongo_hk = MongoHook(conn_id='stocksdktest_mongo')
-		self.conn = self.mongo_hk.get_conn()
-		self.dict_list = []
 
 	def pre_execute(self, context):
-		super(IOSStockOperator, self).pre_execute(context)
+		super(IOSRunnerOperator, self).pre_execute(context)
 		# check login without password
 		# ssh_client = paramiko.SSHClient()
 		# ssh_client.load_host_keys(self.ssh_key_path)
 		try:
-			# ssh_client.connect(hostname=OSX_HOSTNAME, port=22, username=OSX_USER_ID, timeout=SSH_TIMEOUT)
 			self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 			self.ssh_client.connect(hostname=OSX_HOSTNAME, port=OSX_PORT, username=OSX_USER_ID, password=OSX_UESR_PWD,
 									timeout=SSH_TIMEOUT)
-			stdin, stdout,stderr = self.ssh_client.exec_command('echo "ok"')
+			stdin, stdout, stderr = self.ssh_client.exec_command('echo "ok"')
 		except paramiko.SSHException as e:
 			raise AirflowException(str(e))
 
-	# self.ssh_client.exec_command('mkdir -p %s' % IOS_REPO_PATH)
-	# self.ssh_client.exec_command('git clone --depth=1 %s %s')
-
-	@staticmethod
-	def protobuf_record_to_dict(record):
-		if record is None:
-			sys.stderr('TextExecutionRecordtoDict Type Error, param is NoneType')
-			return
-		if type(record) != TestExecutionRecord:
-			sys.stderr('TextExecutionRecordtoDict Type Error, param is not TestExecutionRecord')
-			return
-		res = dict()
-		res['jobID'] = record.jobID
-		res['runnerID'] = record.runnerID
-		res['testcaseID'] = record.testcaseID
-		res['recordID'] = record.recordID
-		res['isPass'] = record.isPass
-		res['startTime'] = record.startTime
-		res['paramData'] = bytes_to_dict(record.paramData)
-		res['resultData'] = bytes_to_dict(record.resultData)
-		res['exceptionData'] = bytes_to_dict(record.exceptionData)
-		return res
-
 	def execute(self, context):
+
+		# test SSH connection
 		stdin, stdout, stderr = self.ssh_client.exec_command('echo "ok"')
 		if len(stderr.read()) != 0:
 			print(stderr.read())
@@ -91,27 +56,6 @@ class IOSStockOperator(StockOperator):
 			print("Config Info.Plist error")
 			exit(1)
 
-		# return
-
-		print("-----------1---------------")
-
-		chunk_cache = LogChunkCache()
-
-		result = []
-
-		def read_record(record_str):
-			record = TestExecutionRecord()
-			data = parse_sim_log(chunk_cache, record_str)
-			if data:
-				record.ParseFromString(data)
-			if len(record.ListFields()) > 0:
-				print("*************************")
-				print(record)
-				self.dict_list.append(self.protobuf_record_to_dict(record))
-				print("*************************")
-
-		spawn_xcrun_log(ssh_cmd=self.ssh_cmd,logger=read_record)
-
 		test_result = False
 
 		def check_test_result(line):
@@ -121,22 +65,10 @@ class IOSStockOperator(StockOperator):
 			elif 'TEST EXECUTE SUCCEEDED' in line:
 				test_result = True
 
-
 		cmd_code = xcodebuild_test_cmd(ssh_cmd=self.ssh_cmd, logger=check_test_result)
 		print("status: ", (cmd_code == 0) and test_result)
 
-		myclient = self.mongo_hk.client
-		mydb = myclient["stockSdkTest"]
-		col = mydb[self.task_id]
-		print('Debug Airflow: dict_list:---------------')
-		try:
-			# col.insert_many(self.dict_list)
-			print(self.dict_list)
-		except TypeError as s:
-			print(s)
-		finally:
-			self.xcom_push(context, key=self.task_id, value=self.runner_conf.runnerID)
-
+		self.xcom_push(context, key=self.task_id, value=self.runner_conf.runnerID)
 		self.ssh_client.close()
 
 
@@ -178,7 +110,7 @@ if __name__ == '__main__':
 
 	runner_conf.casesConfig.extend([case_conf])
 
-	ios_task = IOSStockOperator(
+	ios_task = IOSRunnerOperator(
 		task_id="1",
 		app_id="2",
 		project_path="",
