@@ -10,7 +10,7 @@ from utils import *
 class DataCompareOperator(StockOperator):
 	@apply_defaults
 	def __init__(self, runner_conf, task_id_list, *args, **kwargs):
-		super(DataCompareOperator, self).__init__(queue='android', runner_conf=runner_conf, *args, **kwargs)
+		super(DataCompareOperator, self).__init__(queue='worker', runner_conf=runner_conf, *args, **kwargs)
 		self.task_id_list = task_id_list
 		self.mongo_hk = MongoHook(conn_id='stocksdktest_mongo')
 		self.conn = self.mongo_hk.get_conn()
@@ -23,14 +23,6 @@ class DataCompareOperator(StockOperator):
 
 	def get_android_data(self):
 		return 0
-
-	def ordered(self, obj):
-		if isinstance(obj, dict):
-			return sorted((k, self.ordered(v)) for k, v in obj.items())
-		if isinstance(obj, list):
-			return sorted(self.ordered(x) for x in obj)
-		else:
-			return obj
 
 	def execute(self, context):
 		myclient = self.mongo_hk.client
@@ -45,21 +37,29 @@ class DataCompareOperator(StockOperator):
 
 		# 对于直接在安卓测试的扩充
 		print("-----------------------------Now Get Data From Mongo Directly--------------------------------")
-		new_result = dict()
+		result = dict()
 		cmp_result = dict()
 		error_result = list()
-		new_result['jobID'] = self.runner_conf.jobID
-		new_result['dagID'] = self.dag_id
-		new_result['compared'] = cmp_result
-		new_result['error'] = error_result
+
+		result['jobID'] = self.runner_conf.jobID
+		result['dagID'] = self.dag_id
+		result['runnerID1'] = id1
+		result['runnerID2'] = id2
+		result['compared'] = cmp_result
+		result['error'] = error_result
+
+		cmp_result['true'] = list()
+		cmp_result['false'] = list()
+
 		# 筛选规则
+		rule_json_exist = {'$gt':{}}
 		rule1 = {
 			'runnerID': id1,
-			'$or': [{'resultData': {'$ne': None}}, 	{'exceptionData': {'$ne': None}}]
+			'$or': [{'resultData': rule_json_exist}, 	{'exceptionData': rule_json_exist}]
 		}
 		rule2 = {
 			'runnerID': id2,
-			'$or': [{'resultData': {'$ne': None}}, 	{'exceptionData': {'$ne': None}}]
+			'$or': [{'resultData': rule_json_exist}, 	{'exceptionData': rule_json_exist}]
 		}
 
 		for x in col.find(rule1):
@@ -99,26 +99,27 @@ class DataCompareOperator(StockOperator):
 					r1 = x['resultData']
 					r2 = y['resultData']
 
-					resDBItem = dict()
-					resDBItem['jobID'] = x['jobID']
-					resDBItem['runnerID1'] = id1
-					resDBItem['runnerID2'] = id2
-					resDBItem['paramData'] = x['paramData'] 
-					resDBItem['result1'] = r1
-					resDBItem['result2'] = r2
-
 					res = record_compare(r1, r2)
 					print(res)
-					for k, v in res.items():
-						resDBItem[k] = v
+					res_item = dict()
+					res_item['recordID1'] = x['recordID']
+					res_item['recordID2'] = y['recordID']
+					res_item['testcaseID1'] = x['testcaseID']
+					res_item['testcaseID2'] = y['testcaseID']
+					res_item['paramData1'] = x['paramData']
+					res_item['paramData2'] = y['paramData']
+					# TODO: 差一个时间，需要安卓那里支持一下endTime,先测试下endTime有没有问题
+					if res['result'] == True:
+						cmp_result['true'].append(res_item)
+					else:
+						res_item['result1'] = r1
+						res_item['result2'] = r2
+						res_item['details'] = res['details']
+						cmp_result['false'].append(res_item)
 
-					if cmp_result.get(testcaseID) == None:
-						cmp_result[testcaseID] = []
-					cmp_result[testcaseID].append(resDBItem)
-		
 		col_res = mydb[self.runner_conf.storeConfig.collectionName + '_test_result']
 		try:
-			col_res.insert_one(new_result)
+			col_res.insert_one(result)
 		except TypeError as e:
 			print(e)
 

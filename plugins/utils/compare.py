@@ -1,7 +1,7 @@
 import jsonpatch
 
 
-def get_value_from_path(self, record, path):
+def get_value_from_path(record, path):
 	# 字符串是否表示一个数字
 	# TODO eval is dangerous
 	def is_str_integer(str):
@@ -117,13 +117,15 @@ def record_compare(record1, record2):
 						elif item['op'] == 'test':
 							print("-----------There is a option Test TODO" + item['op'])
 				except TypeError as e:
+					print(e)
 					resInfo = patches
 				except KeyError as e:
+					print(e)
 					resInfo = patches
 
 	result = {
-		"Consistency Result": res,
-		"More Infomations": resInfo
+		"result": res,
+		"details": resInfo
 	}
 	return result
 

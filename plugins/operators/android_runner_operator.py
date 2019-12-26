@@ -16,8 +16,8 @@ from utils import *
 class AndroidRunnerOperator(StockOperator):
 
 	@apply_defaults
-	def __init__(self, apk_id, apk_version, runner_conf, target_device=None, release_xcom_key = "android_release",*args, **kwargs):
-		super(AndroidRunnerOperator, self).__init__(queue='android', runner_conf=runner_conf, *args, **kwargs)
+	def __init__(self, apk_id, apk_version, runner_conf, run_times=1,target_device=None, release_xcom_key = "android_release",*args, **kwargs):
+		super(AndroidRunnerOperator, self).__init__(queue='android', runner_conf=runner_conf, run_times=run_times,*args, **kwargs)
 		self.apk_id = apk_id
 		self.apk_version = apk_version
 		self.apk_path = None
@@ -26,6 +26,7 @@ class AndroidRunnerOperator(StockOperator):
 		self.release_xcom_key = release_xcom_key
 		self.mongo_hk = MongoHook(conn_id='stocksdktest_mongo')
 		self.conn = self.mongo_hk.get_conn()
+		self.runner_conf = self.runner_conf_replicate(runner_conf=self.runner_conf,replicate_numbers=self.run_times-1)
 
 	def install_apk(self, apk_files):
 		"""
@@ -72,6 +73,18 @@ class AndroidRunnerOperator(StockOperator):
 				raise AirflowException('Can not get Android release assets: %s')
 			self.install_apk(release_files)
 
+	def read_data(self):
+		print("-----------Android Result-----------")
+		myclient = self.mongo_hk.client
+		mydb = myclient[self.runner_conf.storeConfig.dbName]
+		col = mydb[self.runner_conf.storeConfig.collectionName]
+		id = self.runner_conf.runnerID
+		rule = {
+			'runnerID': id,
+		}
+		for x in col.find(rule):
+			print(x)
+
 	def execute(self, context):
 
 		test_status_code = []
@@ -105,3 +118,4 @@ class AndroidRunnerOperator(StockOperator):
 		# 	raise AirflowException('Android Test Failed')
 
 		self.xcom_push(context, key=self.task_id, value=self.runner_conf.runnerID)
+		self.read_data()

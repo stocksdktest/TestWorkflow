@@ -21,13 +21,14 @@ IOS_REPO_PATH = '/Users/test-env/stocksdktest/IOSTestRunner'
 
 class IOSRunnerOperator(StockOperator):
 	@apply_defaults
-	def __init__(self, app_id, project_path, runner_conf, *args, **kwargs):
-		super(IOSRunnerOperator, self).__init__(queue='osx', runner_conf=runner_conf, *args, **kwargs)
+	def __init__(self, app_id, project_path, runner_conf, run_times=1,*args, **kwargs):
+		super(IOSRunnerOperator, self).__init__(queue='osx', runner_conf=runner_conf, run_times=run_times,*args, **kwargs)
 		self.ssh_key_path = '/root/.ssh/id_rsa'
 		self.app_id = app_id
 		self.project_path = project_path
 		self.ssh_cmd = 'ssh -p %s %s@%s ' % (OSX_PORT, OSX_USER_ID, OSX_HOSTNAME)
 		self.ssh_client = paramiko.SSHClient()
+		self.runner_conf = self.runner_conf_replicate(runner_conf=self.runner_conf,replicate_numbers=self.run_times-1)
 
 	def pre_execute(self, context):
 		super(IOSRunnerOperator, self).pre_execute(context)
@@ -105,10 +106,24 @@ if __name__ == '__main__':
 			'PAGE_INDEX': '0',
 			'ASC?': 'no',
 			'FIELD': '2'
+		}),
+		json.dumps({
+			'PAGE_SIZE': '12',
 		})
 	])
 
-	runner_conf.casesConfig.extend([case_conf])
+	case_conf2 = TestcaseConfig()
+	case_conf2.testcaseID = 'AHQuoteListTestCase1'
+	case_conf2.continueWhenFailed = False
+	case_conf2.roundIntervalSec = 3
+	case_conf2.paramStrs.extend([
+		json.dumps({
+			'PAGE_SIZE': '12',
+		})
+	])
+
+	runner_conf.casesConfig.extend([case_conf,case_conf2])
+
 
 	ios_task = IOSRunnerOperator(
 		task_id="1",
@@ -116,6 +131,6 @@ if __name__ == '__main__':
 		project_path="",
 		runner_conf=runner_conf
 	)
-	ios_task.pre_execute("")
-	ios_task.execute("")
+	# ios_task.pre_execute("")
+	# ios_task.execute("")
 	stdin, stdout, stderr = ios_task.ssh_client.exec_command('echo "ok"')
