@@ -13,26 +13,26 @@ from operators.stock_operator import StockOperator
 from protos_gen import *
 from utils import *
 
-def get_debug_release_files():
-	from operators.release_ci_operator import ReleaseFile
-	release_files = list()
-	release1 = ReleaseFile(
-		name='app-debug-androidTest.apk',
-		type='application/vnd.android.package-archive',
-		filepath='/release/Android/release-20191229-0.0.1/app-debug-androidTest.apk',
-	)
-	release1.md5sum = 'f95a2395013d2c51bbc4a88dae896012'
-
-	release2 = ReleaseFile(
-		name='app-debug.apk',
-		type='application/vnd.android.package-archive',
-		filepath='/release/Android/release-20191229-0.0.1/app-debug.apk',
-	)
-	release2.md5sum = 'f2b55540e3ecba9abe5ef20a39d7e313'
-
-	release_files.append(release1)
-	release_files.append(release2)
-	return release_files
+# def get_debug_release_files():
+# 	from operators.release_ci_operator import ReleaseFile
+# 	release_files = list()
+# 	release1 = ReleaseFile(
+# 		name='app-debug-androidTest.apk',
+# 		type='application/vnd.android.package-archive',
+# 		filepath='/release/Android/release-20191229-0.0.1/app-debug-androidTest.apk',
+# 	)
+# 	release1.md5sum = 'f95a2395013d2c51bbc4a88dae896012'
+#
+# 	release2 = ReleaseFile(
+# 		name='app-debug.apk',
+# 		type='application/vnd.android.package-archive',
+# 		filepath='/release/Android/release-20191229-0.0.1/app-debug.apk',
+# 	)
+# 	release2.md5sum = 'f2b55540e3ecba9abe5ef20a39d7e313'
+#
+# 	release_files.append(release1)
+# 	release_files.append(release2)
+# 	return release_files
 
 class AndroidRunnerOperator(StockOperator):
 

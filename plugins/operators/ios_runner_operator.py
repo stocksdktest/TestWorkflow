@@ -12,25 +12,25 @@ from protos_gen.config_pb2 import Site
 from utils import *
 from utils.ios import xcodebuild_test_cmd
 
-OSX_HOSTNAME = '221.228.66.83'
-OSX_PORT = 30751
+OSX_HOSTNAME = '192.168.100.2'
+OSX_PORT = 22
 OSX_USER_ID = 'test-env'
 OSX_UESR_PWD = 'test-env'
 SSH_TIMEOUT = 20
 IOS_REPO_PATH = '/Users/test-env/stocksdktest/IOSTestRunner'
 
 
-def get_debug_release_files():
-	from operators.release_ci_operator import ReleaseFile
-	release_files = list()
-	release1 = ReleaseFile(
-		name='IOSTestRunner.app.zip',
-		type='application/vnd.android.package-archive',
-		filepath='/release/iOS/release-20191227-0.0.1/IOSTestRunner.app.zip',
-	)
-	release1.md5sum = '630076f0287bc5b17d36e59c5fb418d4'
-	release_files.append(release1)
-	return release_files
+# def get_debug_release_files():
+# 	from operators.release_ci_operator import ReleaseFile
+# 	release_files = list()
+# 	release1 = ReleaseFile(
+# 		name='IOSTestRunner.app.zip',
+# 		type='application/vnd.android.package-archive',
+# 		filepath='/release/iOS/release-20191227-0.0.1/IOSTestRunner.app.zip',
+# 	)
+# 	release1.md5sum = '630076f0287bc5b17d36e59c5fb418d4'
+# 	release_files.append(release1)
+# 	return release_files
 
 class IOSRunnerOperator(StockOperator):
 	@apply_defaults
