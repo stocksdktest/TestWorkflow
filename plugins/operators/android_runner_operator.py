@@ -13,6 +13,27 @@ from operators.stock_operator import StockOperator
 from protos_gen import *
 from utils import *
 
+def get_debug_release_files():
+	from operators.release_ci_operator import ReleaseFile
+	release_files = list()
+	release1 = ReleaseFile(
+		name='app-debug-androidTest.apk',
+		type='application/vnd.android.package-archive',
+		filepath='/release/Android/release-20191229-0.0.1/app-debug-androidTest.apk',
+	)
+	release1.md5sum = 'f95a2395013d2c51bbc4a88dae896012'
+
+	release2 = ReleaseFile(
+		name='app-debug.apk',
+		type='application/vnd.android.package-archive',
+		filepath='/release/Android/release-20191229-0.0.1/app-debug.apk',
+	)
+	release2.md5sum = 'f2b55540e3ecba9abe5ef20a39d7e313'
+
+	release_files.append(release1)
+	release_files.append(release2)
+	return release_files
+
 class AndroidRunnerOperator(StockOperator):
 
 	@apply_defaults
@@ -26,7 +47,6 @@ class AndroidRunnerOperator(StockOperator):
 		self.release_xcom_key = release_xcom_key
 		self.mongo_hk = MongoHook(conn_id='stocksdktest_mongo')
 		self.conn = self.mongo_hk.get_conn()
-		self.runner_conf = self.runner_conf_replicate(runner_conf=self.runner_conf,replicate_numbers=self.run_times-1)
 
 	def install_apk(self, apk_files):
 		"""
@@ -35,12 +55,13 @@ class AndroidRunnerOperator(StockOperator):
 		"""
 		for file in apk_files:
 			path = '/tmp/%s/%s' % (file.md5sum, file.name)
-			download_file(url=file.url, file_path=path, md5=file.md5sum)
+			download_file(url=file.filepath, file_path=path, md5=file.md5sum)
 			if exec_adb_cmd(['adb', 'install', '-r', '-t', path], serial=self.serial) != 0:
 				raise AirflowException('Install apk from %s failed' % file)
 
 	def pre_execute(self, context):
 		super(AndroidRunnerOperator, self).pre_execute(context)
+		self.runner_conf = self.runner_conf_replicate(runner_conf=self.runner_conf,replicate_numbers=self.run_times-1)
 
 		# TODO: if one apk is installed successfully another failed, many throw exception about version unmattched
 		# it seems 2 apks have been installed and com.chi.ssetest too
@@ -52,9 +73,10 @@ class AndroidRunnerOperator(StockOperator):
 			if not self.serial:
 				raise AirflowException('can not scan device')
 
-		if not connect_to_device(self.serial):
-			print("serial",self.serial)
-			raise AirflowException('can not connect to device "%s"' % self.serial)
+		# TODO: 测试的时候注释，到时候记得注释回来
+		# if not connect_to_device(self.serial):
+		# 	print("serial",self.serial)
+		# 	raise AirflowException('can not connect to device "%s"' % self.serial)
 
 		main_apk_version = get_app_version(self.serial, self.apk_id)
 		print('Verify App(%s) version: %s, cur is %s' % (self.apk_id, self.apk_version, main_apk_version))
@@ -67,7 +89,10 @@ class AndroidRunnerOperator(StockOperator):
 					exec_adb_cmd(['adb', 'uninstall', '%s.test' % self.apk_id], serial=self.serial) != 0:
 					raise AirflowException('Uninstall previous apk error')
 
+			# TODO: Annotate
 			release_files = self.xcom_pull(context, key=self.release_xcom_key)
+			# release_files = get_debug_release_files()
+
 			print('release: %s' % release_files)
 			if release_files is None or not isinstance(release_files, list):
 				raise AirflowException('Can not get Android release assets: %s')
@@ -117,5 +142,31 @@ class AndroidRunnerOperator(StockOperator):
 		# 		(test_status_code.count('0') + test_status_code.count('1') < len(test_status_code)):
 		# 	raise AirflowException('Android Test Failed')
 
-		self.xcom_push(context, key=self.task_id, value=self.runner_conf.runnerID)
 		self.read_data()
+		self.xcom_push(context, key=self.task_id, value=self.runner_conf.runnerID)
+
+if __name__ == '__main__':
+
+	from dags.test_adb import initRunnerConfig
+
+	runner_conf_list = initRunnerConfig()
+	task_id_to_cmp_list = ['adb_shell_cmp_a', 'adb_shell_cmp_b']
+	device = '818fd179'
+
+	android_a = AndroidRunnerOperator(
+		task_id=task_id_to_cmp_list[0],
+		provide_context=False,
+		apk_id='com.chi.ssetest',
+		apk_version='release-20191229-0.0.1',
+		runner_conf=runner_conf_list[0],
+		target_device=device
+		# run_times = 10
+	)
+	context = dict()
+	context['run_id'] = '1'
+
+	android_a.pre_execute(context)
+	android_a.execute(context)
+
+
+
