@@ -74,9 +74,9 @@ class AndroidRunnerOperator(StockOperator):
 				raise AirflowException('can not scan device')
 
 		# TODO: 测试的时候注释，到时候记得注释回来
-		# if not connect_to_device(self.serial):
-		# 	print("serial",self.serial)
-		# 	raise AirflowException('can not connect to device "%s"' % self.serial)
+		if not connect_to_device(self.serial):
+			print("serial",self.serial)
+			raise AirflowException('can not connect to device "%s"' % self.serial)
 
 		main_apk_version = get_app_version(self.serial, self.apk_id)
 		print('Verify App(%s) version: %s, cur is %s' % (self.apk_id, self.apk_version, main_apk_version))
@@ -145,28 +145,28 @@ class AndroidRunnerOperator(StockOperator):
 		self.read_data()
 		self.xcom_push(context, key=self.task_id, value=self.runner_conf.runnerID)
 
-if __name__ == '__main__':
-
-	from dags.test_adb import initRunnerConfig
-
-	runner_conf_list = initRunnerConfig()
-	task_id_to_cmp_list = ['adb_shell_cmp_a', 'adb_shell_cmp_b']
-	device = '818fd179'
-
-	android_a = AndroidRunnerOperator(
-		task_id=task_id_to_cmp_list[0],
-		provide_context=False,
-		apk_id='com.chi.ssetest',
-		apk_version='release-20191229-0.0.1',
-		runner_conf=runner_conf_list[0],
-		target_device=device
-		# run_times = 10
-	)
-	context = dict()
-	context['run_id'] = '1'
-
-	android_a.pre_execute(context)
-	android_a.execute(context)
+# if __name__ == '__main__':
+#
+# 	from dags.test_adb import initRunnerConfig
+#
+# 	runner_conf_list = initRunnerConfig()
+# 	task_id_to_cmp_list = ['adb_shell_cmp_a', 'adb_shell_cmp_b']
+# 	device = '818fd179'
+#
+# 	android_a = AndroidRunnerOperator(
+# 		task_id=task_id_to_cmp_list[0],
+# 		provide_context=False,
+# 		apk_id='com.chi.ssetest',
+# 		apk_version='release-20191229-0.0.1',
+# 		runner_conf=runner_conf_list[0],
+# 		target_device=device
+# 		# run_times = 10
+# 	)
+# 	context = dict()
+# 	context['run_id'] = '1'
+#
+# 	android_a.pre_execute(context)
+# 	android_a.execute(context)
 
 
 

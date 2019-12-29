@@ -147,21 +147,21 @@ class IOSRunnerOperator(StockOperator):
 		self.ssh_client.close()
 
 
-if __name__ == '__main__':
-	from dags.test_ios_android import gen2iOSCaseList
-
-	runner_conf_list = gen2iOSCaseList()
-
-	ios_task = IOSRunnerOperator(
-		task_id="1",
-		provide_context=False,
-		app_version="release-20191227-0.0.1",
-		runner_conf=runner_conf_list[0]
-	)
-
-	context = dict()
-	context['run_id'] = 'ios_release'
-
-	ios_task.pre_execute(context)
-	ios_task.execute(context)
-	stdin, stdout, stderr = ios_task.ssh_client.exec_command('echo "ok"')
+# if __name__ == '__main__':
+# 	from dags.test_ios_android import gen2iOSCaseList
+#
+# 	runner_conf_list = gen2iOSCaseList()
+#
+# 	ios_task = IOSRunnerOperator(
+# 		task_id="1",
+# 		provide_context=False,
+# 		app_version="release-20191227-0.0.1",
+# 		runner_conf=runner_conf_list[0]
+# 	)
+#
+# 	context = dict()
+# 	context['run_id'] = 'ios_release'
+#
+# 	ios_task.pre_execute(context)
+# 	ios_task.execute(context)
+# 	stdin, stdout, stderr = ios_task.ssh_client.exec_command('echo "ok"')
