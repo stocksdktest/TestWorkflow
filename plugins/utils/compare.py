@@ -122,6 +122,9 @@ def record_compare(record1, record2):
 				except KeyError as e:
 					print(e)
 					resInfo = patches
+				except IndexError as e:
+					print(e)
+					resInfo = patches
 
 	result = {
 		"result": res,

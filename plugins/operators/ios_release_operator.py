@@ -4,18 +4,19 @@ from operators.release_ci_operator import ReleaseCIOperator
 
 class IOSReleaseOperator(ReleaseCIOperator):
     @apply_defaults
-    def __init__(self, repo_name, tag_id, tag_sha, runner_conf, *args, **kwargs):
+    def __init__(self, repo_name, tag_id, tag_sha, runner_conf, release_xcom_key='ios_release',*args, **kwargs):
         super(IOSReleaseOperator, self).__init__(
             repo_name=repo_name,
             tag_id=tag_id,
             tag_sha=tag_sha,
             queue='osx',
             runner_conf=runner_conf,
-            release_xcom_key='ios_release',
+            release_xcom_key=release_xcom_key,
             *args,
             **kwargs
         )
         self.remote_path = '/release/iOS/%s/' % (tag_id)
+        print('remote_path', self.remote_path)
 
     def verify_release(self, release_files):
         if release_files is None or len(release_files) < 1:

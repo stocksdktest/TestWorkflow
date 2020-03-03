@@ -142,7 +142,7 @@ class AndroidRunnerOperator(StockOperator):
 		# 		(test_status_code.count('0') + test_status_code.count('1') < len(test_status_code)):
 		# 	raise AirflowException('Android Test Failed')
 
-		self.read_data()
+		# self.read_data()
 		self.xcom_push(context, key=self.task_id, value=self.runner_conf.runnerID)
 
 # if __name__ == '__main__':

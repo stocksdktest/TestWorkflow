@@ -142,7 +142,7 @@ class IOSRunnerOperator(StockOperator):
 		cmd_code = xcodebuild_test_cmd(ssh_cmd=self.ssh_cmd, logger=check_test_result)
 		print("status: ", (cmd_code == 0) and test_result)
 
-		self.read_data()
+		# self.read_data()
 		self.xcom_push(context, key=self.task_id, value=self.runner_conf.runnerID)
 		self.ssh_client.close()
 

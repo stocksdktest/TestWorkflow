@@ -14,7 +14,7 @@ OSX_USER_ID = 'test-env'
 OSX_UESR_PWD = 'test-env'
 SSH_TIMEOUT = 20
 
-IPHONE_SDK_VERSION = '11.2'
+IPHONE_SDK_VERSION = '12.4'
 PLISTBUDDY_PATH = r'/usr/libexec/PlistBuddy'
 XCTOOL_PATH = r'/usr/local/bin/xctool'
 XCODEBUILD_PATH = r'/usr/bin/xcodebuild'
@@ -281,10 +281,7 @@ def upload_ios_app_to_remote(app_version, local_path):
 			exec_command=ssh_client.exec_command,
 			cmd=cd_cmd + ';' + unzip_cmd
 		)
-		exec_cmd(
-			exec_command=ssh_client.exec_command,
-			cmd=cd_cmd + ';' + unzip_cmd
-		)
+
 	rm_cmd = 'rm -r %s' % (APP_APP_PATH)
 	exec_cmd(
 		exec_command=ssh_client.exec_command,
