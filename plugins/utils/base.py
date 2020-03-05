@@ -103,10 +103,10 @@ def command_to_script(args, script_path):
         sh.close()
 
 
-def runner_conf_to_file(runner_conf, file_path):
+def runner_config_to_file(encoded_runner_config, file_path):
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, 'w') as sh:
-        sh.write(base64_encode(runner_conf.SerializeToString()))
+        sh.write(encoded_runner_config)
         sh.close()
 
 

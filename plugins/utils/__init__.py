@@ -1,5 +1,5 @@
 from .base import base64_encode, base64_decode, test_base64_str, generate_id, download_file, bytes_to_dict, \
-    command_to_script, LogChunkCache, case_equal, runner_conf_to_file, FTP_Downloader
+    command_to_script, LogChunkCache, case_equal, runner_config_to_file, FTP_Downloader
 from .adb import start_adb_server, scan_local_device, connect_to_device, exec_adb_cmd, spawn_logcat, \
     parse_logcat, get_app_version
 from .ios import spawn_xcrun_log, parse_sim_log, config_plist, xctest_cmd, get_ios_app_version, upload_ios_app_to_remote

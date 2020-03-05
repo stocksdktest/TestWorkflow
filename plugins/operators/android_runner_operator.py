@@ -37,7 +37,7 @@ from utils import *
 class AndroidRunnerOperator(StockOperator):
 
 	@apply_defaults
-	def __init__(self, apk_id, apk_version, runner_conf, run_times=1,target_device=None, release_xcom_key = "android_release",*args, **kwargs):
+	def __init__(self, apk_id, apk_version, runner_conf, run_times=1,target_device=None, release_xcom_key = "android_release", config_file = False, *args, **kwargs):
 		super(AndroidRunnerOperator, self).__init__(queue='android', runner_conf=runner_conf, run_times=run_times,*args, **kwargs)
 		self.apk_id = apk_id
 		self.apk_version = apk_version
@@ -45,6 +45,7 @@ class AndroidRunnerOperator(StockOperator):
 		self.test_apk_path = None
 		self.serial = target_device
 		self.release_xcom_key = release_xcom_key
+		self.config_file = config_file
 		self.mongo_hk = MongoHook(conn_id='stocksdktest_mongo')
 		self.conn = self.mongo_hk.get_conn()
 
@@ -120,22 +121,46 @@ class AndroidRunnerOperator(StockOperator):
 				# check whether code ONLY contains '0' or '1'
 				test_status_code.extend(codes)
 
-		command_to_script(args=[
-			'am', 'instrument', '-w', '-r',
-			'-e', 'debug', 'false',
-			'-e', 'filter', 'com.chi.ssetest.TestcaseFilter',
-			'-e', 'listener', 'com.chi.ssetest.TestcaseExecutionListener',
-			'-e', 'collector_file', 'test.log',
-			'-e', 'runner_config', base64_encode(self.runner_conf.SerializeToString()),
-			'com.chi.ssetest.test/android.support.test.runner.AndroidJUnitRunner'
-		], script_path='/tmp/test.sh')
-		cmd_code_push = exec_adb_cmd(args=['adb', 'push', '/tmp/test.sh', '/data/local/tmp/'], serial=self.serial)
-		cmd_code_exec = exec_adb_cmd(args=['adb', 'shell', 'sh', '/data/local/tmp/test.sh'], serial=self.serial,
-									 logger=check_test_result)
+		if self.config_file == False:
+			command_to_script(args=[
+				'am', 'instrument', '-w', '-r',
+				'-e', 'debug', 'false',
+				'-e', 'filter', 'com.chi.ssetest.TestcaseFilter',
+				'-e', 'listener', 'com.chi.ssetest.TestcaseExecutionListener',
+				'-e', 'collector_file', 'test.log',
+				'-e', 'runner_config', base64_encode(self.runner_conf.SerializeToString()),
+				'com.chi.ssetest.test/android.support.test.runner.AndroidJUnitRunner'
+			], script_path='/tmp/test.sh')
+			cmd_code_push = exec_adb_cmd(args=['adb', 'push', '/tmp/test.sh', '/data/local/tmp/'], serial=self.serial)
+			cmd_code_exec = exec_adb_cmd(args=['adb', 'shell', 'sh', '/data/local/tmp/test.sh'], serial=self.serial,
+										 logger=check_test_result)
 
-		if cmd_code_push != 0 and cmd_code_exec !=0:
-			raise AirflowException('Android ADB Failed')
+			if cmd_code_push != 0 and cmd_code_exec !=0:
+				raise AirflowException('Android ADB Failed')
+		else:
+			runner_conf_local = '/tmp/runner_config'
+			runner_conf_android = '/data/local/tmp/runner_config'
 
+			command_to_script(args=[
+				'am', 'instrument', '-w', '-r',
+				'-e', 'debug', 'false',
+				'-e', 'filter', 'com.chi.ssetest.TestcaseFilter',
+				'-e', 'listener', 'com.chi.ssetest.TestcaseExecutionListener',
+				'-e', 'collector_file', 'test.log',
+				'-e', 'runner_config', runner_conf_android,
+				'com.chi.ssetest.test/android.support.test.runner.AndroidJUnitRunner'
+			], script_path='/tmp/test.sh')
+			runner_config_to_file(
+				encoded_runner_config=base64_encode(self.runner_conf.SerializeToString()),
+				file_path=runner_conf_local
+			)
+			cmd_code_push = exec_adb_cmd(args=['adb', 'push', '/tmp/test.sh', '/data/local/tmp/'], serial=self.serial)
+			cmd_conf_push = exec_adb_cmd(args=['adb', 'push', '/tmp/runner_config', '/data/local/tmp/'], serial=self.serial)
+			cmd_code_exec = exec_adb_cmd(args=['adb', 'shell', 'sh', '/data/local/tmp/test.sh'], serial=self.serial,
+										 logger=check_test_result)
+
+			if cmd_code_push != 0 and cmd_code_exec !=0 and cmd_conf_push !=0:
+				raise AirflowException('Android ADB Failed')
 
 		# TODO: 一次测试就报错的话，其他测试成功的结果就没用了
 		# if cmd_code_push != 0 or cmd_code_exec != 0 or len(test_status_code) == 0 or \
