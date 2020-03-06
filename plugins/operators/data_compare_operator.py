@@ -222,11 +222,10 @@ class DataCompareOperator(StockOperator):
         return 0
 
     def execute(self, context):
-        # TODO: AD HOC FOR TEST
-        # id1 = self.xcom_pull(context, key=self.task_id_list[0])
-        # id2 = self.xcom_pull(context, key=self.task_id_list[1])
-        id1 = 'RUN-A-76ab4246-98a3-4bc0-9966-d87ce9f22f33'
-        id2 = 'RUN-A-9c081379-ba8b-4723-8b33-40959475437c'
+        id1 = self.xcom_pull(context, key=self.task_id_list[0])
+        id2 = self.xcom_pull(context, key=self.task_id_list[1])
+        # id1 = 'RUN-A-76ab4246-98a3-4bc0-9966-d87ce9f22f33'
+        # id2 = 'RUN-A-9c081379-ba8b-4723-8b33-40959475437c'
         print('xcom_pull', id1)
         print('xcom_pull', id2)
         print("-----------------------------Synchronize MongoDB--------------------------------")
@@ -330,8 +329,7 @@ class DataCompareOperator(StockOperator):
                     res_item['result2'] = r2
                     res_item['details'] = res['details']
                     cmp_result['false'].append(res_item)
-        # TODO: AD HOC FOR TEST
-        return result
+
 
         col_res = self.mongo_hk.client[self.runner_conf.storeConfig.dbName][
             self.runner_conf.storeConfig.collectionName + '_test_result']

@@ -76,7 +76,6 @@ class DataSortingOperator(StockOperator):
 
         # TODO: FOR TEST AD HOC
         id = self.xcom_pull(context, key=self.from_task)
-        # id = 'RUN-A-11921697-65a6-4c3e-ac78-20d15212e305'
         print('xcom_pull', id)
         print("-----------------------------Now Get Data From Mongo Directly--------------------------------")
         result = dict()
