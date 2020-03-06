@@ -24,6 +24,20 @@ class StockOperator(BaseOperator):
             case_conf.paramStrs.sort()
         return replicated
 
+    #  这个runner_conf有样例
+    def get_runner_conf_cases(self):
+        cnt = 0
+        for caseConfig in self.runner_conf.casesConfig:
+            cnt = cnt + caseConfig.paramStrs.__len__()
+        return cnt
+
+    # 这个runner_conf需要返回几条记录
+    def get_runner_conf_records(self):
+        cnt = 0
+        for caseConfig in self.runner_conf.casesConfig:
+            cnt = cnt + caseConfig.paramStrs.__len__() + 1
+        return cnt
+
     def pre_execute(self, context):
         self.runner_conf.jobID = context.get('run_id')  # dag_run_id
         self.runner_conf.runnerID = generate_id('RUN-')

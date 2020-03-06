@@ -140,6 +140,9 @@ class AndroidRunnerOperator(StockOperator):
 		else:
 			runner_conf_local = '/tmp/runner_config'
 			runner_conf_android = '/data/local/tmp/runner_config'
+			timeout = self.get_runner_conf_cases() * 10
+			if timeout< 500:
+				timeout = 500
 
 			command_to_script(args=[
 				'am', 'instrument', '-w', '-r',
@@ -157,7 +160,8 @@ class AndroidRunnerOperator(StockOperator):
 			cmd_code_push = exec_adb_cmd(args=['adb', 'push', '/tmp/test.sh', '/data/local/tmp/'], serial=self.serial)
 			cmd_conf_push = exec_adb_cmd(args=['adb', 'push', '/tmp/runner_config', '/data/local/tmp/'], serial=self.serial)
 			cmd_code_exec = exec_adb_cmd(args=['adb', 'shell', 'sh', '/data/local/tmp/test.sh'], serial=self.serial,
-										 logger=check_test_result)
+										 logger=check_test_result,
+										 timeout=timeout)
 
 			if cmd_code_push != 0 and cmd_code_exec !=0 and cmd_conf_push !=0:
 				raise AirflowException('Android ADB Failed')
