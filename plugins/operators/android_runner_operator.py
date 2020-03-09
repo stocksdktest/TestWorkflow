@@ -114,6 +114,11 @@ class AndroidRunnerOperator(StockOperator):
 	def execute(self, context):
 
 		test_status_code = []
+		timeout = self.get_runner_conf_cases() * 5
+		if timeout < 300:
+			timeout = 000
+		print("Process Timeout is set in {} seconds".format(timeout))
+
 		def check_test_result(line):
 			if 'INSTRUMENTATION_STATUS_CODE:' in line:
 				# find number in string, https://stackoverflow.com/a/29581287/9797889
@@ -133,16 +138,14 @@ class AndroidRunnerOperator(StockOperator):
 			], script_path='/tmp/test.sh')
 			cmd_code_push = exec_adb_cmd(args=['adb', 'push', '/tmp/test.sh', '/data/local/tmp/'], serial=self.serial)
 			cmd_code_exec = exec_adb_cmd(args=['adb', 'shell', 'sh', '/data/local/tmp/test.sh'], serial=self.serial,
-										 logger=check_test_result)
+										 logger=check_test_result,
+										 timeout=timeout)
 
 			if cmd_code_push != 0 and cmd_code_exec !=0:
 				raise AirflowException('Android ADB Failed')
 		else:
 			runner_conf_local = '/tmp/runner_config'
 			runner_conf_android = '/data/local/tmp/runner_config'
-			timeout = self.get_runner_conf_cases() * 10
-			if timeout< 500:
-				timeout = 500
 
 			command_to_script(args=[
 				'am', 'instrument', '-w', '-r',

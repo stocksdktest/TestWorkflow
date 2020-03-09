@@ -4,5 +4,6 @@ from .adb import start_adb_server, scan_local_device, connect_to_device, exec_ad
     parse_logcat, get_app_version
 from .ios import spawn_xcrun_log, parse_sim_log, config_plist, xctest_cmd, get_ios_app_version, upload_ios_app_to_remote
 from .compare import record_compare
+from .sdk_mongo_reader import SdkMongoReader
 from .test_data import get_two_testresult
 from .work_config import sort_map
