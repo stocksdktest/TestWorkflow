@@ -164,7 +164,13 @@ class SdkMongoReader(object):
             for record in results:
                 runnerID = record['runnerID']
                 resultData = record['resultData']
-                datetime = resultData['datetime']
+                # if 'addValue' in resultData.keys():
+                #     resultData.pop('addValue')
+                try: 
+                    datetime = resultData['datetime']
+                except KeyError as e:
+                    print("record has no field datetime {}".format(record))
+                    continue
                 if datetime not in id_time_dict[runnerID]:  # 对于同一个datetime，有一条记录就够了
                     id_time_dict[runnerID].add(datetime)
                     id_result_time_dict[runnerID][datetime] = resultData

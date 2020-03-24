@@ -114,6 +114,8 @@ class DataCompareOperator(StockOperator):
 
                     # prepare for res_item
                     res_item = dict()
+                    res_item['runnerID1'] = x['runnerID']
+                    res_item['runnerID2'] = y['runnerID']
                     res_item['recordID1'] = x['recordID']
                     res_item['recordID2'] = y['recordID']
                     res_item['testcaseID1'] = x['testcaseID']
@@ -135,17 +137,20 @@ class DataCompareOperator(StockOperator):
                         res_item['details'] = res['details']
                         cmp_result['false'].append(res_item)
         else:
-            group_resharp = mongo_reader.get_quote_results(
+            group_resharp = self.mongo_reader.get_quote_results(
                 runnerID1=id1,
                 runnerID2=id2,
-                dbName=dbName,
-                collectionName=collectionName
+                dbName=self.runner_conf.storeConfig.dbName,
+                collectionName=self.runner_conf.storeConfig.collectionName
             )
             if group_resharp.__len__() != 0:
                 for res in group_resharp:
                     param = res['param']
                     results = res['results']
                     keys = list(results.keys())  # runnerID
+                    if keys.__len__() < 2:
+                        print("for param {} , no enough data to compare".format(param))
+                        continue
                     # TODO: 如果加上竞品，就得Cn2了
                     list1 = results[keys[0]]
                     list2 = results[keys[1]]
@@ -155,8 +160,10 @@ class DataCompareOperator(StockOperator):
                     times.sort()
 
                     # prepare for res_item
+                    match_cnt = 0
                     res_item = dict()
                     miss_time = set()
+                    match_time = set()
                     dismatch = list()
                     res_item['testcaseID'] = param['testcaseID']
                     res_item['paramData'] = param['paramStr']
@@ -177,12 +184,16 @@ class DataCompareOperator(StockOperator):
                             continue
 
                         res = record_compare(r1, r2)
+                        res['r1'] = r1
+                        res['r2'] = r2
                         flag = res['result']
                         # print("At time {}".format(time,))
                         # print("r1 is {}".format(r1))
                         # print("r2 is {}".format(r2))
                         if res['result'] == True:
                             print("--------------------------------")
+                            match_cnt = match_cnt + 1
+                            match_time.add(time)
                         if res['result'] == False:
                             dismatch.append(res)
                             # print("result is {}".format(res['result']))
@@ -190,12 +201,17 @@ class DataCompareOperator(StockOperator):
 
                     miss_rate = miss_time.__len__() / times.__len__()
                     error_rate = dismatch.__len__() / times.__len__()
+                    match_rate = match_cnt / times.__len__()
                     res_item['miss_time'] = list(miss_time)
+                    res_item['match_time'] = list(match_time)
                     res_item['numbers'] = times.__len__()
                     res_item['miss_rate'] = format(miss_rate, '.0%')
+                    res_item['match_rate'] = format(match_rate, '.0%')
                     res_item['error_rate'] = format(error_rate, '.0%')
 
-                    if dismatch.__len__() == 0:
+                    if miss_rate == 1:
+                        mismatch_result.append(res_item)
+                    elif dismatch.__len__() == 0:
                         cmp_result['true'].append(res_item)
                     else:
                         cmp_result['false'].append(res_item)
@@ -204,8 +220,13 @@ class DataCompareOperator(StockOperator):
         print("------------------The Size(val) of result is {}".format(result.__sizeof__()))
 
 
-        col_res = self.mongo_hk.client[self.runner_conf.storeConfig.dbName][
-            self.runner_conf.storeConfig.collectionName + '_test_result']
+        dbName = self.runner_conf.storeConfig.dbName
+        collectionName = self.runner_conf.storeConfig.collectionName + '_test_result'
+        print("dbName is {}".format(dbName))
+        print("collectionName is {}".format(collectionName))
+
+
+        col_res = self.mongo_hk.client[dbName][collectionName]
         try:
             col_res.insert_one(result)
         except TypeError as e:

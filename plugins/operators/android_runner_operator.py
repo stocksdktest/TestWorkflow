@@ -114,11 +114,11 @@ class AndroidRunnerOperator(StockOperator):
 	def execute(self, context):
 
 		test_status_code = []
-		timeout = self.get_runner_conf_cases() * 5
+		timeout = self.get_runner_conf_cases() * 3
 		if timeout < 300:
-			timeout = 000
+			timeout = 300
 		print("Process Timeout is set in {} seconds".format(timeout))
-
+		print("RunnerID is {}".format(self.runner_conf.runnerID))
 		def check_test_result(line):
 			if 'INSTRUMENTATION_STATUS_CODE:' in line:
 				# find number in string, https://stackoverflow.com/a/29581287/9797889

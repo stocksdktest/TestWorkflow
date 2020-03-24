@@ -78,6 +78,11 @@ c_map['37'] = 'amplitudeRate'  # 振幅比率
 c_map['38'] = 'receipts'  # 每股收益
 c_map['42'] = 'pe2'  # 静态市盈率
 c_map['53'] = 'orderRatio'  # 委比
+c_map['86'] = 'monthChangeRate'  # 本月涨跌幅
+c_map['87'] = 'yearChangeRate'  # 本年涨跌幅
+c_map['88'] = 'recentMonthChangeRate'  # 近一月涨跌幅
+c_map['89'] = 'recentYearChangeRate'  # 近一年涨跌幅
+
 # 科创板特有排序栏位
 c_map['72'] = 'afterHoursVolume'  # 盘后成交量
 c_map['73'] = 'afterHoursAmount'  # 盘后成交额
