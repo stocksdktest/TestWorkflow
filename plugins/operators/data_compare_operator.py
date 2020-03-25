@@ -33,13 +33,14 @@ class DataCompareOperator(StockOperator):
                                                       replicate_numbers=self.run_times - 1)
         id1 = self.xcom_pull(context, key=self.task_id_list[0])
         id2 = self.xcom_pull(context, key=self.task_id_list[1])
-        # # TODO: AD HOC
-        # id1 = 'RUN--7d7acfc9-b3f5-4aec-a3ff-cb98ad8ec197'
-        # id2 = 'RUN--05da2757-a085-4b89-aa53-8e33526d9967'
         print('xcom_pull', id1)
         print('xcom_pull', id2)
         print("-----------------------------Synchronize MongoDB--------------------------------")
         expectation = self.get_runner_conf_records()
+        sleep_time = 30
+        if context.get('expectation') is not None:
+            expectation = context.get('expectation')
+            sleep_time = 5
         timeout = expectation * 5  # 一个case最多给10s的时间
         if timeout < 300:
             timeout = 300
@@ -50,7 +51,8 @@ class DataCompareOperator(StockOperator):
             dbName=self.runner_conf.storeConfig.dbName,
             collectionName=self.runner_conf.storeConfig.collectionName,
             timeout=timeout,
-            expectation=expectation
+            expectation=expectation,
+            sleep_time=sleep_time
         )
         print("-----------------------------Prepare for paramData to paramStr--------------------------------")
         self.mongo_reader.prepare_param(
@@ -60,23 +62,12 @@ class DataCompareOperator(StockOperator):
             collectionName=self.runner_conf.storeConfig.collectionName
         )
         print("-----------------------------Now Get Data From Mongo Directly--------------------------------")
-        result = dict()  # 存储所有返回的结果
-        cmp_result = dict()  # 比较的结果
-        error_result = list()  # 异常的结果
-        mismatch_result = list()  # 无法比较的结果
-        empty_result = list()  # 返回为空的结果
-
-        result['jobID'] = self.runner_conf.jobID
-        result['dagID'] = self.dag_id
-        result['runnerID1'] = id1
-        result['runnerID2'] = id2
-        result['compared'] = cmp_result
-        result['error'] = error_result
-        result['mismatch'] = mismatch_result
-        result['empty'] = empty_result
-
-        cmp_result['true'] = list()
-        cmp_result['false'] = list()
+        compare_record = CompareResultRecord(
+            jobID=self.runner_conf.jobID,
+            dagID=self.dag_id,
+            id1=id1,
+            id2=id2
+        )
 
         result_exception = self.mongo_reader.get_exception(
             runnerID1=id1,
@@ -89,14 +80,12 @@ class DataCompareOperator(StockOperator):
         if result_exception.__len__() != 0:
             for x in result_exception[0]['record']:
                 if x['isPass'] == False:
-                    print(x['runnerID'], 'recordID', x['recordID'], x['testcaseID'], 'test failure')
-                    error_result.append(x)
+                    compare_record.append_error(x)
                 else:
-                    print(x['runnerID'], 'recordID', x['recordID'], x['testcaseID'], 'test empty')
-                    empty_result.append(x)
+                    compare_record.append_empty(x)
 
         print("----------------------------- Test Success --------------------------------")
-        if self.quote_detail == False:
+        if not self.quote_detail:
             result_group = self.mongo_reader.get_results(
                 runnerID1=id1,
                 runnerID2=id2,
@@ -106,36 +95,25 @@ class DataCompareOperator(StockOperator):
             if result_group.__len__() != 0:
                 for res in result_group:
                     if res['record'].__len__() == 1:
-                        mismatch_result.append(res['record'][0])
+                        compare_record.append_mismatch(res['record'][0])
                         continue
                     # TODO: 如果加上竞品，就得Cn2了
                     x = res['record'][0]
                     y = res['record'][1]
 
-                    # prepare for res_item
-                    res_item = dict()
-                    res_item['runnerID1'] = x['runnerID']
-                    res_item['runnerID2'] = y['runnerID']
-                    res_item['recordID1'] = x['recordID']
-                    res_item['recordID2'] = y['recordID']
-                    res_item['testcaseID1'] = x['testcaseID']
-                    res_item['testcaseID2'] = y['testcaseID']
-                    res_item['paramData1'] = x['paramData']
-                    res_item['paramData2'] = y['paramData']
-                    res_item['endtime1'] = x['endTime']
-                    res_item['endtime2'] = y['endTime']
+                    compare_item = CompareItemRecord(records= [x,y])
 
                     r1 = x['resultData']
                     r2 = y['resultData']
                     res = record_compare(r1, r2)
 
                     if res['result'] == True:
-                        cmp_result['true'].append(res_item)
+                        item = compare_item.get_item()
+                        compare_record.append_compare_true(item)
                     else:
-                        res_item['result1'] = r1
-                        res_item['result2'] = r2
-                        res_item['details'] = res['details']
-                        cmp_result['false'].append(res_item)
+                        compare_item.append_results(results=[r1,r2], details= res['details'])
+                        item = compare_item.get_item()
+                        compare_record.append_compare_false(item)
         else:
             group_resharp = self.mongo_reader.get_quote_results(
                 runnerID1=id1,
@@ -160,61 +138,51 @@ class DataCompareOperator(StockOperator):
                     times.sort()
 
                     # prepare for res_item
+                    quote_item = QuoteDetaiItemRecord(
+                        testcaseID=param['testcaseID'],
+                        paramData=param['paramStr'],
+                        times_cnts=times.__len__()
+                    )
                     match_cnt = 0
-                    res_item = dict()
-                    miss_time = set()
-                    match_time = set()
-                    dismatch = list()
-                    res_item['testcaseID'] = param['testcaseID']
-                    res_item['paramData'] = param['paramStr']
-                    res_item['result'] = dismatch
                     print("In runnerIDs in {}".format(keys))
-                    print("Compared for {} in {}".format(param['testcaseID'], param['paramStr']))
 
                     for time in times:
                         r1 = list1.get(time)
                         r2 = list2.get(time)
                         if r1 is None:
                             # print("r1 at time {} is None".format(time))
-                            miss_time.add(time)
+                            quote_item.missing(time)
                             continue
                         if r2 is None:
                             # print("r2 at time {} is None".format(time))
-                            miss_time.add(time)
+                            quote_item.missing(time)
                             continue
 
                         res = record_compare(r1, r2)
                         res['r1'] = r1
                         res['r2'] = r2
-                        flag = res['result']
                         # print("At time {}".format(time,))
                         # print("r1 is {}".format(r1))
                         # print("r2 is {}".format(r2))
                         if res['result'] == True:
                             print("--------------------------------")
                             match_cnt = match_cnt + 1
-                            match_time.add(time)
+                            quote_item.matching(time)
                         if res['result'] == False:
-                            dismatch.append(res)
+                            quote_item.append_dismatch(res)
                             # print("result is {}".format(res['result']))
                             # print("detial is {}".format(res))
 
-                    miss_rate = miss_time.__len__() / times.__len__()
-                    error_rate = dismatch.__len__() / times.__len__()
-                    match_rate = match_cnt / times.__len__()
-                    res_item['miss_time'] = list(miss_time)
-                    res_item['match_time'] = list(match_time)
-                    res_item['numbers'] = times.__len__()
-                    res_item['miss_rate'] = format(miss_rate, '.0%')
-                    res_item['match_rate'] = format(match_rate, '.0%')
-                    res_item['error_rate'] = format(error_rate, '.0%')
-
-                    if miss_rate == 1:
-                        mismatch_result.append(res_item)
-                    elif dismatch.__len__() == 0:
-                        cmp_result['true'].append(res_item)
+                    quote_item.caucalute(match_cnt=match_cnt)
+                    item = quote_item.get_item()
+                    if quote_item.is_mismatch():
+                        compare_record.append_mismatch(item, is_quote= True)
+                    elif quote_item.is_dismatch():
+                        compare_record.append_compare_true(item)
                     else:
-                        cmp_result['false'].append(res_item)
+                        compare_record.append_compare_false(item)
+
+        result = compare_record.get_result()
 
         print("------------------The Size(sys) of result is {}".format(sys.getsizeof(result)))
         print("------------------The Size(val) of result is {}".format(result.__sizeof__()))
@@ -225,6 +193,9 @@ class DataCompareOperator(StockOperator):
         print("dbName is {}".format(dbName))
         print("collectionName is {}".format(collectionName))
 
+        if context.get('unit_test') is not None:
+            self.close_connection()
+            return result
 
         col_res = self.mongo_hk.client[dbName][collectionName]
         try:
@@ -233,98 +204,15 @@ class DataCompareOperator(StockOperator):
             print(e)
         except DocumentTooLarge as e:
             print("DocumentTooLarge Error")
-            for item in result['compared']['false']:
-                item.pop('result1')
-                item.pop('result2')
+            # TODO: 如果Details也过大，应该怎么办
+            if not self.quote_detail:
+                for item in result['compared']['false']:
+                    item.pop('result1')
+                    item.pop('result2')
+            else:
+                pass
             col_res.insert_one(result)
 
-
-if __name__ == '__main__':
-    mongo_hk = MongoHook(conn_id='stocksdktest_mongo')
-    conn = mongo_hk.get_conn()
-    myclient = mongo_hk.client
-    mongo_reader = SdkMongoReader(client=myclient)
-    dbName = 'stockSdkTest'
-    collectionName = 'quotedetail'
-
-    id1 = 'RUN--7d7acfc9-b3f5-4aec-a3ff-cb98ad8ec197'
-    id2 = 'RUN--05da2757-a085-4b89-aa53-8e33526d9967'
-
-    # r1, r2 = get_two_testresult()
-    #
-    from protos_gen.config_pb2 import RunnerConfig, TestcaseConfig
-
-    runner_conf = RunnerConfig()
-    runner_conf.jobID = 'TJ-1'
-    runner_conf.runnerID = generate_id('RUN-A')
-    runner_conf.storeConfig.mongoUri = 'mongodb://221.228.66.83:30617'
-    runner_conf.storeConfig.dbName = dbName
-    runner_conf.storeConfig.collectionName = collectionName
-    runner_conf.storeConfig.restEndpoint = 'http://mongo-python-eve.sdk-test.svc.cluster.local:80'
-
-    # 测试样例
-    import json
-    case_conf = TestcaseConfig()
-    case_conf.testcaseID = 'SEARTEST_1'
-    case_conf.roundIntervalSec = 2
-    case_conf.continueWhenFailed = False
-    case_conf.paramStrs.extend([
-        json.dumps({
-            'MARKET': 'shszsdsd'
-        }),
-        json.dumps({
-            'MARKET': 'sh'
-        }),
-    ])
-    case_conf = TestcaseConfig()
-    case_conf.testcaseID = 'QUOTEDETAIL_1'
-    case_conf.continueWhenFailed = True
-    case_conf.roundIntervalSec = 3
-    # case_conf.paramStrs.extend([
-    #     json.dumps({
-    #         'CODE': '600000.sh',
-    #     }),
-    #     json.dumps({
-    #         'CODE': '000001.sz',
-    #     }),
-    #     json.dumps({
-    #         'CODE': '600425.sh',
-    #     }),
-    # ])
-    for i in range(50):
-        case_conf.paramStrs.extend([
-            json.dumps({
-                'CODE': '600000.sh',
-            })
-        ])
-    for i in range(50):
-        case_conf.paramStrs.extend([
-            json.dumps({
-                'CODE': '000001.sz',
-            }),
-        ])
-    for i in range(50):
-        case_conf.paramStrs.extend([
-            json.dumps({
-                'CODE': '600425.sh',
-            }),
-        ])
-
-    runner_conf.casesConfig.extend([case_conf])
-
-    a = DataCompareOperator(
-        runner_conf=runner_conf,
-        task_id='11',
-        task_id_list=['a', 'b'],
-        quote_detail=True
-    )
-    res = a.execute("")
-    # print(res)
-    # mongo_reader.synchronizer(runnerID1=id1,runnerID2=id2,dbName=dbName,collectionName=collectionName,expectation=602)
-    # # mongo_reader.prepare_param(runnerID1=id1, runnerID2=id2, dbName=dbName, collectionName=collectionName)
-    # exception = mongo_reader.get_exception(runnerID1=id1, runnerID2=id2, dbName=dbName, collectionName=collectionName)
-    # group = mongo_reader.get_results(runnerID1=id1, runnerID2=id2, dbName=dbName, collectionName=collectionName)
-    # group_resharp = mongo_reader.get_quote_results(runnerID1=id1, runnerID2=id2, dbName=dbName, collectionName=collectionName)
 
 
 

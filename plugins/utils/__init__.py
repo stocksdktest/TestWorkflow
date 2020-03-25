@@ -7,3 +7,4 @@ from .compare import record_compare
 from .sdk_mongo_reader import SdkMongoReader
 from .test_data import get_two_testresult
 from .work_config import sort_map
+from .compare_record import CompareResultRecord, SortResultRecord, CompareItemRecord, QuoteDetaiItemRecord

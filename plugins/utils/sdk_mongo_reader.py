@@ -198,7 +198,8 @@ class SdkMongoReader(object):
             {'runnerID': {'$eq': runnerID2}}
         ]
         rule['$and'] = [
-            {'paramData': {'$gt': {}}}
+            {'paramData': {'$gt': {}}},
+            {'paramStr': None } # TODO: to check
         ]
 
         hash_list = list()
@@ -245,16 +246,18 @@ class SdkMongoReader(object):
         print("Synchronizer : collectionName is {}".format(collectionName))
         print("Synchronizer : expectation is {}".format(expectation))
         print("Synchronizer : timeout is {}".format(timeout))
+        print("Synchronizer : sleep_time is {}".format(sleep_time))
 
-        while col.find({'runnerID': runnerID1}).count() != cnt1 or col.find(
-                {'runnerID': runnerID2}).count() != cnt2 or cnt1 != cnt2:
+        while col.count_documents({'runnerID': runnerID1}) != cnt1 \
+                or col.count_documents({'runnerID': runnerID2}) != cnt2 \
+                or cnt1 != cnt2:
 
             print('cnt1', cnt1, 'cnt2', cnt2)
 
             cnt1_pre = cnt1
             cnt2_pre = cnt2
-            cnt1 = col.find({'runnerID': runnerID1}).count()
-            cnt2 = col.find({'runnerID': runnerID2}).count()
+            cnt1 = col.count_documents({'runnerID': runnerID1})
+            cnt2 = col.count_documents({'runnerID': runnerID2})
             if cnt1 == expectation and cnt2 == expectation:
                 print("cnt1 and cnt2 are both ", expectation)
                 break
