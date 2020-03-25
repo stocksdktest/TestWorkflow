@@ -73,14 +73,7 @@ class MongoHookWithDB(BaseHook):
         if self.client is not None:
             return self.client
 
-        # Mongo Connection Options dict that is unpacked when passed to MongoClient
-        options = self.extras
-
-        # If we are using SSL disable requiring certs from specific hostname
-        if options.get('ssl', False):
-            options.update({'ssl_cert_reqs': CERT_NONE})
-
-        self.client = MongoClient(self.uri, **options)
+        self.client = MongoClient(self.uri)
 
         return self.client
 

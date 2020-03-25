@@ -6,14 +6,15 @@ import requests
 
 class CrawlerTestcase(object):
     def __init__(self, testcase_id, testcase_config, testcase_collector,
-                 crawler_ctrl_url, crawler_duration_seconds, mongo_collector, crawler_collection_name, record_collection_name):
+                 crawler_ctrl_url, crawler_duration_seconds, crawler_result_collector,
+                 crawler_collection_name, record_collection_name):
         self.testcase_id = testcase_id
         self.testcase_config = testcase_config
         self.testcase_collector = testcase_collector
         self.crawler_ctrl_url = crawler_ctrl_url
         self.crawler_duration_seconds = crawler_duration_seconds
 
-        self.collector = mongo_collector
+        self.crawler_result_collector = crawler_result_collector
         self.crawler_collection_name = crawler_collection_name
         self.record_collection_name = record_collection_name
 
@@ -60,7 +61,8 @@ class CrawlerTestcase(object):
                     self.crawler_ctrl_url, post_param, response.text))
                     # wait until crawler done
                     sleep(self.crawler_duration_seconds)
-                    crawler_result = self.collector.get_crawler_result(collection_name=self.crawler_collection_name, crawler_job_id=crawler_job_id)
+                    crawler_result = self.crawler_result_collector.get_crawler_result(
+                        collection_name=self.crawler_collection_name, crawler_job_id=crawler_job_id)
                     if len(crawler_result) == 0:
                         self.testcase_collector.on_test_fail(
                             collection_name=self.record_collection_name,

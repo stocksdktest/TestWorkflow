@@ -1,7 +1,5 @@
 import uuid
 from datetime import datetime
-from airflow.contrib.hooks.mongo_hook import MongoHook
-from airflow.exceptions import AirflowException
 from airflow.utils.decorators import apply_defaults
 
 from operators.stock_operator import StockOperator
@@ -19,10 +17,11 @@ class CrawlerRunnerOperator(StockOperator):
             job_id=self.runner_conf.jobID,
             runner_id=self.runner_conf.runnerID
         )
+        record_collection_name = self.runner_conf.storeConfig.collectionName
         for case_config in self.runner_conf.casesConfig:
             testcase_id = case_config.testcaseID
             if testcase_id in StockTestcaseClasses:
-                testcase_instance = StockTestcaseClasses[testcase_id](case_config, collector)
+                testcase_instance = StockTestcaseClasses[testcase_id](case_config, collector, record_collection_name)
                 print('Construct Crawler Testcase: %s' % testcase_id)
                 self.cases_instance.append((testcase_id, testcase_instance))
             else:
