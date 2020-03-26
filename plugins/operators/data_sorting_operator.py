@@ -84,7 +84,7 @@ def is_list_sort(sort_list: list, testcaseID, sort_type, ascending=True):
         key = sort_type_key_mapper(testcaseID=testcaseID, sort_type=sort_type)  # 把"hsl"这样的拼音转化为待排序项的key
     except KeyError as e:
         print("Status Unknown", e)
-        res['error_msg'] = e
+        res['error_msg'] = repr(e)
         return res
 
     print("-------------------Info------------------\n"
@@ -95,7 +95,7 @@ def is_list_sort(sort_list: list, testcaseID, sort_type, ascending=True):
         key_list = phrase_keylist(sort_list=sort_list, key=key)
     except KeyError as e:
         print("Status Unknown", e)
-        res['error_msg'] = e
+        res['error_msg'] = repr(e)
         return res
 
     print("Key list is ", key_list)
