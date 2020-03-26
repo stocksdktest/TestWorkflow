@@ -143,6 +143,10 @@ c_map['-61'] = 'ratioMainforceMoneyNetInflow5'  # 5日主力资金净流入占�
 c_map['-62'] = 'ratioMainforceMoneyNetInflow10'  # 10日主力资金净流入占比
 c_map['-63'] = 'ratioMainforceMoneyNetInflow20'  # 20日主力资金净流入占比
 
+sort_map['BANKUAI'] = ['BANKUAISORTING_1', 'BANKUAISORTING_2']
+sort_map['CATE'] = ['CATESORTING_1', 'CATESORTING_2', 'CATESORTING_3', 'CATESORTING_4']
+
+sort_map['SORT_TESTCASEIDS'] = sort_map['BANKUAI'] + sort_map['CATE']
 
 sort_map['BANKUAISORTING_1'] = b_map
 sort_map['BANKUAISORTING_2'] = b_map

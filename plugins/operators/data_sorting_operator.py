@@ -1,4 +1,6 @@
 import datetime
+import sys
+
 from airflow.exceptions import AirflowException
 from airflow.utils.decorators import apply_defaults
 from operators.stock_operator import StockOperator
@@ -7,18 +9,22 @@ from airflow.contrib.hooks.mongo_hook import MongoHook
 from utils import *
 from collections import defaultdict
 
+
 def sort_type_key_mapper(testcaseID, sort_type):
+    """
+    把"hsl"这样的拼音转化为待排序项的key
+    @param testcaseID:
+    @param sort_type: 类似hsl这样的排序参数
+    @return: 类似turnoverRate这样的key
+    """
     try:
         key = sort_map.get(testcaseID).get(sort_type)
         if key is not None:
             return key
         else:
-            # raise AirflowException("Invalid sort type {} for {}".format(sort_type, testcaseID))
-            print("-----------------------Invalid sort type {} for {}".format(sort_type, testcaseID))
+            raise KeyError("Invalid sort type {} for {}".format(sort_type, testcaseID))
     except AttributeError as e:
-        # raise AirflowException("Invalid testcaseID {}".format(testcaseID))
-        print("-----------------------Invalid testcaseID {}".format(testcaseID))
-        print(e)
+        raise KeyError("Invalid testcaseID {}".format(testcaseID))
 
 
 def check_list(sort_list: list, key, ascending=True):
@@ -36,46 +42,79 @@ def check_list(sort_list: list, key, ascending=True):
         return True
 
 
+def phrase_keylist(sort_list: list, key):
+    items = list()  # 根据key从结果中取得待排序项
+    for item in sort_list:
+        if key in item.keys():
+            items.append(item[key])
+        else:
+            raise KeyError("Key {} not exists in records {}".format(key, item.keys()))
+
+    print("origin key list is {}".format(items))
+
+    def invalid(item):
+        if item == '' or item == '一':
+            return False
+        else:
+            return True
+
+    items = list(filter(invalid, items))
+    try:
+        key_list = [float(item) for item in items]
+    except ValueError as e:
+        key_list = items
+
+    return key_list
+
+
 def is_list_sort(sort_list: list, testcaseID, sort_type, ascending=True):
-    # TODO: 传入了错误的key的异常处理
-    key = sort_type_key_mapper(testcaseID=testcaseID, sort_type=sort_type)  # 把"hsl"这样的拼音转化为待排序项的key
-    print("-----Info Checking %s, sort_type is %s, key is %s" % (testcaseID, sort_type, key))
+    """
+    判断对于testcaseID的sort_list，是否根据sort_type按照升降序排列
+    @param sort_list:
+    @param testcaseID:
+    @param sort_type:
+    @param ascending:
+    @return:
+    """
+    res = {
+        'check_res': None,
+        'error_msg': None
+    }
+    try:
+        key = sort_type_key_mapper(testcaseID=testcaseID, sort_type=sort_type)  # 把"hsl"这样的拼音转化为待排序项的key
+    except KeyError as e:
+        print("Status Unknown", e)
+        res['error_msg'] = e
+        return res
+
+    print("-------------------Info------------------\n"
+          "Checking %s, sort_type is %s, key is %s" % (testcaseID, sort_type, key))
     print("Is it Ascending?") if ascending else print("Is it Descending?")
 
-    # TODO: safe eval from str to numbers
     try:
-        key_list = [eval(item[key]) for item in sort_list]  # extract key from list
-    except (SyntaxError,NameError) as e:
-        try:
-            key_list = [int(item[key]) for item in sort_list]  # extract key from list
-        except Exception as e:
-            key_list = list()
-            for item in sort_list:
-                it = item[key]
-                if it == '':
-                    continue
-                if it == '一':
-                    it = '0'
-                key_list.append(it)
+        key_list = phrase_keylist(sort_list=sort_list, key=key)
     except KeyError as e:
-        print(e)
-        print("KeyError, result is {}".format(sort_list[0]))
-        return
+        print("Status Unknown", e)
+        res['error_msg'] = e
+        return res
 
     print("Key list is ", key_list)
     check_result = check_list(sort_list=key_list, key=key, ascending=ascending)
-    print("Checking Sort Result is ", check_result)
+    res['check_res'] = check_result
+    print("Checking Sort Result is {}".format(check_result))
 
-    return check_result
+    return res
+
 
 class DataSortingOperator(StockOperator):
     @apply_defaults
-    def __init__(self, runner_conf, from_task,sdk_type='android', *args, **kwargs):
+    def __init__(self, runner_conf, from_task, sdk_type='android', *args, **kwargs):
         super(DataSortingOperator, self).__init__(queue='worker', runner_conf=runner_conf, *args, **kwargs)
         self.from_task = from_task
         self.sdk_type = sdk_type
         self.mongo_hk = MongoHook(conn_id='stocksdktest_mongo')
         self.conn = self.mongo_hk.get_conn()
+        self.mongo_reader = SdkMongoReader(client=self.mongo_hk.client)
 
     def close_connection(self):
         self.mongo_hk.close_conn()
@@ -85,48 +124,74 @@ class DataSortingOperator(StockOperator):
         mydb = myclient[self.runner_conf.storeConfig.dbName]
         col = mydb[self.runner_conf.storeConfig.collectionName]
 
-        # TODO: FOR TEST AD HOC
         id = self.xcom_pull(context, key=self.from_task)
         print('xcom_pull', id)
+
+        print("-----------------------------Synchronize MongoDB--------------------------------")
+        expectation = self.get_runner_conf_records()
+        sleep_time = 30
+        if context.get('expectation') is not None:
+            expectation = context.get('expectation')
+            sleep_time = 5
+        timeout = expectation * 5  # 一个case最多给10s的时间
+        if timeout < 300:
+            timeout = 300
+        print('timeout(records to return) is {}'.format(timeout))
+        self.mongo_reader.synchronizer_single(
+            runnerID=id,
+            dbName=self.runner_conf.storeConfig.dbName,
+            collectionName=self.runner_conf.storeConfig.collectionName,
+            timeout=timeout,
+            expectation=expectation,
+            sleep_time=sleep_time
+        )
         print("-----------------------------Now Get Data From Mongo Directly--------------------------------")
-        result = dict()
-        sort_result = defaultdict(list)
-        exception_result = list()
-        result['sort_result'] = sort_result
-        result['exception'] = exception_result
-        # TODO: 对异常的处理
-        # 筛选规则
+        sort_record = SortResultRecord(
+            jobID=self.runner_conf.jobID,
+            dagID=self.dag_id,
+            id=id
+        )
+
+        result_exception = self.mongo_reader.get_exception(
+            runnerID1=id,
+            runnerID2=id,
+            dbName=self.runner_conf.storeConfig.dbName,
+            collectionName=self.runner_conf.storeConfig.collectionName
+        )
+
+        print("----------------------------- Test Failure --------------------------------")
+        if result_exception.__len__() != 0:
+            for x in result_exception[0]['record']:
+                if x['isPass'] == False:
+                    sort_record.append_error(x)
+                else:
+                    sort_record.append_empty(x)
+
+        print("----------------------------- Test Success --------------------------------")
+
         rule = {
             'runnerID': id,
-            # TODO: 加上对于排序 testcaseID的限制
-            '$or': [{'resultData': {'$ne': None}}, {'exceptionData': {'$ne': None}}]
+            'testcaseID': {'$in': sort_map['SORT_TESTCASEIDS']},
+            'resultData': {'$gt': {}}
         }
         records = list()  # 存储待排序的记录
         for record in col.find(rule):
-            # 异常处理
-            if record['exceptionData'] is not None:
-                print("Get excepitionData {}".format(record))
-                exception_result.append(record)
-                continue
 
-            # 得到正常的数据
             testcaseID = record['testcaseID']
             param = record['paramData']['param']
             recordID = record['recordID']
             sort_asc = True  # 默认升序
-            if testcaseID == 'BANKUAISORTING_1':  # 先处理 BANKUAISORTING_1相关的
+            if testcaseID in sort_map['BANKUAI']:
                 records.append(record)
                 sort_type = param.split(',')[2]
                 sort_asc = int(param.split(',')[3])
-            elif testcaseID == 'CATESORTING_2':
-                # TODO:
+            elif testcaseID in sort_map['CATE']:
                 records.append(record)
                 sort_type = param.split(',')[2]
                 sort_asc = int(param.split(',')[3]) ^ 1
             else:
                 continue
 
-            # result_list = list(record['resultData'].values())  # 待验证排序的list
             result_list = list()
             for x in record['resultData'].values():
                 if isinstance(x, dict):
@@ -137,164 +202,32 @@ class DataSortingOperator(StockOperator):
                 sort_type=sort_type,
                 ascending=bool(sort_asc)
             )
-            sort_result[testcaseID].append({
+            item = {
                 # 'origin_result': result_list,
                 'recordID': recordID,
-                'check_result': check_res,
+                'check_result': check_res['check_res'],
+                'error_msg' : check_res['error_msg'],
                 'param': param
-            })
+            }
+            sort_record.append_sort_result(
+                testcaseID=testcaseID,
+                item=item,
+                sort_ok=check_res['check_res']
+            )
 
-        col = mydb[self.runner_conf.storeConfig.collectionName+"_result"]
+        result = sort_record.get_result()
+
+        print("------------------The Size(sys) of result is {}".format(sys.getsizeof(result)))
+        print("------------------The Size(val) of result is {}".format(result.__sizeof__()))
+
+        dbName = self.runner_conf.storeConfig.dbName
+        collectionName = self.runner_conf.storeConfig.collectionName + '_test_result'
+        print("dbName is {}".format(dbName))
+        print("collectionName is {}".format(collectionName))
+
+        if context.get('unit_test') is not None:
+            self.close_connection()
+            return result, records
+
+        col = mydb[self.runner_conf.storeConfig.collectionName + "_result"]
         col.insert(result)
-
-def test_main():
-    import pymongo
-
-    myclient = pymongo.MongoClient("mongodb://221.228.66.83:30617")  # 远程MongoDB服务器
-    mydb = myclient["stockSdkTest"]
-    col = mydb["sort"]
-    id = 'RUN--dc0ddbe1-8a1d-45ec-ae14-8ba250afbbb8'
-    print('xcom_pull', id)
-    print("-----------------------------Now Get Data From Mongo Directly--------------------------------")
-    result = dict()
-    sort_result = defaultdict(list)
-    exception_result = list()
-    result['sort_result'] = sort_result
-    result['exception_result'] = exception_result
-    # TODO: 对异常的处理
-    # 筛选规则
-    rule = {
-        'runnerID': id,
-        # TODO: 加上对于排序 testcaseID的限制
-        '$or': [{'resultData': {'$ne': None}}, {'exceptionData': {'$ne': None}}]
-    }
-    records = list()  # 存储待排序的记录
-    for record in col.find(rule):
-        # 异常处理
-        if record['exceptionData'] is not None:
-            exception_result.append(record)
-            continue
-
-        # 得到正常的数据
-        testcaseID = record['testcaseID']
-        param = record['paramData']['param']
-        recordID = record['recordID']
-        sort_asc = True  # 默认升序
-        if testcaseID == 'BANKUAISORTING_1':  # 先处理 BANKUAISORTING_1相关的
-            records.append(record)
-            sort_type = param.split(',')[2]
-            sort_asc = int(param.split(',')[3])
-        elif testcaseID == 'CATESORTING_2':
-            # TODO:
-            records.append(record)
-            sort_type = param.split(',')[2]
-            sort_asc = int(param.split(',')[3])^1
-        else:
-            continue
-
-        result_list = list(record['resultData'].values())  # 待验证排序的list
-        check_res = is_list_sort(
-            sort_list=result_list.copy(),
-            testcaseID=testcaseID,
-            sort_type=sort_type,
-            ascending=bool(sort_asc)
-        )
-        sort_result[testcaseID].append({
-            # 'origin_result': result_list,
-            'recordID': recordID,
-            'check_result': check_res,
-            'param': param
-        })
-
-    col = mydb['sort_result']
-    col.insert(result)
-
-    myclient.close()
-
-
-if __name__ == '__main__':
-    # from protos_gen.config_pb2 import RunnerConfig
-    #
-    # runner_conf = RunnerConfig()
-    # runner_conf.jobID = 'TJ-1'
-    # runner_conf.runnerID = generate_id('RUN-A')
-    # runner_conf.storeConfig.mongoUri = "mongodb://221.228.66.83:30617"
-    # runner_conf.storeConfig.dbName = "stockSdkTest"
-    # runner_conf.storeConfig.collectionName = "sort"
-    # runner_conf.storeConfig.restEndpoint = 'http://mongo-python-eve.sdk-test.svc.cluster.local:80'
-    #
-    # data_sorter = DataSortingOperator(
-    #     runner_conf=runner_conf,
-    #     task_id="sorting",
-    #     from_task="android_before"
-    # )
-    #
-    # data_sorter.execute(" ")
-    import pymongo
-
-    myclient = pymongo.MongoClient("mongodb://221.228.66.83:30617")  # 远程MongoDB服务器
-    mydb = myclient["stockSdkTest"]
-    col = mydb["sort"]
-    id = 'RUN--dc0ddbe1-8a1d-45ec-ae14-8ba250afbbb8'
-    print('xcom_pull', id)
-    print("-----------------------------Now Get Data From Mongo Directly--------------------------------")
-    result = dict()
-    sort_result = defaultdict(list)
-    exception_result = list()
-    result['sort_result'] = sort_result
-    result['exception_result'] = exception_result
-    # TODO: 对异常的处理
-    # 筛选规则
-    rule = {
-        'runnerID': id,
-        # TODO: 加上对于排序 testcaseID的限制
-        '$or': [{'resultData': {'$ne': None}}, {'exceptionData': {'$ne': None}}]
-    }
-    records = list()  # 存储待排序的记录
-    for record in col.find(rule):
-        # 异常处理
-        print("record:", record)
-        if record['exceptionData'] is not None:
-            exception_result.append(record)
-            continue
-
-        # 得到正常的数据
-        testcaseID = record['testcaseID']
-        param = record['paramData']['param']
-        recordID = record['recordID']
-        sort_asc = True  # 默认升序
-        if testcaseID == 'BANKUAISORTING_1':  # 先处理 BANKUAISORTING_1相关的
-            records.append(record)
-            sort_type = param.split(',')[2]
-            sort_asc = int(param.split(',')[3])
-        elif testcaseID == 'CATESORTING_2':
-            # TODO:
-            records.append(record)
-            sort_type = param.split(',')[2]
-            sort_asc = int(param.split(',')[3])^1
-        else:
-            continue
-
-        # result_list = list(record['resultData'].values())  # 待验证排序的list
-        result_list = list()
-        for x in record['resultData'].values():
-            if isinstance(x, dict):
-                result_list.append(x)
-
-        check_res = is_list_sort(
-            sort_list=result_list.copy(),
-            testcaseID=testcaseID,
-            sort_type=sort_type,
-            ascending=bool(sort_asc)
-        )
-        sort_result[testcaseID].append({
-            # 'origin_result': result_list,
-            'recordID': recordID,
-            'check_result': check_res,
-            'param': param
-        })
-
-    # col = mydb['sort_result']
-    # col.insert(result)
-
-    myclient.close()

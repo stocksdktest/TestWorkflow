@@ -29,6 +29,7 @@ class StockResultRecord(object):
         self.result = dict()  # 存储所有返回的结果
         self.error = list()  # 异常的结果
         self.empty = list()  # 返回为空的结果
+        self.mismatch = list()  # 无法比较的结果
 
         self.result['jobID'] = jobID
         self.result['dagID'] = dagID
@@ -47,6 +48,7 @@ class StockResultRecord(object):
 
     def add_status(self, item: dict):
         item['status'] = 0
+        item['bugDescribe'] = None
 
     def append_empty(self, record):
         self.pop(record)
@@ -60,6 +62,14 @@ class StockResultRecord(object):
         self.error.append(record)
         print("{} {} recordID {} test failure".format(record['runnerID'], record['testcaseID'], record['recordID']))
 
+    def append_mismatch(self, record, is_quote=False):
+        self.pop(record)
+        self.add_status(record)
+        self.mismatch.append(record)
+        if not is_quote:
+            print("{} {} recordID {} mismatch".format(record['runnerID'], record['testcaseID'], record['recordID']))
+
+
     def get_result(self):
         return self.result
 
@@ -70,20 +80,12 @@ class CompareResultRecord(StockResultRecord):
         super().__init__(jobID, dagID)
 
         self.compare = defaultdict(list)  # 比较的结果
-        self.mismatch = list()  # 无法比较的结果
         self.result['runnerID1'] = id1
         self.result['runnerID2'] = id2
         self.result['compared'] = self.compare
         self.result['error'] = self.error
         self.result['mismatch'] = self.mismatch
         self.result['empty'] = self.empty
-
-    def append_mismatch(self, record, is_quote=False):
-        self.pop(record)
-        self.add_status(record)
-        self.mismatch.append(record)
-        if not is_quote:
-            print("{} {} recordID {} mismatch".format(record['runnerID'], record['testcaseID'], record['recordID']))
 
     def append_compare_true(self, item):
         self.compare['true'].append(item)
@@ -97,13 +99,26 @@ class SortResultRecord(StockResultRecord):
 
     def __init__(self, jobID, dagID, id) -> None:
         super().__init__(jobID, dagID)
-        self.sort_result = defaultdict(list)
+        self.sort_result = dict()
+        self.sort_result['true'] = defaultdict(list)
+        self.sort_result['false'] = defaultdict(list)
+        self.sort_result['unknown'] = defaultdict(list)
         self.result['runnerID'] = id
         self.result['sort_result'] = self.sort_result
+        self.result['error'] = self.error
+        self.result['mismatch'] = self.mismatch
+        self.result['empty'] = self.empty
 
-    def append_sort_result(self, testcaseID, item):
-        self.sort_result[testcaseID].append(item)
+    def append_sort_result(self, testcaseID, item, sort_ok):
+        if not sort_ok:
+            self.add_status(item)
 
+        if sort_ok == True:
+            self.sort_result['true'][testcaseID].append(item)
+        elif sort_ok == False:
+            self.sort_result['false'][testcaseID].append(item)
+        else:
+            self.sort_result["unknown"][testcaseID].append(item)
 
 class CompareItemRecord(object):
 

@@ -217,6 +217,60 @@ class SdkMongoReader(object):
                 {'_id': x['_id']},
                 {'$set': {'paramStr': sorted(dx.items()).__str__()}})
 
+    def synchronizer_single(self, runnerID, expectation, dbName='stockSdkTest', collectionName='test_result', timeout=10,
+                     sleep_time=30):
+        """
+        同步数据库，等待数据都与预计的参数相当，或者超时，或者连续3个sleep时间段里数据库的数据量不变
+        @param runnerID:
+        @param expectation:
+        @param dbName:
+        @param collectionName:
+        @param timeout:
+        @param sleep_time:
+        @return:
+        """
+        mydb = self.client[dbName]
+        col = mydb[collectionName]
+        cnt = 0
+        cnt_pre = 0
+        counter = 0  # 数据库2端数据不变的次数
+        timer = 0
+        max = timeout
+
+        print("Synchronizer : runnerID is {}".format(runnerID))
+        print("Synchronizer : dbName is {}".format(dbName))
+        print("Synchronizer : collectionName is {}".format(collectionName))
+        print("Synchronizer : expectation is {}".format(expectation))
+        print("Synchronizer : timeout is {}".format(timeout))
+        print("Synchronizer : sleep_time is {}".format(sleep_time))
+
+        while col.count_documents({'runnerID': runnerID}) != cnt:
+
+            print('cnt', cnt)
+
+            cnt_pre = cnt
+            cnt = col.count_documents({'runnerID': runnerID})
+            if cnt == expectation:
+                print("cnt is equal to expectation ", expectation)
+                break
+
+            if cnt_pre == cnt:
+                counter = counter + 1
+            else:
+                counter = 0
+
+            time.sleep(sleep_time)
+            timer = timer + sleep_time
+            if timer > max:
+                print('---------------------Time out for %d Seconds---------------------' % max)
+                break
+            if counter > 5:
+                print('---------------------Records numbers not change for 3 sleep period---------------------')
+                break
+            print('---------------------Synchronize MongoDB for %d Seconds---------------------' % timer)
+
+        print("Synchronizer End, cnt is {}".format(cnt))
+
     def synchronizer(self, runnerID1, runnerID2, expectation, dbName='stockSdkTest', collectionName='test_result', timeout=10,
                      sleep_time=30):
         """

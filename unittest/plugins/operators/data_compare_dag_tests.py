@@ -23,14 +23,7 @@ def get_test_runer_config(dbName, collectionName):
 
     return runner_conf
 
-# class TestDataCompareOperator(unittest.TestCase):
-#
-#     def test_data_compare_task_by_xcom(self):
-#         dbName = 'stockSdkTest'
-#         collectionName = 'quotedetail'
-#         pass
-
-if __name__ == '__main__':
+def test_data_compare():
     dbName = 'stockSdkTest'
     collectionName = '201912_Android_777'
     runner_conf = get_test_runer_config(dbName=dbName, collectionName=collectionName)
@@ -71,3 +64,13 @@ if __name__ == '__main__':
         if context.get('expectation') is not None:
             expectation = context.get('expectation')
         result = data_compare.execute(context)
+
+    return result
+
+class TestDataCompareOperator(unittest.TestCase):
+
+    def test_data_compare_task_by_xcom(self):
+        result = test_data_compare()
+
+if __name__ == '__main__':
+    result = test_data_compare()

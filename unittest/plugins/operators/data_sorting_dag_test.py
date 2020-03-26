@@ -7,6 +7,7 @@ from airflow.models import TaskInstance
 from airflow.operators.python_operator import PythonOperator
 
 from operators.data_compare_operator import DataCompareOperator
+from operators.data_sorting_operator import DataSortingOperator
 from protos_gen.config_pb2 import RunnerConfig, TestcaseConfig
 from utils import *
 
@@ -23,54 +24,52 @@ def get_test_runer_config(dbName, collectionName):
 
     return runner_conf
 
-def test_data_compare_quote():
+def test_data_sorting():
     dbName = 'stockSdkTest'
-    collectionName = '201912_Android_cs_sc_quotedetail'
+    collectionName = 'sort'
     runner_conf = get_test_runer_config(dbName=dbName, collectionName=collectionName)
-    task_id_list = ['a','b']
-    id1 = 'RUN--a3254900-81f1-4643-b0a1-bb19905ee10b' # TODO
-    id2 = 'RUN--57f4cc29-4d50-4c84-9f9a-3ae6f7b7cb20' # TODO
+    task_from = 'a'
+    id = 'RUN--d10c15c3-9f77-4e7d-a8cd-5c50ee838852'
 
     with DAG(dag_id='any_dag', start_date=datetime.now()) as dag:
         def push_function(**kwargs):
-            kwargs['ti'].xcom_push(key=task_id_list[0], value=id1)
-            kwargs['ti'].xcom_push(key=task_id_list[1], value=id2)
-
+            kwargs['ti'].xcom_push(key=task_from, value=id)
 
         runnerid_provider = PythonOperator(
             task_id='push_task',
             python_callable=push_function,
             provide_context=True
         )
-        data_compare = DataCompareOperator(
+        sorter = DataSortingOperator(
+            task_id='android_sort_a',
+            from_task=task_from,
+            retries=3,
+            provide_context=False,
             runner_conf=runner_conf,
-            task_id='data_compare',
-            provide_context=True,
-            task_id_list=task_id_list,
-            quote_detail=True
+            dag=dag
         )
-        runnerid_provider >> data_compare
+        runnerid_provider >> sorter
 
         execution_date = datetime.now()
 
         provider_instance = TaskInstance(task=runnerid_provider, execution_date=execution_date)
         runnerid_provider.execute(provider_instance.get_template_context())
 
-        compare_instance = TaskInstance(task=data_compare, execution_date=execution_date)
-        context = compare_instance.get_template_context()
+        sort_instance = TaskInstance(task=sorter, execution_date=execution_date)
+        context = sort_instance.get_template_context()
         context['run_id'] = 'fake-run'
-        context['expectation'] = 3001 # TODO
+        context['expectation'] = 61
         context['unit_test'] = True
         if context.get('expectation') is not None:
             expectation = context.get('expectation')
-        result = data_compare.execute(context)
+        result, records = sorter.execute(context)
 
     return result
 
 class TestDataCompareOperator(unittest.TestCase):
 
     def test_data_compare_task_by_xcom(self):
-        result = test_data_compare_quote()
+        result = test_data_sorting()
 
 if __name__ == '__main__':
-    result = test_data_compare_quote()
+    result = test_data_sorting()
