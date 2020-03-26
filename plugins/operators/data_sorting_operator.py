@@ -5,7 +5,7 @@ from airflow.exceptions import AirflowException
 from airflow.utils.decorators import apply_defaults
 from operators.stock_operator import StockOperator
 
-from airflow.contrib.hooks.mongo_hook import MongoHook
+from utils.mongo_hook import MongoHookWithDB
 from utils import *
 from collections import defaultdict
 
@@ -112,7 +112,7 @@ class DataSortingOperator(StockOperator):
         super(DataSortingOperator, self).__init__(queue='worker', runner_conf=runner_conf, *args, **kwargs)
         self.from_task = from_task
         self.sdk_type = sdk_type
-        self.mongo_hk = MongoHook(conn_id='stocksdktest_mongo')
+        self.mongo_hk = MongoHookWithDB(conn_id='stocksdktest_mongo')
         self.conn = self.mongo_hk.get_conn()
         self.mongo_reader = SdkMongoReader(client=self.mongo_hk.client)
 

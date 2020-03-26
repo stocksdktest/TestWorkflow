@@ -4,7 +4,7 @@ import json
 from airflow.exceptions import AirflowException
 from airflow.utils.decorators import apply_defaults
 from operators.stock_operator import StockOperator
-from airflow.contrib.hooks.mongo_hook import MongoHook
+from utils.mongo_hook import MongoHookWithDB
 
 # TODO only this import style can work on airflow
 from protos_gen import *
@@ -43,7 +43,7 @@ class IOSRunnerOperator(StockOperator):
 		self.release_xcom_key = release_xcom_key
 		self.ssh_cmd = 'ssh -p %s %s@%s ' % (OSX_PORT, OSX_USER_ID, OSX_HOSTNAME)
 		self.ssh_client = paramiko.SSHClient()
-		self.mongo_hk = MongoHook(conn_id='stocksdktest_mongo')
+		self.mongo_hk = MongoHookWithDB(conn_id='stocksdktest_mongo')
 		self.conn = self.mongo_hk.get_conn()
 
 

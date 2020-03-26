@@ -2,7 +2,7 @@ import re
 import sys
 import datetime
 
-from airflow.contrib.hooks.mongo_hook import MongoHook
+from utils.mongo_hook import MongoHookWithDB
 
 from airflow.exceptions import AirflowException
 from airflow.utils.decorators import apply_defaults
@@ -46,7 +46,7 @@ class AndroidRunnerOperator(StockOperator):
 		self.serial = target_device
 		self.release_xcom_key = release_xcom_key
 		self.config_file = config_file
-		self.mongo_hk = MongoHook(conn_id='stocksdktest_mongo')
+		self.mongo_hk = MongoHookWithDB(conn_id='stocksdktest_mongo')
 		self.conn = self.mongo_hk.get_conn()
 
 	def install_apk(self, apk_files):

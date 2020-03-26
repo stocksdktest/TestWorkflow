@@ -1,7 +1,7 @@
 from airflow.utils.decorators import apply_defaults
 from operators.stock_operator import StockOperator
 
-from airflow.contrib.hooks.mongo_hook import MongoHook
+from utils.mongo_hook import MongoHookWithDB
 from utils import *
 from pymongo.errors import DocumentTooLarge
 from collections import defaultdict
@@ -13,7 +13,7 @@ class DataCompareOperator(StockOperator):
     def __init__(self, runner_conf, task_id_list, run_times=1, quote_detail = False, *args, **kwargs):
         super(DataCompareOperator, self).__init__(queue='worker', runner_conf=runner_conf, *args, **kwargs)
         self.task_id_list = task_id_list
-        self.mongo_hk = MongoHook(conn_id='stocksdktest_mongo')
+        self.mongo_hk = MongoHookWithDB(conn_id='stocksdktest_mongo')
         self.conn = self.mongo_hk.get_conn()
         self.run_times = run_times
         self.quote_detail = quote_detail
