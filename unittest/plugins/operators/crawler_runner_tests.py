@@ -1,7 +1,6 @@
 import unittest
 import json
 from datetime import datetime
-
 from airflow import DAG, settings
 from airflow.models import Connection, TaskInstance
 
@@ -53,13 +52,15 @@ class TestCrawlerRunnerOperator(unittest.TestCase):
         runner_conf.storeConfig.dbName = 'stockSdkTest'
         runner_conf.storeConfig.collectionName = 'test_result'
         case_conf = TestcaseConfig()
-        case_conf.testcaseID = 'TESTCASE_0'
+        case_conf.testcaseID = 'QUOTEDETAIL_1'
         case_conf.continueWhenFailed = True
         case_conf.roundIntervalSec = 3
         case_conf.paramStrs.extend([
             json.dumps({
-                'CODE': '600789.sh',
+                'CODE': '600000.sh',
                 'SUBTYPE': 'SH1001',
+                'STARTDATE': '2020-03-30-15-30-00',
+                'ENDDATE': '2020-03-30-15-41-00',
             }),
         ])
         runner_conf.casesConfig.extend([case_conf])
