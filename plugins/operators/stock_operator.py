@@ -39,7 +39,7 @@ class StockOperator(BaseOperator):
         return cnt
 
     def pre_execute(self, context):
-        self.runner_conf.jobID = context.get('run_id')  # dag_run_id
+        self.runner_conf.jobID = context.get('run_id').replace('+',' ')  # dag_run_id
         self.runner_conf.runnerID = generate_id('RUN-')
         # if not self.runner_conf.storeConfig.HasField('collectionName'):
         # 	self.runner_conf.storeConfig.collectionName = self.dag_id

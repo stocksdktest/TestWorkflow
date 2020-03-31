@@ -82,7 +82,7 @@ class CompareResultRecord(StockResultRecord):
         self.compare = defaultdict(list)  # 比较的结果
         self.result['runnerID1'] = id1
         self.result['runnerID2'] = id2
-        self.result['compared'] = self.compare
+        self.result['result'] = self.compare
         self.result['error'] = self.error
         self.result['mismatch'] = self.mismatch
         self.result['empty'] = self.empty
@@ -103,8 +103,9 @@ class SortResultRecord(StockResultRecord):
         self.sort_result['true'] = defaultdict(list)
         self.sort_result['false'] = defaultdict(list)
         self.sort_result['unknown'] = defaultdict(list)
-        self.result['runnerID'] = id
-        self.result['sort_result'] = self.sort_result
+        self.result['runnerID1'] = id
+        self.result['runnerID2'] = id
+        self.result['result'] = self.sort_result
         self.result['error'] = self.error
         self.result['mismatch'] = self.mismatch
         self.result['empty'] = self.empty
