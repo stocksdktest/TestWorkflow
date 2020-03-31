@@ -143,8 +143,8 @@ class CompareItemRecord(object):
             self.item['endTime{}'.format(i + 1)] = records[i]['endTime']
 
     def append_results(self, results, details):
-        for i in range(results.__len__()):
-            self.item['result{}'.format(i+1)] = results[i]
+        # for i in range(results.__len__()):
+        #     self.item['result{}'.format(i+1)] = results[i]
         self.item['details'] = details
 
     def get_item(self):
