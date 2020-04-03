@@ -6,8 +6,8 @@ import requests
 
 class CrawlerTestcase(object):
     def __init__(self, testcase_id, testcase_config, testcase_collector,
-                 crawler_ctrl_url, crawler_duration_seconds, crawler_result_collector,
-                 crawler_collection_name, record_collection_name):
+                 crawler_ctrl_url, crawler_result_collector,
+                 crawler_collection_name, record_collection_name, crawler_duration_seconds=120):
         self.testcase_id = testcase_id
         self.testcase_config = testcase_config
         self.testcase_collector = testcase_collector
@@ -40,6 +40,9 @@ class CrawlerTestcase(object):
                 print('JSON decode error: %s' % param_str)
 
         for param in params:
+            duration=self.crawler_duration_seconds
+            if 'DURATION_SECONDS' in param:
+                duration = int(param['DURATION_SECONDS'])
             post_param = self.generate_post_param(testcase_param=param)
             crawler_job_id = CrawlerTestcase.generate_crawler_job_id()
             post_param['JOBID'] = crawler_job_id
@@ -60,7 +63,7 @@ class CrawlerTestcase(object):
                     print('Crawler(%s) start with param: \'%s\', response is: \'%s\'' % (
                     self.crawler_ctrl_url, post_param, response.text))
                     # wait until crawler done
-                    sleep(self.crawler_duration_seconds)
+                    sleep(duration)
                     crawler_result = self.crawler_result_collector.get_crawler_result(
                         collection_name=self.crawler_collection_name, crawler_job_id=crawler_job_id)
                     if len(crawler_result) == 0:

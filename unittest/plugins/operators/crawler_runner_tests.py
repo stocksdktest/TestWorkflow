@@ -1,4 +1,5 @@
 import unittest
+import uuid
 import json
 from datetime import datetime
 from airflow import DAG, settings
@@ -40,8 +41,10 @@ class TestCrawlerRunnerOperator(unittest.TestCase):
             )
 
             task_instance = TaskInstance(task=crawler_runner, execution_date=datetime.now())
-            crawler_runner.pre_execute(task_instance.get_template_context())
-            crawler_runner.execute(task_instance.get_template_context())
+            context = task_instance.get_template_context()
+            context['run_id'] = str(uuid.uuid4())
+            crawler_runner.pre_execute(context)
+            crawler_runner.execute(context)
 
             self.assertEqual(len(crawler_runner.cases_instance), 0)
 
@@ -59,8 +62,9 @@ class TestCrawlerRunnerOperator(unittest.TestCase):
             json.dumps({
                 'CODE': '600000.sh',
                 'SUBTYPE': 'SH1001',
-                'STARTDATE': '2020-03-30-15-30-00',
-                'ENDDATE': '2020-03-30-15-41-00',
+                'DURATION_SECONDS': 60,
+                # 'STARTDATE': '2020-03-30-15-30-00',
+                # 'ENDDATE': '2020-03-30-15-41-00',
             }),
         ])
         runner_conf.casesConfig.extend([case_conf])
@@ -73,7 +77,9 @@ class TestCrawlerRunnerOperator(unittest.TestCase):
             )
 
             task_instance = TaskInstance(task=crawler_runner, execution_date=datetime.now())
-            crawler_runner.pre_execute(task_instance.get_template_context())
-            crawler_runner.execute(task_instance.get_template_context())
+            context = task_instance.get_template_context()
+            context['run_id'] = str(uuid.uuid4())
+            crawler_runner.pre_execute(context)
+            crawler_runner.execute(context)
 
             self.assertEqual(len(crawler_runner.cases_instance), 1)
