@@ -79,7 +79,9 @@ class CompareResultRecord(StockResultRecord):
     def __init__(self, jobID, dagID, id1, id2) -> None:
         super().__init__(jobID, dagID)
 
-        self.compare = defaultdict(list)  # 比较的结果
+        self.compare = dict()  # 比较的结果
+        self.compare['true'] = list()
+        self.compare['false'] = list()
         self.result['runnerID1'] = id1
         self.result['runnerID2'] = id2
         self.result['result'] = self.compare
@@ -153,7 +155,7 @@ class CompareItemRecord(object):
 
 class QuoteDetaiItemRecord(object):
 
-    def __init__(self, testcaseID, paramData, times_cnts) -> None:
+    def __init__(self, testcaseID, paramData, times_cnts, recordID) -> None:
         super().__init__()
         self.item = dict()
         self.miss = set()
@@ -166,6 +168,7 @@ class QuoteDetaiItemRecord(object):
         self.item['testcaseID'] = testcaseID
         self.item['paramData'] = paramData
         self.item['result'] = self.dismatch
+        self.item['recordID'] = recordID
 
         print("Compared for {} in {}".format(testcaseID, paramData))
 

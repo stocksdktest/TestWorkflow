@@ -221,7 +221,9 @@ class DataSortingOperator(StockOperator):
         print("------------------The Size(val) of result is {}".format(result.__sizeof__()))
 
         dbName = self.runner_conf.storeConfig.dbName
-        collectionName = self.runner_conf.storeConfig.collectionName + '_test_result'
+        # collectionName = self.runner_conf.storeConfig.collectionName + '_test_result'
+        collectionName = 'compare_result'
+
         print("dbName is {}".format(dbName))
         print("collectionName is {}".format(collectionName))
 
@@ -229,5 +231,5 @@ class DataSortingOperator(StockOperator):
             self.close_connection()
             return result, records
 
-        col = mydb[self.runner_conf.storeConfig.collectionName + "_result"]
+        col = mydb[collectionName]
         col.insert(result)

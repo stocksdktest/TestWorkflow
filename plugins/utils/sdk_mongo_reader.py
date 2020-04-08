@@ -155,25 +155,25 @@ class SdkMongoReader(object):
         for res in group:
             results = res['record']
             param = res['_id']
-            id_result_time_dict = defaultdict(dict)  # 存储每个runnerID对应的记录(默认是的行情快照),以runnerID为key，对应一个dict，dict以datetime为key
+            id_record_time_dict = defaultdict(dict)  # 存储每个runnerID对应的记录(默认是的行情快照),以runnerID为key，对应一个dict，dict以datetime为key
             id_time_dict = defaultdict(set)
             item = dict()
             item['param'] = param
-            item['results'] = id_result_time_dict
+            item['records'] = id_record_time_dict
 
             for record in results:
                 runnerID = record['runnerID']
-                resultData = record['resultData']
+                recordData = record
                 # if 'addValue' in resultData.keys():
                 #     resultData.pop('addValue')
                 try: 
-                    datetime = resultData['datetime']
+                    datetime = recordData['resultData']['datetime']
                 except KeyError as e:
                     print("record has no field datetime {}".format(record))
                     continue
                 if datetime not in id_time_dict[runnerID]:  # 对于同一个datetime，有一条记录就够了
                     id_time_dict[runnerID].add(datetime)
-                    id_result_time_dict[runnerID][datetime] = resultData
+                    id_record_time_dict[runnerID][datetime] = recordData
 
             group_resharp.append(item)
 

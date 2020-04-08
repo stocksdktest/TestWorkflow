@@ -124,7 +124,7 @@ class DataCompareOperator(StockOperator):
             if group_resharp.__len__() != 0:
                 for res in group_resharp:
                     param = res['param']
-                    results = res['results']
+                    results = res['records']
                     keys = list(results.keys())  # runnerID
                     if keys.__len__() < 2:
                         print("for param {} , no enough data to compare".format(param))
@@ -137,18 +137,30 @@ class DataCompareOperator(StockOperator):
                     times = list(set(x + y))
                     times.sort()
 
+                    if 'paramData' in res.keys():
+                        paramData = res['paramData']
+                    else:
+                        paramData = param['paramStr']
+
                     # prepare for res_item
                     quote_item = QuoteDetaiItemRecord(
                         testcaseID=param['testcaseID'],
-                        paramData=param['paramStr'],
-                        times_cnts=times.__len__()
+                        paramData=paramData,
+                        times_cnts=times.__len__(),
+                        recordID=param['paramStr']
                     )
                     match_cnt = 0
                     print("In runnerIDs in {}".format(keys))
 
+                    # import pprint
+                    # print("list1 is ")
+                    # pprint.pprint(list1)
+
                     for time in times:
-                        r1 = list1.get(time)
-                        r2 = list2.get(time)
+                        record1 = list1.get(time)
+                        record2 = list2.get(time)
+                        r1 = record1['resultData']
+                        r2 = record2['resultData']
                         if r1 is None:
                             # print("r1 at time {} is None".format(time))
                             quote_item.missing(time)
@@ -159,8 +171,11 @@ class DataCompareOperator(StockOperator):
                             continue
 
                         res = record_compare(r1, r2)
-                        res['r1'] = r1
-                        res['r2'] = r2
+                        res['datetime'] = time
+                        res['recordID1'] = record1['recordID']
+                        res['recordID2'] = record2['recordID']
+                        res['resultData1'] = r1
+                        res['resultData2'] = r2
                         # print("At time {}".format(time,))
                         # print("r1 is {}".format(r1))
                         # print("r2 is {}".format(r2))
@@ -189,7 +204,7 @@ class DataCompareOperator(StockOperator):
 
 
         dbName = self.runner_conf.storeConfig.dbName
-        collectionName = self.runner_conf.storeConfig.collectionName + '_test_result'
+        collectionName = 'compare_result'
         print("dbName is {}".format(dbName))
         print("collectionName is {}".format(collectionName))
 
