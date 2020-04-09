@@ -159,16 +159,17 @@ class DataCompareOperator(StockOperator):
                     for time in times:
                         record1 = list1.get(time)
                         record2 = list2.get(time)
-                        r1 = record1['resultData']
-                        r2 = record2['resultData']
-                        if r1 is None:
+                        if record1 is None:
                             # print("r1 at time {} is None".format(time))
                             quote_item.missing(time)
                             continue
-                        if r2 is None:
+                        if record2 is None:
                             # print("r2 at time {} is None".format(time))
                             quote_item.missing(time)
                             continue
+
+                        r1 = record1['resultData']
+                        r2 = record2['resultData']
 
                         res = record_compare(r1, r2)
                         res['datetime'] = time
