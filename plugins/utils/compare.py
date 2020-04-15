@@ -15,8 +15,8 @@ def get_value_from_path(record, path):
 
 	path_list = path.lstrip('/').split('/')
 	src_a = record
+	# print('src_a:', src_a)
 	for key in path_list:
-		# print('src_a:',src_a)
 		# print('key:',key)
 		if isinstance(src_a, list) and is_str_integer(key):
 			src_a = src_a[int(key)]
@@ -57,6 +57,8 @@ def record_compare(record1, record2):
 					for item in patches:
 						# print("-----------There is a option " + item['op'])
 						if item['op'] == 'replace':
+							# TODO:
+							# print("op is replace")
 							src_a = get_value_from_path(record1, item['path'])
 							src_b = item['value']
 
@@ -92,7 +94,16 @@ def record_compare(record1, record2):
 							if item['op'] == 'add':
 								src_b = item['value']
 							else:
-								src_a = get_value_from_path(record1, item['path'])
+								# print("op is remove") # TODO
+								# print("path is {}".format(item['path']))
+								# print("record1 is {}".format(record1))
+								# print("record2 is {}".format(record2))
+								try:
+									src_a = get_value_from_path(record1, item['path'])
+								except IndexError as e:
+									# TODO: Better solution
+									print("IndexError when remove, because it must been add")
+									continue
 
 							resInfo.append({
 								'type': 'Data Amount Inconsistency',
@@ -104,7 +115,14 @@ def record_compare(record1, record2):
 						elif item['op'] == 'move' or item['op'] == 'copy':
 							''' move equals remove and add'''
 							''' copy equals add the value in from to path '''
-							src_a = get_value_from_path(record1, item['from'])
+
+							try:
+								src_a = get_value_from_path(record1, item['from'])
+							except IndexError as e:
+								# TODO: Better solution
+								print("IndexError when {}, because it must been add".format(item['op']))
+								continue
+
 							src_b = "nut exist in src_b"
 
 							resInfo.append({
@@ -117,14 +135,14 @@ def record_compare(record1, record2):
 						elif item['op'] == 'test':
 							print("-----------There is a option Test TODO" + item['op'])
 				except TypeError as e:
-					print(e)
+					print("Compare TypeError", e)
 					resInfo = patches
 				except KeyError as e:
-					print(e)
+					print("Compare KeyError", e)
 					resInfo = patches
-				except IndexError as e:
-					print(e)
-					resInfo = patches
+				# except IndexError as e:
+				# 	print("Compare IndexError", e)
+				# 	resInfo = patches
 
 	result = {
 		"result": res,

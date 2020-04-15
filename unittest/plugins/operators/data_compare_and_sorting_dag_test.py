@@ -7,6 +7,7 @@ from airflow.models import TaskInstance
 from airflow.operators.python_operator import PythonOperator
 
 from operators.data_compare_operator import DataCompareOperator
+from operators.data_sorting_operator import DataSortingOperator
 from protos_gen.config_pb2 import RunnerConfig, TestcaseConfig
 from utils import *
 
@@ -23,13 +24,14 @@ def get_test_runer_config(dbName, collectionName):
 
     return runner_conf
 
-def test_data_compare_quote():
+def test_data_compare():
     dbName = 'stockSdkTest'
     collectionName = 'test_result'
     runner_conf = get_test_runer_config(dbName=dbName, collectionName=collectionName)
-    task_id_list = ['a','b']
-    id1 = 'RUN--6c2aaef2-b8d7-4be5-b45f-d6f89a61b360' # TODO
-    id2 = 'RUN--5edf7bf3-033e-4d5d-92db-3dfb9493065d' # TODO
+    task_id_list = ['a', 'b']
+    sort_id_list = ['sort1', 'sort2']
+    id1 = 'RUN--52fb7f41-aa24-496c-9e19-faa49d2780f7'
+    id2 = 'RUN--df2dbe1c-bcee-4724-a207-3def57f2fcb4'
 
     with DAG(dag_id='any_dag', start_date=datetime.now()) as dag:
         def push_function(**kwargs):
@@ -42,24 +44,57 @@ def test_data_compare_quote():
             python_callable=push_function,
             provide_context=True
         )
+        sorter1 = DataSortingOperator(
+            task_id=sort_id_list[0],
+            from_task=task_id_list[0],
+            retries=3,
+            provide_context=False,
+            runner_conf=runner_conf,
+            sort_and_comprae=True,
+            dag=dag
+        )
+        sorter2 = DataSortingOperator(
+            task_id=sort_id_list[1],
+            from_task=task_id_list[1],
+            retries=3,
+            provide_context=False,
+            runner_conf=runner_conf,
+            sort_and_comprae=True,
+            dag=dag
+        )
         data_compare = DataCompareOperator(
             runner_conf=runner_conf,
             task_id='data_compare',
             provide_context=True,
             task_id_list=task_id_list,
-            quote_detail=True
+            sort_id_list=sort_id_list,
+            sort_and_comprae=True,
+            quote_detail=False
         )
-        runnerid_provider >> data_compare
-
+        runnerid_provider >> [sorter1, sorter2] >> data_compare
         execution_date = datetime.now()
 
         provider_instance = TaskInstance(task=runnerid_provider, execution_date=execution_date)
         runnerid_provider.execute(provider_instance.get_template_context())
 
+        sorter1_instance = TaskInstance(task=sorter1, execution_date=execution_date)
+        context_sorter1 = sorter1_instance.get_template_context()
+        context_sorter1['run_id'] = 'fake-run'
+        context_sorter1['expectation'] = 3
+        context_sorter1['unit_test'] = True
+        sorter1.execute(context_sorter1)
+
+        sorter2_instance = TaskInstance(task=sorter2, execution_date=execution_date)
+        context_sorter2 = sorter2_instance.get_template_context()
+        context_sorter2['run_id'] = 'fake-run'
+        context_sorter2['expectation'] = 3
+        context_sorter2['unit_test'] = True
+        sorter2.execute(context_sorter2)
+
         compare_instance = TaskInstance(task=data_compare, execution_date=execution_date)
         context = compare_instance.get_template_context()
         context['run_id'] = 'fake-run'
-        context['expectation'] = 3001 # TODO
+        context['expectation'] = 3
         context['unit_test'] = True
         if context.get('expectation') is not None:
             expectation = context.get('expectation')
@@ -67,10 +102,11 @@ def test_data_compare_quote():
 
     return result
 
-# class TestDataCompareOperator(unittest.TestCase):
+# class TestDataCompareAndSortOperator(unittest.TestCase):
 #
 #     def test_data_compare_task_by_xcom(self):
-#         result = test_data_compare_quote()
+#         result = test_data_compare()
+
 
 if __name__ == '__main__':
-    result = test_data_compare_quote()
+    result = test_data_compare()

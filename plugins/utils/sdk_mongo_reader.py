@@ -56,7 +56,7 @@ class SdkMongoReader(object):
             {'$group': group},
         ]
 
-        cursor = col.aggregate(pipeline)
+        cursor = col.aggregate(pipeline, allowDiskUse=True)
         res = list()
         for document in cursor:
             res.append(document)
@@ -96,7 +96,7 @@ class SdkMongoReader(object):
             {'$group': group},
         ]
 
-        cursor = col.aggregate(pipeline)
+        cursor = col.aggregate(pipeline, allowDiskUse=True)
         res = list()
         for document in cursor:
             res.append(document)
@@ -140,7 +140,7 @@ class SdkMongoReader(object):
             {'$group': group},
         ]
 
-        cursor = col.aggregate(pipeline)
+        cursor = col.aggregate(pipeline, allowDiskUse=True)
         res = list()
         for document in cursor:
             res.append(document)
@@ -166,6 +166,12 @@ class SdkMongoReader(object):
                 recordData = record
                 # if 'addValue' in resultData.keys():
                 #     resultData.pop('addValue')
+                try:
+                    if 'paramData' not in item.keys():
+                        item['paramData'] = record['paramData']
+                except:
+                    print("record has no field paramData in {}".format(record))
+
                 try: 
                     datetime = recordData['resultData']['datetime']
                 except KeyError as e:

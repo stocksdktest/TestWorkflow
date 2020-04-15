@@ -10,9 +10,11 @@ import sys
 
 class DataCompareOperator(StockOperator):
     @apply_defaults
-    def __init__(self, runner_conf, task_id_list, run_times=1, quote_detail = False, *args, **kwargs):
+    def __init__(self, runner_conf, task_id_list, run_times=1, quote_detail = False, sort_id_list=None, sort_and_comprae = False,*args, **kwargs):
         super(DataCompareOperator, self).__init__(queue='worker', runner_conf=runner_conf, *args, **kwargs)
         self.task_id_list = task_id_list
+        self.sort_id_list = sort_id_list
+        self.sort_and_comprae = sort_and_comprae
         self.mongo_hk = MongoHookWithDB(conn_id='stocksdktest_mongo')
         self.conn = self.mongo_hk.get_conn()
         self.run_times = run_times
@@ -208,6 +210,14 @@ class DataCompareOperator(StockOperator):
         collectionName = 'compare_result'
         print("dbName is {}".format(dbName))
         print("collectionName is {}".format(collectionName))
+
+        if self.sort_and_comprae:
+            sort_result1 = self.xcom_pull(context, key=self.sort_id_list[0])
+            sort_result2 = self.xcom_pull(context, key=self.sort_id_list[1])
+            result['result']['sort1'] = sort_result1['result']
+            result['result']['sort2'] = sort_result2['result']
+
+
 
         if context.get('unit_test') is not None:
             self.close_connection()

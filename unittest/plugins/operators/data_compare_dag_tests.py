@@ -25,11 +25,11 @@ def get_test_runer_config(dbName, collectionName):
 
 def test_data_compare():
     dbName = 'stockSdkTest'
-    collectionName = '201912_Android_777'
+    collectionName = 'test_result'
     runner_conf = get_test_runer_config(dbName=dbName, collectionName=collectionName)
     task_id_list = ['a', 'b']
-    id1 = 'RUN--9a1e402e-81d1-470b-9b63-d3f50aa425ce'
-    id2 = 'RUN--9714a072-919b-45fe-8685-bd875c39f9b6'
+    id1 = 'RUN--52fb7f41-aa24-496c-9e19-faa49d2780f7'
+    id2 = 'RUN--df2dbe1c-bcee-4724-a207-3def57f2fcb4'
 
     with DAG(dag_id='any_dag', start_date=datetime.now()) as dag:
         def push_function(**kwargs):
@@ -67,10 +67,10 @@ def test_data_compare():
 
     return result
 
-class TestDataCompareOperator(unittest.TestCase):
-
-    def test_data_compare_task_by_xcom(self):
-        result = test_data_compare()
+# class TestDataCompareOperator(unittest.TestCase):
+#
+#     def test_data_compare_task_by_xcom(self):
+#         result = test_data_compare()
 
 if __name__ == '__main__':
     result = test_data_compare()

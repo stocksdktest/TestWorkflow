@@ -108,10 +108,11 @@ def is_list_sort(sort_list: list, testcaseID, sort_type, ascending=True):
 
 class DataSortingOperator(StockOperator):
     @apply_defaults
-    def __init__(self, runner_conf, from_task, sdk_type='android', *args, **kwargs):
+    def __init__(self, runner_conf, from_task, sdk_type='android', sort_and_comprae=False, *args, **kwargs):
         super(DataSortingOperator, self).__init__(queue='worker', runner_conf=runner_conf, *args, **kwargs)
         self.from_task = from_task
         self.sdk_type = sdk_type
+        self.sort_and_comprae = sort_and_comprae
         self.mongo_hk = MongoHookWithDB(conn_id='stocksdktest_mongo')
         self.conn = self.mongo_hk.get_conn()
         self.mongo_reader = SdkMongoReader(client=self.mongo_hk.client)
@@ -205,8 +206,9 @@ class DataSortingOperator(StockOperator):
             item = {
                 # 'origin_result': result_list,
                 'recordID': recordID,
+                'paramData': record['paramData'],
                 'check_result': check_res['check_res'],
-                'error_msg' : check_res['error_msg'],
+                'error_msg': check_res['error_msg'],
                 'param': param
             }
             sort_record.append_sort_result(
@@ -227,9 +229,12 @@ class DataSortingOperator(StockOperator):
         print("dbName is {}".format(dbName))
         print("collectionName is {}".format(collectionName))
 
-        if context.get('unit_test') is not None:
-            self.close_connection()
-            return result, records
+        if self.sort_and_comprae:
+            self.xcom_push(context, key=self.task_id, value=result)
+        else:
+            if context.get('unit_test') is not None:
+                self.close_connection()
+                return result, records
 
-        col = mydb[collectionName]
-        col.insert(result)
+            col = mydb[collectionName]
+            col.insert(result)
