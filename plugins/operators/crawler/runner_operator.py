@@ -13,6 +13,7 @@ class CrawlerRunnerOperator(StockOperator):
         self.cases_instance = list()
 
     def pre_execute(self, context):
+        super(CrawlerRunnerOperator, self).pre_execute(context)
         collector = CrawlerTestResultCollector(
             job_id=self.runner_conf.jobID,
             runner_id=self.runner_conf.runnerID
@@ -36,6 +37,7 @@ class CrawlerRunnerOperator(StockOperator):
                 print('Execute Crawler done: %s' % testcase_id)
             except Exception as e:
                 print('CrawlerTestcase(%s) start_crawl() has error: %s' % (testcase_id, str(e)))
+        self.xcom_push(context, key=self.task_id, value=self.runner_conf.runnerID)
 
 
 class CrawlerTestResultCollector(object):

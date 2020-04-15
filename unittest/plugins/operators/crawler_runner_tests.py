@@ -1,7 +1,7 @@
 import unittest
+import uuid
 import json
 from datetime import datetime
-
 from airflow import DAG, settings
 from airflow.models import Connection, TaskInstance
 
@@ -41,8 +41,10 @@ class TestCrawlerRunnerOperator(unittest.TestCase):
             )
 
             task_instance = TaskInstance(task=crawler_runner, execution_date=datetime.now())
-            crawler_runner.pre_execute(task_instance.get_template_context())
-            crawler_runner.execute(task_instance.get_template_context())
+            context = task_instance.get_template_context()
+            context['run_id'] = str(uuid.uuid4())
+            crawler_runner.pre_execute(context)
+            crawler_runner.execute(context)
 
             self.assertEqual(len(crawler_runner.cases_instance), 0)
 
@@ -53,13 +55,18 @@ class TestCrawlerRunnerOperator(unittest.TestCase):
         runner_conf.storeConfig.dbName = 'stockSdkTest'
         runner_conf.storeConfig.collectionName = 'test_result'
         case_conf = TestcaseConfig()
-        case_conf.testcaseID = 'TESTCASE_0'
+        case_conf.testcaseID = 'QUOTEDETAIL_1'
         case_conf.continueWhenFailed = True
         case_conf.roundIntervalSec = 3
         case_conf.paramStrs.extend([
             json.dumps({
-                'CODE': '600789.sh',
-                'SUBTYPE': 'SH1001',
+                'CODE_A': '688001.sh',
+                'CODE_P': '688001.sh',
+                'SUBTYPE': 'SH1006',
+                'SHSC': 'KCB',
+                'DURATION_SECONDS': 60,
+                'STARTDATE': '2020-03-01-13-10-00',
+                'ENDDATE': '2020-04-03-10-10-00',
             }),
         ])
         runner_conf.casesConfig.extend([case_conf])
@@ -72,7 +79,9 @@ class TestCrawlerRunnerOperator(unittest.TestCase):
             )
 
             task_instance = TaskInstance(task=crawler_runner, execution_date=datetime.now())
-            crawler_runner.pre_execute(task_instance.get_template_context())
-            crawler_runner.execute(task_instance.get_template_context())
+            context = task_instance.get_template_context()
+            context['run_id'] = str(uuid.uuid4())
+            crawler_runner.pre_execute(context)
+            crawler_runner.execute(context)
 
             self.assertEqual(len(crawler_runner.cases_instance), 1)
