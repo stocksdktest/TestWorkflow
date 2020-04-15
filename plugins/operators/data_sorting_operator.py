@@ -194,9 +194,12 @@ class DataSortingOperator(StockOperator):
                 continue
 
             result_list = list()
+            # code_list = list()
             for x in record['resultData'].values():
                 if isinstance(x, dict):
                     result_list.append(x)
+                    # code_list.append(x['id'])
+
             check_res = is_list_sort(
                 sort_list=result_list.copy(),
                 testcaseID=testcaseID,
@@ -207,6 +210,7 @@ class DataSortingOperator(StockOperator):
                 # 'origin_result': result_list,
                 'recordID': recordID,
                 'paramData': record['paramData'],
+                # 'code_list':code_list,
                 'check_result': check_res['check_res'],
                 'error_msg': check_res['error_msg'],
                 'param': param

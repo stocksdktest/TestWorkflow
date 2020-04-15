@@ -102,9 +102,9 @@ class SortResultRecord(StockResultRecord):
     def __init__(self, jobID, dagID, id) -> None:
         super().__init__(jobID, dagID)
         self.sort_result = dict()
-        self.sort_result['true'] = defaultdict(list)
-        self.sort_result['false'] = defaultdict(list)
-        self.sort_result['unknown'] = defaultdict(list)
+        self.sort_result['true'] = list()
+        self.sort_result['false'] = list()
+        self.sort_result['unknown'] = list()
         self.result['runnerID1'] = id
         self.result['runnerID2'] = id
         self.result['result'] = self.sort_result
@@ -113,15 +113,16 @@ class SortResultRecord(StockResultRecord):
         self.result['empty'] = self.empty
 
     def append_sort_result(self, testcaseID, item, sort_ok):
+        item['testcaseID'] = testcaseID
         if not sort_ok:
             self.add_status(item)
 
         if sort_ok == True:
-            self.sort_result['true'][testcaseID].append(item)
+            self.sort_result['true'].append(item)
         elif sort_ok == False:
-            self.sort_result['false'][testcaseID].append(item)
+            self.sort_result['false'].append(item)
         else:
-            self.sort_result["unknown"][testcaseID].append(item)
+            self.sort_result["unknown"].append(item)
 
 class CompareItemRecord(object):
 
