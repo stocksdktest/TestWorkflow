@@ -13,7 +13,7 @@ class OhlcSchedule_3(CrawlerTestcase):
             # TODO 与Android和iOS类似，统一的testcase_id
             testcase_id='CRAWLER_OHLCV3_3',
             # TODO 爬虫平台对应的后端接口
-            crawler_ctrl_url='http://192.168.128.58:8989/services/search/ohlcSchedule',
+            crawler_ctrl_url='http://153.37.190.164/services/search/ohlcSchedule',
             # TODO 预估一次爬虫运行所要花费的时间
             crawler_duration_seconds=20,
             # TODO 爬虫爬取结果所存的数据库
