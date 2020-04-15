@@ -61,10 +61,25 @@ class QuoteSchedule_1(CrawlerTestcase):
             return False
         else:
             return True
+    def jjsjsj(self,cr) -> dict:
+        print(self.judge(cr['shadiao']) if 'shadiao' in cr.keys() else 'laji')
+        print('shadiao' in cr.keys())
+        dictionary = {
+            'shadiao':((cr['shadiao'] if float(cr['shadiao']) <= 0 else '+' + str(cr['shadiao'])) if self.judge(cr['shadiao']) else cr['shadiao']) if 'shadiao' in cr.keys() else '-',
+        }
+        return dictionary
     def parse_crawler_result(self, crawler_result) -> list:
         # TODO 将爬虫平台获得的数据格式转化为，与Android和iOS相对应的Testcase所生成的数据格式
         print('CrawlerTestcase(%s) get result: %s' % (self.testcase_id, crawler_result))
         print('-----------------------------------')
+        print(self.jjsjsj({'shadiao':'-/-/-'}))
+        print(self.custom_round(0.2135*10,2))
+        print(Decimal(self.custom_round(0.0250 * 10, 1)).quantize(Decimal('0.000')))
+        A = datetime.now()
+        B = datetime.strptime(self.ENDDATE,'%Y-%m-%d-%H-%M-%S')
+        print(A)
+        print(B)
+        print((B - A).seconds if B > A else 20)
         dictionary = {}
         if self.SHSC == 'HSQQ':
             for cr in crawler_result:

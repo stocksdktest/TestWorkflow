@@ -42,7 +42,7 @@ class TickSchedule_2(CrawlerTestcase):
         if 'openInterestDiff' not in temporary.keys():
             # print('++++++++++++++++++++++++++')
             for cr in crawler_result:
-                dictionary[str(cr['transactionTime'])] = {
+                dictionary[str(cr['transactionTime'])if 'transactionTime' in cr.keys() else 'isEmpty'] = {
                     'transactionTime': cr['transactionTime'] if 'transactionTime' in cr.keys() else '-',
                     'transactionPrice': cr['transactionPrice'] if 'transactionPrice' in cr.keys() else '-',
                     'singleVolume': cr['singleVolume'] if 'singleVolume' in cr.keys() else '-',
@@ -51,7 +51,7 @@ class TickSchedule_2(CrawlerTestcase):
         else:
             # print('****************************')
             for cr in crawler_result:
-                dictionary[str(cr['transactionTime'])] = {
+                dictionary[str(cr['transactionTime'])if 'transactionTime' in cr.keys() else 'isEmpty'] = {
                     'transactionTime': cr['transactionTime'] if 'transactionTime' in cr.keys() else '-',
                     'transactionPrice': cr['transactionPrice'] if 'transactionPrice' in cr.keys() else '-',
                     'singleVolume': cr['singleVolume'] if 'singleVolume' in cr.keys() else '-',
