@@ -60,11 +60,13 @@ class TestCrawlerRunnerOperator(unittest.TestCase):
         case_conf.roundIntervalSec = 3
         case_conf.paramStrs.extend([
             json.dumps({
-                'CODE': '600000.sh',
-                'SUBTYPE': 'SH1001',
+                'CODE_A': '688001.sh',
+                'CODE_P': '688001.sh',
+                'SUBTYPE': 'SH1006',
+                'SHSC': 'KCB',
                 'DURATION_SECONDS': 60,
-                # 'STARTDATE': '2020-03-30-15-30-00',
-                # 'ENDDATE': '2020-03-30-15-41-00',
+                'STARTDATE': '2020-03-01-13-10-00',
+                'ENDDATE': '2020-04-03-10-10-00',
             }),
         ])
         runner_conf.casesConfig.extend([case_conf])
