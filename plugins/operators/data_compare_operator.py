@@ -10,7 +10,8 @@ import sys
 
 class DataCompareOperator(StockOperator):
     @apply_defaults
-    def __init__(self, runner_conf, task_id_list, run_times=1, quote_detail = False, sort_id_list=None, sort_and_comprae = False,*args, **kwargs):
+    def __init__(self, runner_conf, task_id_list, run_times=1, quote_detail=False, sort_id_list=None,
+                 sort_and_comprae=False, *args, **kwargs):
         super(DataCompareOperator, self).__init__(queue='worker', runner_conf=runner_conf, *args, **kwargs)
         self.task_id_list = task_id_list
         self.sort_id_list = sort_id_list
@@ -103,14 +104,31 @@ class DataCompareOperator(StockOperator):
                     x = res['record'][0]
                     y = res['record'][1]
 
-                    compare_item = CompareItemRecord(records= [x,y])
+                    compare_item = CompareItemRecord(records=[x, y])
 
                     r1 = x['resultData']
                     r2 = y['resultData']
-                    res = record_compare(r1, r2)
 
                     # for sorting add ids
                     if self.sort_and_comprae:
+                        # reformat r1 and r2:
+                        try:
+                            key_list_1 = r1.keys()
+                            key_list_2 = r2.keys()
+                            for key in key_list_1:
+                                item = r1[key]
+                                id = item['id'].replace('.',"")
+                                r1[id] = r1.pop(key)
+                            for key in key_list_2:
+                                item = r2[key]
+                                id = item['id'].replace('.',"")
+                                r2[id] = r2.pop(key)
+                        except KeyError as e:
+                            print("Error when reformat sort records", e)
+
+
+
+                        # record code_list
                         code_list1 = list()
                         code_list2 = list()
                         try:
@@ -126,12 +144,13 @@ class DataCompareOperator(StockOperator):
                         finally:
                             compare_item.add_sort_code_list([code_list1, code_list2])
 
+                    res = record_compare(r1, r2)
 
                     if res['result'] == True:
                         item = compare_item.get_item()
                         compare_record.append_compare_true(item)
                     else:
-                        compare_item.append_results(results=[r1,r2], details= res['details'])
+                        compare_item.append_results(results=[r1, r2], details=res['details'])
                         item = compare_item.get_item()
                         compare_record.append_compare_false(item)
         else:
@@ -212,7 +231,7 @@ class DataCompareOperator(StockOperator):
                     quote_item.caucalute(match_cnt=match_cnt)
                     item = quote_item.get_item()
                     if quote_item.is_mismatch():
-                        compare_record.append_mismatch(item, is_quote= True)
+                        compare_record.append_mismatch(item, is_quote=True)
                     elif quote_item.is_dismatch():
                         compare_record.append_compare_true(item)
                     else:
@@ -222,7 +241,6 @@ class DataCompareOperator(StockOperator):
 
         print("------------------The Size(sys) of result is {}".format(sys.getsizeof(result)))
         print("------------------The Size(val) of result is {}".format(result.__sizeof__()))
-
 
         dbName = self.runner_conf.storeConfig.dbName
         collectionName = 'compare_result'
@@ -234,8 +252,6 @@ class DataCompareOperator(StockOperator):
             sort_result2 = self.xcom_pull(context, key=self.sort_id_list[1])
             result['result']['sort1'] = sort_result1['result']
             result['result']['sort2'] = sort_result2['result']
-
-
 
         if context.get('unit_test') is not None:
             self.close_connection()
@@ -250,16 +266,9 @@ class DataCompareOperator(StockOperator):
             print("DocumentTooLarge Error")
             # TODO: 如果Details也过大，应该怎么办
             if not self.quote_detail:
-                for item in result['compared']['false']:
+                for item in result['result']['false']:
                     item.pop('result1')
                     item.pop('result2')
             else:
                 pass
             col_res.insert_one(result)
-
-
-
-
-
-
-
