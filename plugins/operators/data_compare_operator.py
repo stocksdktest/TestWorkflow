@@ -109,6 +109,24 @@ class DataCompareOperator(StockOperator):
                     r2 = y['resultData']
                     res = record_compare(r1, r2)
 
+                    # for sorting add ids
+                    if self.sort_and_comprae:
+                        code_list1 = list()
+                        code_list2 = list()
+                        try:
+                            for r in r1.values():
+                                if isinstance(x, dict):
+                                    code_list1.append(r['id'])
+                            for r in r2.values():
+                                if isinstance(x, dict):
+                                    code_list2.append(r['id'])
+
+                        except KeyError as e:
+                            print("Error when id", e)
+                        finally:
+                            compare_item.add_sort_code_list([code_list1, code_list2])
+
+
                     if res['result'] == True:
                         item = compare_item.get_item()
                         compare_record.append_compare_true(item)

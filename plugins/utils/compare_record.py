@@ -1,6 +1,6 @@
 import pymongo
 import pprint
-from collections import defaultdict
+from collections import defaultdict, Sequence
 
 
 class TestResultMongoRecord(object):
@@ -130,6 +130,10 @@ class CompareItemRecord(object):
         super().__init__()
         self.item = dict()
         self.append_base_info(records)
+
+    def add_sort_code_list(self, codelists: list):
+        self.item['codelist1'] = codelists[0]
+        self.item['codelist2'] = codelists[1]
 
     def append_base_info(self, records: list):
         for i in range(records.__len__()):
