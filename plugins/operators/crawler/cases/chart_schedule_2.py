@@ -2,15 +2,15 @@ from datetime import datetime, timedelta
 import re
 from operators.crawler.cases.base import CrawlerTestcase
 
-class ChartSchedule_1(CrawlerTestcase):
+class ChartSchedule_2(CrawlerTestcase):
     def __init__(self, testcase_config, collector, record_collection_name):
-        super(ChartSchedule_1, self).__init__(
+        super(ChartSchedule_2, self).__init__(
             testcase_config=testcase_config,
             testcase_collector = collector,
             record_collection_name=record_collection_name,
             crawler_result_collector=collector,
             # TODO 与Android和iOS类似，统一的testcase_id
-            testcase_id='CRAWLER_CHARTV2TEST_1',
+            testcase_id='CRAWLER_CHARTV2TEST_2',
             # TODO 爬虫平台对应的后端接口
             crawler_ctrl_url='http://192.168.128.58:8989/services/search/chartSchedule',
             # TODO 预估一次爬虫运行所要花费的时间

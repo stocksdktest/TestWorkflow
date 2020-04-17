@@ -10,9 +10,9 @@ class TickSchedule_1(CrawlerTestcase):
             record_collection_name=record_collection_name,
             crawler_result_collector=collector,
             # TODO 与Android和iOS类似，统一的testcase_id
-            testcase_id='TICK_1',
+            testcase_id='CRAWLER_TICK_1',
             # TODO 爬虫平台对应的后端接口
-            crawler_ctrl_url='http://153.37.190.164:8989/services/search/tickSchedule',
+            crawler_ctrl_url='http://192.168.128.58:8989/services/search/tickSchedule',
             # TODO 预估一次爬虫运行所要花费的时间
             crawler_duration_seconds=20,
             # TODO 爬虫爬取结果所存的数据库
@@ -37,27 +37,27 @@ class TickSchedule_1(CrawlerTestcase):
         print('CrawlerTestcase(%s) get result: %s' % (self.testcase_id, crawler_result))
         # print('-----------------------------------')
         dictionary = {}
-        i = 1
+        # i = 1
         temporary = crawler_result[0]
         if 'openInterestDiff' not in temporary.keys():
             # print('++++++++++++++++++++++++++')
             for cr in crawler_result:
                 dictionary[str(cr['transactionTime'])if 'transactionTime' in cr.keys() else 'isEmpty'] = {
-                    'transactionTime': cr['transactionTime'] if 'transactionTime' in cr.keys() else '-',
-                    'transactionPrice': cr['transactionPrice'] if 'transactionPrice' in cr.keys() else '-',
-                    'singleVolume': cr['singleVolume'] if 'singleVolume' in cr.keys() else '-',
+                    'transactionTime': str(cr['transactionTime']) if 'transactionTime' in cr.keys() else '-',
+                    'transactionPrice': str(cr['transactionPrice']) if 'transactionPrice' in cr.keys() else '-',
+                    'singleVolume': str(cr['singleVolume']) if 'singleVolume' in cr.keys() else '-',
                 }
-                i += 1
+                # i += 1
         else:
             # print('****************************')
             for cr in crawler_result:
                 dictionary[str(cr['transactionTime'])if 'transactionTime' in cr.keys() else 'isEmpty'] = {
-                    'transactionTime': cr['transactionTime'] if 'transactionTime' in cr.keys() else '-',
-                    'transactionPrice': cr['transactionPrice'] if 'transactionPrice' in cr.keys() else '-',
-                    'singleVolume': cr['singleVolume'] if 'singleVolume' in cr.keys() else '-',
-                    'openInterestDiff': cr['openInterestDiff'] if 'openInterestDiff' in cr.keys() else '-',
+                    'transactionTime': str(cr['transactionTime']) if 'transactionTime' in cr.keys() else '-',
+                    'transactionPrice': str(cr['transactionPrice']) if 'transactionPrice' in cr.keys() else '-',
+                    'singleVolume': str(cr['singleVolume']) if 'singleVolume' in cr.keys() else '-',
+                    'openInterestDiff': str(cr['openInterestDiff']) if 'openInterestDiff' in cr.keys() else '-',
                 }
-                i += 1
+                # i += 1
         print(dictionary)
         return dictionary
 

@@ -16,7 +16,7 @@ class QuoteSchedule_1(CrawlerTestcase):
             # TODO 与Android和iOS类似，统一的testcase_id
             testcase_id='CRAWLER_QUOTEDETAIL_1',
             # TODO 爬虫平台对应的后端接口
-            crawler_ctrl_url='http://153.37.190.164:8989/services/search/quoteSchedule',
+            crawler_ctrl_url='http://192.168.128.58:8989/services/search/quoteSchedule',
             # TODO 预估一次爬虫运行所要花费的时间
             crawler_duration_seconds=20,
             # TODO 爬虫爬取结果所存的数据库
@@ -83,7 +83,7 @@ class QuoteSchedule_1(CrawlerTestcase):
         dictionary = {}
         if self.SHSC == 'HSQQ':
             for cr in crawler_result:
-                dictionary[re.sub('[- :]','',cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = {
+                dictionary1= {
                     'lastPrice': cr['lastPrice'] if 'lastPrice' in cr.keys() else '-',
                     'averageValue': cr['averageValue'] if 'averageValue' in cr.keys() else '-',
                     'changeRate': cr['changeRate'] if 'changeRate' in cr.keys() else '-',
@@ -131,9 +131,12 @@ class QuoteSchedule_1(CrawlerTestcase):
                     'buyVolumes4': cr['buyVolumes4'] if 'buyVolumes4' in cr.keys() else '-',
                     'buyVolumes5': cr['buyVolumes5'] if 'buyVolumes5' in cr.keys() else '-',
                 }
+                for i in dictionary1.keys():
+                    dictionary1[i] = str(dictionary1[i])
+                dictionary[re.sub('[- :]', '', cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = dictionary1
         elif self.SHSC == 'HSSC':
             for cr in crawler_result:
-                dictionary[re.sub('[- :]','',cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = {
+                dictionary1 = {
                     'lastPrice': cr['lastPrice'] if 'lastPrice' in cr.keys() else '-',
                     'averageValue': cr['averageValue'] if 'averageValue' in cr.keys() else '-',
                     'changeRate': cr['changeRate'] if 'changeRate' in cr.keys() else '-',
@@ -181,9 +184,12 @@ class QuoteSchedule_1(CrawlerTestcase):
                     'buyVolumes4': cr['buyVolumes4'] if 'buyVolumes4' in cr.keys() else '-',
                     'buyVolumes5': cr['buyVolumes5'] if 'buyVolumes5' in cr.keys() else '-',
                 }
+                for i in dictionary1:
+                    dictionary1[i] = str(dictionary1[i])
+                dictionary[re.sub('[- :]','',cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = dictionary1
         elif self.SHSC == 'QHSC':
             for cr in crawler_result:
-                dictionary[re.sub('[- :]','',cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = {
+                dictionary1 = {
                     'lastPrice': cr['lastPrice'] if 'lastPrice' in cr.keys() else '-',
                     'averageValue': cr['averageValue'] if 'averageValue' in cr.keys() else '-',
                     'change': ((cr['change'] if float(cr['change']) <= 0 else '+' + str(cr['change'])) if self.judge(cr['change']) else cr['change']) if 'change' in cr.keys() else '-',
@@ -207,9 +213,12 @@ class QuoteSchedule_1(CrawlerTestcase):
                     'limitDown': cr['limitDown'] if 'limitDown' in cr.keys() else '-',
                     # 'volumeRatio': cr['volumeRatio'] if 'volumeRatio' in cr.keys() else '-',
                 }
+                for i in dictionary1:
+                    dictionary1[i] = str(dictionary1[i])
+                dictionary[re.sub('[- :]', '', cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = dictionary1
         elif self.SHSC == 'ZS':
             for cr in crawler_result:
-                dictionary[re.sub('[- :]','',cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = {
+                dictionary1 = {
                     'lastPrice': cr['lastPrice'] if 'lastPrice' in cr.keys() else '-',
                     'changeRate': cr['changeRate'] if 'changeRate' in cr.keys() else '-',
                     'change': ((cr['change'] if float(cr['change']) <= 0 else '+' + str(cr['change'])) if self.judge(cr['change']) else cr['change']) if 'change' in cr.keys() else '-',
@@ -229,9 +238,12 @@ class QuoteSchedule_1(CrawlerTestcase):
                     'buyVolume': cr['buyVolume'] if 'buyVolume' in cr.keys() else '-',
                     'sellVolume': cr['sellVolume'] if 'sellVolume' in cr.keys() else '-',
                 }
+                for i in dictionary1:
+                    dictionary1[i] = str(dictionary1[i])
+                dictionary[re.sub('[- :]', '', cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = dictionary1
         elif self.SHSC == 'GG':
             for cr in crawler_result:
-                dictionary[re.sub('[- :]','',cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = {
+                dictionary1 = {
                     'lastPrice': cr['lastPrice'] if 'lastPrice' in cr.keys() else '-',
                     'averageValue': cr['averageValue'] if 'averageValue' in cr.keys() else '-',
                     'changeRate': cr['changeRate'] if 'changeRate' in cr.keys() else '-',
@@ -253,9 +265,12 @@ class QuoteSchedule_1(CrawlerTestcase):
                     'hs': (self.custom_round(cr['hs']) if self.judge(cr['hs']) else cr['hs']) if 'hs' in cr.keys() else '-',
                     'HKTotalValue': (self.custom_round(cr['HKTotalValue']) if self.judge(cr['HKTotalValue']) else cr['HKTotalValue']) if 'HKTotalValue' in cr.keys() else '-',
                 }
+                for i in dictionary1:
+                    dictionary1[i] = str(dictionary1[i])
+                dictionary[re.sub('[- :]', '', cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = dictionary1
         elif self.SHSC == 'JJ':
             for cr in crawler_result:
-                dictionary[re.sub('[- :]','',cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = {
+                dictionary1 = {
                     'lastPrice': cr['lastPrice'] if 'lastPrice' in cr.keys() else '-',
                     'change': ((cr['change'] if float(cr['change']) <= 0 else '+' + str(cr['change'])) if self.judge(cr['change']) else cr['change']) if 'change' in cr.keys() else '-',
                     'changeRate': cr['changeRate'] if 'changeRate' in cr.keys() else '-',
@@ -291,9 +306,12 @@ class QuoteSchedule_1(CrawlerTestcase):
                     'buyVolumes4': cr['buyVolumes4'] if 'buyVolumes4' in cr.keys() else '-',
                     'buyVolumes5': cr['buyVolumes5'] if 'buyVolumes5' in cr.keys() else '-',
                 }
+                for i in dictionary1:
+                    dictionary1[i] = str(dictionary1[i])
+                dictionary[re.sub('[- :]', '', cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = dictionary1
         elif self.SHSC == 'ZQ':
             for cr in crawler_result:
-                dictionary[re.sub('[- :]','',cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = {
+                dictionary1 = {
                     'lastPrice': cr['lastPrice'] if 'lastPrice' in cr.keys() else '-',
                     'change': ((cr['change'] if float(cr['change']) <= 0 else '+' + str(cr['change'])) if self.judge(cr['change']) else cr['change']) if 'change' in cr.keys() else '-',
                     'changeRate': cr['changeRate'] if 'changeRate' in cr.keys() else '-',
@@ -325,9 +343,12 @@ class QuoteSchedule_1(CrawlerTestcase):
                     'buyVolumes4': cr['buyVolumes4'] if 'buyVolumes4' in cr.keys() else '-',
                     'buyVolumes5': cr['buyVolumes5'] if 'buyVolumes5' in cr.keys() else '-',
                 }
+                for i in dictionary1:
+                    dictionary1[i] = str(dictionary1[i])
+                dictionary[re.sub('[- :]', '', cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = dictionary1
         elif self.SHSC == 'KCB':
             for cr in crawler_result:
-                dictionary[re.sub('[- :]','',cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = {
+                dictionary1 = {
                     'lastPrice': cr['lastPrice'] if 'lastPrice' in cr.keys() else '-',
                     'averageValue': cr['averageValue'] if 'averageValue' in cr.keys() else '-',
                     'changeRate': cr['changeRate'] if 'changeRate' in cr.keys() else '-',
@@ -380,6 +401,9 @@ class QuoteSchedule_1(CrawlerTestcase):
                     'buyVolumes4': cr['buyVolumes4'] if 'buyVolumes4' in cr.keys() else '-',
                     'buyVolumes5': cr['buyVolumes5'] if 'buyVolumes5' in cr.keys() else '-',
                 }
+                for i in dictionary1:
+                    dictionary1[i] = str(dictionary1[i])
+                dictionary[re.sub('[- :]', '', cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = dictionary1
         else:
             print('-------输入的(SHSC)不在范围内--------')
         print(dictionary)
