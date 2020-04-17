@@ -11,8 +11,8 @@ StockTestcaseClasses = {
     'TESTCASE_0': ExampleTestcase,
     'CRAWLER_QUOTEDETAIL_1' : QuoteSchedule_1, #行情快照
     'CRAWLER_CHARTV2TEST_1' : ChartSchedule_1, #走势数据
-    'CRAWLER_CHARTV2TEST_2' : ChartSchedule_1,
-    'CRAWLER_CHARTV2TEST_3' : ChartSchedule_1,
+    'CRAWLER_CHARTV2TEST_2' : ChartSchedule_2,
+    'CRAWLER_CHARTV2TEST_3' : ChartSchedule_3,
     'CRAWLER_OHLCV3_1' : OhlcSchedule_1, #历史数据
     'CRAWLER_OHLCV3_2' : OhlcSchedule_2,
     'CRAWLER_OHLCV3_3' : OhlcSchedule_3,
