@@ -179,7 +179,14 @@ class DataSortingOperator(StockOperator):
         for record in col.find(rule):
 
             testcaseID = record['testcaseID']
-            param = record['paramData']['param']
+            paramData = record['paramData']
+            if 'param' in paramData.keys():
+                param = paramData['param']
+            elif 'PARAMS' in paramData.keys():
+                param = paramData['PARAMS']
+            else:
+                raise AirflowException("Invalid paramData")
+
             recordID = record['recordID']
             sort_asc = True  # 默认升序
             if testcaseID in sort_map['BANKUAI']:
