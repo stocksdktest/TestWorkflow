@@ -1,5 +1,7 @@
 from operators.crawler.cases import *
 from operators.crawler.cases.chart_schedule_1 import ChartSchedule_1
+from operators.crawler.cases.chart_schedule_2 import ChartSchedule_2
+from operators.crawler.cases.chart_schedule_3 import ChartSchedule_3
 from operators.crawler.cases.ohlc_schedule_1 import OhlcSchedule_1
 from operators.crawler.cases.ohlc_schedule_2 import OhlcSchedule_2
 from operators.crawler.cases.ohlc_schedule_3 import OhlcSchedule_3
