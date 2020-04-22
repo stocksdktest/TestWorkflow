@@ -28,6 +28,28 @@ class CrawlerTestcase(object):
     def parse_crawler_result(self, crawler_result) -> list:
         raise NotImplementedError()
 
+    def custom_round(self,_float, _len=None):
+        if _len != None:
+            if str(_float)[::-1].find('.') <= _len:
+                return (round(float(_float), _len))
+            elif str(_float)[-1] == '5':
+                return (round(float(str(_float)[:-1] + '6'), _len))
+            else:
+                return (round(float(_float), _len))
+        else:
+            if str(_float)[-1] == '5':
+                return (round(float(str(_float)[:-1] + '6')))
+            else:
+                return (round(float(_float)))
+
+    def judge(self,_any) -> bool:
+        try:
+            float(str(_any))
+        except:
+            return False
+        else:
+            return True
+
     def start_crawl(self):
         if self.testcase_config is None or self.testcase_config.paramStrs is None:
             return
