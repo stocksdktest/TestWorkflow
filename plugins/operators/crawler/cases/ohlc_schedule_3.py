@@ -50,7 +50,7 @@ class OhlcSchedule_3(CrawlerTestcase):
                 'lowPrice': str(cr['lowPrice']) if 'lowPrice' in cr.keys() else '-',
                 'closePrice': str(cr['closePrice']) if 'closePrice' in cr.keys() else '-',
                 'tradeVolume': str(cr['tradeVolume']) if 'tradeVolume' in cr.keys() else '-',
-                'transaction_price': str(cr['transaction_price']) if 'transaction_price' in cr.keys() else '-',
+                'transaction_price': (str(self.custom_round(cr['transaction_price'])) if self.judge(cr['transaction_price']) else cr['transaction_price']) if 'transaction_price' in cr.keys() else '-',
             }
         print(dictionary)
         return dictionary

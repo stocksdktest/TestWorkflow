@@ -25,7 +25,6 @@ class QuoteSchedule_1(CrawlerTestcase):
 
     def generate_post_param(self, testcase_param):
         self.SHSC = testcase_param['SHSC']
-        self.ENDDATE = testcase_param['ENDDATE']
         try:
             # TODO 爬虫平台接口调用参数，testcase_param对应于TestcaseConfig中的paramStrs
             return {
@@ -33,53 +32,15 @@ class QuoteSchedule_1(CrawlerTestcase):
                 'SUBTYPE': testcase_param['SUBTYPE'],
                 'STARTDATE': testcase_param['STARTDATE'],
                 'ENDDATE': testcase_param['ENDDATE'],
-                'SHSC': testcase_param['SHSC'],
-                # 'STARTDATE': cur.strftime('%Y-%m-%d-%H-%M-%S'),
-                # 'ENDDATE': (cur + timedelta(seconds=self.crawler_duration_seconds)).strftime('%Y-%m-%d-%H-%M-%S')
             }
         except:
             raise Exception("Testcae(%s) param is invalid: '%s', miss some field" % (self.testcase_id, testcase_param))
 
-    def custom_round(self,_float, _len=None):
-        if _len != None:
-            if str(_float)[::-1].find('.') <= _len:
-                return (round(float(_float), _len))
-            elif str(_float)[-1] == '5':
-                return (round(float(str(_float)[:-1] + '6'), _len))
-            else:
-                return (round(float(_float), _len))
-        else:
-            if str(_float)[-1] == '5':
-                return (round(float(str(_float)[:-1] + '6')))
-            else:
-                return (round(float(_float)))
-    def judge(self,_any) -> bool:
-        temporary = str(_any)
-        try:
-            float(temporary)
-        except:
-            return False
-        else:
-            return True
-    def jjsjsj(self,cr) -> dict:
-        print(self.judge(cr['shadiao']) if 'shadiao' in cr.keys() else 'laji')
-        print('shadiao' in cr.keys())
-        dictionary = {
-            'shadiao':((cr['shadiao'] if float(cr['shadiao']) <= 0 else '+' + str(cr['shadiao'])) if self.judge(cr['shadiao']) else cr['shadiao']) if 'shadiao' in cr.keys() else '-',
-        }
-        return dictionary
+
     def parse_crawler_result(self, crawler_result) -> list:
         # TODO 将爬虫平台获得的数据格式转化为，与Android和iOS相对应的Testcase所生成的数据格式
         print('CrawlerTestcase(%s) get result: %s' % (self.testcase_id, crawler_result))
         print('-----------------------------------')
-        print(self.jjsjsj({'shadiao':'-/-/-'}))
-        print(self.custom_round(0.2135*10,2))
-        print(Decimal(self.custom_round(0.0250 * 10, 1)).quantize(Decimal('0.000')))
-        A = datetime.now()
-        B = datetime.strptime(self.ENDDATE,'%Y-%m-%d-%H-%M-%S')
-        print(A)
-        print(B)
-        print((B - A).seconds if B > A else 20)
         dictionary = {}
         if self.SHSC == 'HSQQ':
             for cr in crawler_result:
