@@ -1,4 +1,6 @@
 from airflow.utils.decorators import apply_defaults
+
+from operators.comparator.base import RecordComparator
 from operators.stock_operator import StockOperator
 
 from utils.mongo_hook import MongoHookWithDB
@@ -15,12 +17,13 @@ class DataCompareOperator(StockOperator):
         super(DataCompareOperator, self).__init__(queue='worker', runner_conf=runner_conf, *args, **kwargs)
         self.task_id_list = task_id_list
         self.sort_id_list = sort_id_list
-        self.sort_and_comprae = sort_and_comprae
+        self.sort_and_compare = sort_and_comprae
         self.mongo_hk = MongoHookWithDB(conn_id='stocksdktest_mongo')
         self.conn = self.mongo_hk.get_conn()
         self.run_times = run_times
         self.quote_detail = quote_detail
         self.mongo_reader = SdkMongoReader(client=self.mongo_hk.client)
+        self.TICK_LIST = ['CRAWLER_TICK_2']
 
     def close_connection(self):
         self.mongo_hk.close_conn()
@@ -81,11 +84,12 @@ class DataCompareOperator(StockOperator):
 
         print("----------------------------- Test Failure --------------------------------")
         if result_exception.__len__() != 0:
-            for x in result_exception[0]['record']:
-                if x['isPass'] == False:
-                    compare_record.append_error(x)
-                else:
-                    compare_record.append_empty(x)
+            for error_and_empty in result_exception:
+                for x in error_and_empty['record']:
+                    if x['isPass'] == False:
+                        compare_record.append_error(x)
+                    else:
+                        compare_record.append_empty(x)
 
         print("----------------------------- Test Success --------------------------------")
         if not self.quote_detail:
@@ -110,7 +114,7 @@ class DataCompareOperator(StockOperator):
                     r2 = y['resultData']
 
                     # for sorting add ids
-                    if self.sort_and_comprae:
+                    if self.sort_and_compare:
                         # reformat r1 and r2:
                         try:
                             key_list_1 = r1.keys()
@@ -144,7 +148,16 @@ class DataCompareOperator(StockOperator):
                         finally:
                             compare_item.add_sort_code_list([code_list1, code_list2])
 
-                    res = record_compare(r1, r2)
+                    try:
+                        testcaseID = x['testcaseID']
+                    except KeyError as e:
+                        testcaseID = None
+
+                    if testcaseID in self.TICK_LIST:
+                        comparator = RecordComparator()
+                        res = comparator.compare_same_key(r1, r2)
+                    else:
+                        res = record_compare(r1, r2)
 
                     if res['result'] == True:
                         item = compare_item.get_item()
@@ -247,7 +260,7 @@ class DataCompareOperator(StockOperator):
         print("dbName is {}".format(dbName))
         print("collectionName is {}".format(collectionName))
 
-        if self.sort_and_comprae:
+        if self.sort_and_compare:
             sort_result1 = self.xcom_pull(context, key=self.sort_id_list[0])
             sort_result2 = self.xcom_pull(context, key=self.sort_id_list[1])
             result['result']['sort1'] = sort_result1['result']
