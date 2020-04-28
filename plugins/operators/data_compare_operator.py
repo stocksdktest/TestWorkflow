@@ -23,6 +23,7 @@ class DataCompareOperator(StockOperator):
         self.run_times = run_times
         self.quote_detail = quote_detail
         self.mongo_reader = SdkMongoReader(client=self.mongo_hk.client)
+        self.comparator = RecordComparator()
         self.TICK_LIST = ['CRAWLER_TICK_2']
 
     def close_connection(self):
@@ -154,10 +155,9 @@ class DataCompareOperator(StockOperator):
                         testcaseID = None
 
                     if testcaseID in self.TICK_LIST:
-                        comparator = RecordComparator()
-                        res = comparator.compare_same_key(r1, r2)
+                        res = self.comparator.compare_same_key(r1, r2)
                     else:
-                        res = record_compare(r1, r2)
+                        res = self.comparator.compare_deep_diff(r1, r2)
 
                     if res['result'] == True:
                         item = compare_item.get_item()
@@ -223,7 +223,7 @@ class DataCompareOperator(StockOperator):
                         r1 = record1['resultData']
                         r2 = record2['resultData']
 
-                        res = record_compare(r1, r2)
+                        res = self.comparator.compare_deep_diff(r1, r2)
                         res['datetime'] = time
                         res['recordID1'] = record1['recordID']
                         res['recordID2'] = record2['recordID']
@@ -278,10 +278,8 @@ class DataCompareOperator(StockOperator):
         except DocumentTooLarge as e:
             print("DocumentTooLarge Error")
             # TODO: 如果Details也过大，应该怎么办
-            if not self.quote_detail:
-                for item in result['result']['false']:
-                    item.pop('result1')
-                    item.pop('result2')
-            else:
-                pass
+            result['result'] = "DocumentTooLarge"
+            result.pop('error')
+            result.pop('mismatch')
+            result.pop('empty')
             col_res.insert_one(result)
