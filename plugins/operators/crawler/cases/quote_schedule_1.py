@@ -29,19 +29,19 @@ class QuoteSchedule_1(CrawlerTestcase):
             # TODO 爬虫平台接口调用参数，testcase_param对应于TestcaseConfig中的paramStrs
             return {
                 'CODE': testcase_param['CODE_P'],
-                'SUBTYPE': testcase_param['SUBTYPE'],
+                'SUBTYPE': testcase_param['SUBTYPE_C'],
                 'STARTDATE': testcase_param['STARTDATE'],
                 'ENDDATE': testcase_param['ENDDATE'],
             }
         except:
             raise Exception("Testcae(%s) param is invalid: '%s', miss some field" % (self.testcase_id, testcase_param))
 
-
     def parse_crawler_result(self, crawler_result) -> list:
         # TODO 将爬虫平台获得的数据格式转化为，与Android和iOS相对应的Testcase所生成的数据格式
         print('CrawlerTestcase(%s) get result: %s' % (self.testcase_id, crawler_result))
         print('-----------------------------------')
         dictionary = {}
+        j = 0
         if self.SHSC == 'HSQQ':
             for cr in crawler_result:
                 dictionary1= {
@@ -94,7 +94,8 @@ class QuoteSchedule_1(CrawlerTestcase):
                 }
                 for i in dictionary1.keys():
                     dictionary1[i] = str(dictionary1[i])
-                dictionary[re.sub('[- :]', '', cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = dictionary1
+                dictionary[re.sub('[- :]', '', cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty_'+str(j)] = dictionary1
+                j += 1
         elif self.SHSC == 'HSSC':
             for cr in crawler_result:
                 dictionary1 = {
@@ -147,7 +148,8 @@ class QuoteSchedule_1(CrawlerTestcase):
                 }
                 for i in dictionary1:
                     dictionary1[i] = str(dictionary1[i])
-                dictionary[re.sub('[- :]','',cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = dictionary1
+                dictionary[re.sub('[- :]','',cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty_' + str(j)] = dictionary1
+                j += 1
         elif self.SHSC == 'QHSC':
             for cr in crawler_result:
                 dictionary1 = {
@@ -176,7 +178,8 @@ class QuoteSchedule_1(CrawlerTestcase):
                 }
                 for i in dictionary1:
                     dictionary1[i] = str(dictionary1[i])
-                dictionary[re.sub('[- :]', '', cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = dictionary1
+                dictionary[re.sub('[- :]', '', cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty_'+str(j)] = dictionary1
+                j += 1
         elif self.SHSC == 'ZS':
             for cr in crawler_result:
                 dictionary1 = {
@@ -201,7 +204,8 @@ class QuoteSchedule_1(CrawlerTestcase):
                 }
                 for i in dictionary1:
                     dictionary1[i] = str(dictionary1[i])
-                dictionary[re.sub('[- :]', '', cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = dictionary1
+                dictionary[re.sub('[- :]', '', cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty_'+str(j)] = dictionary1
+                j += 1
         elif self.SHSC == 'GG':
             for cr in crawler_result:
                 dictionary1 = {
@@ -228,7 +232,8 @@ class QuoteSchedule_1(CrawlerTestcase):
                 }
                 for i in dictionary1:
                     dictionary1[i] = str(dictionary1[i])
-                dictionary[re.sub('[- :]', '', cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = dictionary1
+                dictionary[re.sub('[- :]', '', cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty_'+str(j)] = dictionary1
+                j += 1
         elif self.SHSC == 'JJ':
             for cr in crawler_result:
                 dictionary1 = {
@@ -269,7 +274,8 @@ class QuoteSchedule_1(CrawlerTestcase):
                 }
                 for i in dictionary1:
                     dictionary1[i] = str(dictionary1[i])
-                dictionary[re.sub('[- :]', '', cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = dictionary1
+                dictionary[re.sub('[- :]', '', cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty_'+str(j)] = dictionary1
+                j += 1
         elif self.SHSC == 'ZQ':
             for cr in crawler_result:
                 dictionary1 = {
@@ -306,7 +312,8 @@ class QuoteSchedule_1(CrawlerTestcase):
                 }
                 for i in dictionary1:
                     dictionary1[i] = str(dictionary1[i])
-                dictionary[re.sub('[- :]', '', cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = dictionary1
+                dictionary[re.sub('[- :]', '', cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty_'+str(j)] = dictionary1
+                j += 1
         elif self.SHSC == 'KCB':
             for cr in crawler_result:
                 dictionary1 = {
@@ -364,7 +371,8 @@ class QuoteSchedule_1(CrawlerTestcase):
                 }
                 for i in dictionary1:
                     dictionary1[i] = str(dictionary1[i])
-                dictionary[re.sub('[- :]', '', cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = dictionary1
+                dictionary[re.sub('[- :]', '', cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty_'+str(j)] = dictionary1
+                j += 1
         else:
             print('-------输入的(SHSC)不在范围内--------')
         print(dictionary)

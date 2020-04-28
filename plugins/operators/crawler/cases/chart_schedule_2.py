@@ -26,7 +26,7 @@ class ChartSchedule_2(CrawlerTestcase):
             return {
                 'CODE': testcase_param['CODE_P'],
                 'TYPE': testcase_param['TYPE'],
-                'SUBTYPE': testcase_param['SUBTYPE'],
+                'SUBTYPE': testcase_param['SUBTYPE_C'],
             }
         except:
             raise Exception("Testcae(%s) param is invalid: '%s', miss some field" % (self.testcase_id, testcase_param))
@@ -37,29 +37,33 @@ class ChartSchedule_2(CrawlerTestcase):
         print('CrawlerTestcase(%s) get result: %s' % (self.testcase_id, crawler_result))
         print('-----------------------------------')
         dictionary = {}
+        i = 0
         if self.TYPE == 'ChartTypeBeforeData':
             for cr in crawler_result:
-                dictionary[re.sub('[- :]','',cr['transactionTime']) if 'transactionTime' in cr.keys() else 'isEmpty'] = {
+                dictionary[re.sub('[- :]','',cr['transactionTime']) if 'transactionTime' in cr.keys() else 'isEmpty_'+str(i)] = {
                     'datetime' : re.sub('[- :]','',cr['transactionTime']) if 'transactionTime' in cr.keys() else '-',
                     'closePrice' : str(cr['transactionPrice']) if 'transactionPrice' in cr.keys() else '-',
                     # 'tradeVolume' : str(cr['singleVolume']) if 'singleVolume' in cr.keys() else '-',
                     # 'averagePrice' : str(cr['averagePrice']) if 'averagePrice' in cr.keys() else '-',
                 }
+                i += 1
         elif self.TYPE == 'ChartTypeAfterData':
             for cr in crawler_result:
-                dictionary[re.sub('[- :]','',cr['transactionTime']) if 'transactionTime' in cr.keys() else 'isEmpty'] = {
+                dictionary[re.sub('[- :]','',cr['transactionTime']) if 'transactionTime' in cr.keys() else 'isEmpty_'+str(i)] = {
                     'datetime' : re.sub('[- :]','',cr['transactionTime']) if 'transactionTime' in cr.keys() else '-',
                     'closePrice' : str(cr['transactionPrice']) if 'transactionPrice' in cr.keys() else '-',
                     'tradeVolume' : str(cr['singleVolume']) if 'singleVolume' in cr.keys() else '-',
                     # 'averagePrice' : str(cr['averagePrice']) if 'averagePrice' in cr.keys() else '-',
                 }
+                i += 1
         else:
             for cr in crawler_result:
-                dictionary[re.sub('[- :]','',cr['transactionTime']) if 'transactionTime' in cr.keys() else 'isEmpty'] = {
+                dictionary[re.sub('[- :]','',cr['transactionTime']) if 'transactionTime' in cr.keys() else 'isEmpty_'+str(i)] = {
                     'datetime' : re.sub('[- :]','',cr['transactionTime']) if 'transactionTime' in cr.keys() else '-',
                     'closePrice' : str(cr['transactionPrice']) if 'transactionPrice' in cr.keys() else '-',
                     'tradeVolume' : str(cr['singleVolume']) if 'singleVolume' in cr.keys() else '-',
                     'averagePrice' : str(cr['averagePrice']) if 'averagePrice' in cr.keys() else '-',
                 }
+                i += 1
         print(dictionary)
         return dictionary

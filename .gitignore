@@ -1,3 +1,4 @@
+*.DS_Store
 .idea/
 plugins/java_gen/
 plugins/swift_gen/
