@@ -27,7 +27,7 @@ class OhlcSchedule_1(CrawlerTestcase):
             return {
                 'CODE': testcase_param['CODE_P'],
                 'PERIOD': testcase_param['PERIOD'],
-                'SUBTYPE': testcase_param['SUBTYPE'],
+                'SUBTYPE': testcase_param['SUBTYPE_C'],
                 'PRICEADJUSTEDMODE': testcase_param['PRICEADJUSTEDMODE'],
                 'STARTDATE': testcase_param['STARTDATE'],
                 'ENDDATE': testcase_param['ENDDATE']
@@ -41,8 +41,9 @@ class OhlcSchedule_1(CrawlerTestcase):
         print('CrawlerTestcase(%s) get result: %s' % (self.testcase_id, crawler_result))
         print('-----------------------------------')
         dictionary = {}
+        i = 0
         for cr in crawler_result:
-            dictionary[re.sub('[- :]','',cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty'] = {
+            dictionary[re.sub('[- :]','',cr['dataTime']) if 'dataTime' in cr.keys() else 'isEmpty_'+str(i)] = {
                 'datetime': re.sub('[- :]','',cr['dataTime']) if 'dataTime' in cr.keys() else '-',
                 'openPrice': str(cr['openPrice']) if 'openPrice' in cr.keys() else '-',
                 'highPrice': str(cr['highPrice']) if 'highPrice' in cr.keys() else '-',
@@ -51,5 +52,6 @@ class OhlcSchedule_1(CrawlerTestcase):
                 'tradeVolume': str(cr['tradeVolume']) if 'tradeVolume' in cr.keys() else '-',
                 'transaction_price': (str(self.custom_round(cr['transaction_price'])) if self.judge(cr['transaction_price']) else cr['transaction_price']) if 'transaction_price' in cr.keys() else '-',
             }
+            i += 1
         print(dictionary)
         return dictionary

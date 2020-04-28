@@ -1,4 +1,5 @@
 from operators.crawler.cases import *
+from operators.crawler.cases.FuquanSchedule_1 import FuquanSchedule_1
 from operators.crawler.cases.chart_schedule_1 import ChartSchedule_1
 from operators.crawler.cases.chart_schedule_2 import ChartSchedule_2
 from operators.crawler.cases.chart_schedule_3 import ChartSchedule_3
@@ -19,5 +20,6 @@ StockTestcaseClasses = {
     'CRAWLER_OHLCV3_2' : OhlcSchedule_2,
     'CRAWLER_OHLCV3_3' : OhlcSchedule_3,
     'CRAWLER_TICK_1' : TickSchedule_1, #分时明细
-    'CRAWLER_TICK_2' : TickSchedule_2
+    'CRAWLER_TICK_2' : TickSchedule_2,
+    'CRAWLER_OHLCSUBTEST_1' : FuquanSchedule_1 #k线复权
 }
