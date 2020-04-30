@@ -73,7 +73,7 @@ class CompareResultItem(object):
             location = data
             item.set_location(location)
             item.set_src_a(src_a=raw_datas[location]['old_value'])
-            item.set_src_a(src_a=raw_datas[location]['new_value'])
+            item.set_src_b(src_b=raw_datas[location]['new_value'])
             self.insert_details(item)
 
     def insert_dictionary_item_removed(self, raw_datas):
