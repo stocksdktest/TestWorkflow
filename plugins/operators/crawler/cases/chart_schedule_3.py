@@ -39,7 +39,8 @@ class ChartSchedule_3(CrawlerTestcase):
         dictionary = {}
         i = 0
         if self.TYPE == 'ChartTypeBeforeData':
-            for cr in crawler_result:
+            crawler_result_cut = [crawler_result[num] for num in range(len(crawler_result) - 5)]
+            for cr in crawler_result_cut:
                 dictionary[re.sub('[- :]','',cr['transactionTime']) if 'transactionTime' in cr.keys() else 'isEmpty_'+str(i)] = {
                     'datetime' : re.sub('[- :]','',cr['transactionTime']) if 'transactionTime' in cr.keys() else '-',
                     'closePrice' : str(cr['transactionPrice']) if 'transactionPrice' in cr.keys() else '-',
