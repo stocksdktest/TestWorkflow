@@ -118,8 +118,8 @@ class DataCompareOperator(StockOperator):
                     if self.sort_and_compare:
                         # reformat r1 and r2:
                         try:
-                            key_list_1 = r1.keys()
-                            key_list_2 = r2.keys()
+                            key_list_1 = list(r1.keys()).copy()
+                            key_list_2 = list(r2.keys()).copy()
                             for key in key_list_1:
                                 item = r1[key]
                                 if 'id' in item.keys():
@@ -148,15 +148,16 @@ class DataCompareOperator(StockOperator):
                         # record code_list
                         code_list1 = list()
                         code_list2 = list()
+
                         try:
                             for r in r1.values():
-                                if isinstance(x, dict):
+                                if isinstance(r, dict):
                                     if 'id' in r.keys():
                                         code_list1.append(r['id'])
                                     elif 'ID' in r.keys():
                                         code_list1.append(r['ID'])
                             for r in r2.values():
-                                if isinstance(x, dict):
+                                if isinstance(r, dict):
                                     if 'id' in r.keys():
                                         code_list2.append(r['id'])
                                     elif 'ID' in r.keys():
@@ -296,7 +297,8 @@ class DataCompareOperator(StockOperator):
         except DocumentTooLarge as e:
             print("DocumentTooLarge Error")
             # TODO: 如果Details也过大，应该怎么办
-            result['result'] = "DocumentTooLarge"
+            result['error_msg'] = "DocumentTooLarge"
+            result.pop('result')
             result.pop('error')
             result.pop('mismatch')
             result.pop('empty')
