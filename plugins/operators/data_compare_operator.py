@@ -122,11 +122,23 @@ class DataCompareOperator(StockOperator):
                             key_list_2 = r2.keys()
                             for key in key_list_1:
                                 item = r1[key]
-                                id = item['id'].replace('.',"")
+                                if 'id' in item.keys():
+                                    id_key = 'id'
+                                elif 'ID' in item.keys():
+                                    id_key = 'ID'
+                                else:
+                                    continue
+                                id = item[id_key].replace('.',"")
                                 r1[id] = r1.pop(key)
                             for key in key_list_2:
                                 item = r2[key]
-                                id = item['id'].replace('.',"")
+                                if 'id' in item.keys():
+                                    id_key = 'id'
+                                elif 'ID' in item.keys():
+                                    id_key = 'ID'
+                                else:
+                                    continue
+                                id = item[id_key].replace('.',"")
                                 r2[id] = r2.pop(key)
                         except KeyError as e:
                             print("Error when reformat sort records", e)
@@ -139,10 +151,16 @@ class DataCompareOperator(StockOperator):
                         try:
                             for r in r1.values():
                                 if isinstance(x, dict):
-                                    code_list1.append(r['id'])
+                                    if 'id' in r.keys():
+                                        code_list1.append(r['id'])
+                                    elif 'ID' in r.keys():
+                                        code_list1.append(r['ID'])
                             for r in r2.values():
                                 if isinstance(x, dict):
-                                    code_list2.append(r['id'])
+                                    if 'id' in r.keys():
+                                        code_list2.append(r['id'])
+                                    elif 'ID' in r.keys():
+                                        code_list2.append(r['ID'])
 
                         except KeyError as e:
                             print("Error when id", e)
