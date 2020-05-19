@@ -67,14 +67,23 @@ class CompareResultItem(object):
             self.insert_details(item)
 
     def insert_values_changed(self, raw_datas):
-        self.false_count = self.false_count + raw_datas.__len__()
         for data in raw_datas:
             item = CompareDetailItem(type=CompareResult['Data Inconsistency'])
             location = data
             item.set_location(location)
-            item.set_src_a(src_a=raw_datas[location]['old_value'])
-            item.set_src_b(src_b=raw_datas[location]['new_value'])
+            v1 = raw_datas[location]['old_value']
+            v2 = raw_datas[location]['new_value']
+            try:
+                a = float(v1)
+                b = float(v2)
+                if a == b:
+                    continue
+            except Exception as e:
+                pass
+            item.set_src_a(src_a=v1)
+            item.set_src_b(src_b=v2)
             self.insert_details(item)
+            self.false_count = self.false_count + raw_datas.__len__()
 
     def insert_dictionary_item_removed(self, raw_datas):
         self.false_count = self.false_count + raw_datas.__len__()
