@@ -88,6 +88,7 @@ class CompareResultRecord(StockResultRecord):
         self.result['error'] = self.error
         self.result['mismatch'] = self.mismatch
         self.result['empty'] = self.empty
+        self.result['error_msg'] = None
 
     def append_compare_true(self, item):
         self.compare['true'].append(item)

@@ -2,7 +2,6 @@ from airflow.exceptions import AirflowException
 from airflow.utils.decorators import apply_defaults
 
 from operators.stock_operator import StockOperator
-from hooks.github_hook import GithubHook
 from airflow.contrib.hooks.ftp_hook import FTPHook
 from ftplib import error_perm
 from utils import *
@@ -56,16 +55,8 @@ class ReleaseCIOperator(StockOperator):
         raise NotImplementedError()
 
     def execute(self, context):
-        github_client = GithubHook(conn_id=self.repo_name)
-        repo = github_client.get_repo(self.repo_name)
         ftp_client = FTPHook(ftp_conn_id='ftp_default')
         conn = ftp_client.get_conn()
-
-        if repo is None:
-            raise AirflowException('repo %s not found' % self.repo_name)
-
-        if not github_client.check_release_sha(repo, self.tag_id, self.tag_sha):
-            raise AirflowException('tag %s sha %s not match' % (self.tag_id, self.tag_sha))
 
         try:
             release_assets = ftp_client.list_directory(self.remote_path)
