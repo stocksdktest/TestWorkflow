@@ -109,12 +109,12 @@ class RecordComparator(object):
 
         for key in keys_a:
             if key not in keys:
-                print("record_a pop {}".format(key))
+                # print("record_a pop {}".format(key))
                 record_a.pop(key)
 
         for key in keys_b:
             if key not in keys:
-                print("record_b pop {}".format(key))
+                # print("record_b pop {}".format(key))
                 record_b.pop(key)
 
     def compare(self, record_a, record_b):
