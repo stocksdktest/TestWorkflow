@@ -38,14 +38,34 @@ csv_to_sdk = {
     '总卖价':'averageSell',
     '卖盘数据': 'sellVolume',
     '买盘数据': 'buyVolume',
-    '权证1':'buyPrices',
-    '发卖盘数':'sellPrices',
+    # '权证1':'buyPrices-buyVolumes',
+    # '发卖盘数':'sellPrices-sellVolumes',
+    '买价1':'buyPrice1',
+    '买价2':'buyPrice2',
+    '买价3':'buyPrice3',
+    '买价4':'buyPrice4',
+    '买价5':'buyPrice5',
+    '买量1':'buyVolume1',
+    '买量2':'buyVolume2',
+    '买量3':'buyVolume3',
+    '买量4':'buyVolume4',
+    '买量5':'buyVolume5',
+    '卖价1': 'sellPrice1',
+    '卖价2': 'sellPrice2',
+    '卖价3': 'sellPrice3',
+    '卖价4': 'sellPrice4',
+    '卖价5': 'sellPrice5',
+    '卖量1': 'sellVolume1',
+    '卖量2': 'sellVolume2',
+    '卖量3': 'sellVolume3',
+    '卖量4': 'sellVolume4',
+    '卖量5': 'sellVolume5',
 }
 
 
 def get_csv_data(csvname):
     lines = list()
-    with open(csvname, 'r', encoding='utf-8') as f:
+    with open(csvname, 'r', encoding='UTF-8-sig') as f:
         reader = csv.reader(f)
         print(type(reader))
         for row in reader:
@@ -68,6 +88,26 @@ def get_csv_data(csvname):
                 record[csv_to_sdk[label]] = value
         if 'datetime' in record.keys():
             record['datetime'] = record['datetime'].split('.')[0].replace('-', '').replace(':', '')
+
+        # process buyPrices buyVolumes sellPrices sellVolumes
+        base_lists = ['buyPrices', 'buyVolumes', 'sellPrices', 'sellVolumes']
+        base_keys = ['buyPrice', 'buyVolume', 'sellPrice', 'sellVolume']
+
+        for key in base_lists:
+            record[key] = list()
+
+        record_keys = record.keys()
+
+        for i in range(base_lists.__len__()):
+            base_list = record[base_lists[i]] # list to append
+            for j in range(1,6):
+                key = base_keys[i] + str(j)
+                if key in record_keys:
+                    base_list.append(record[key])
+                    record.pop(key)
+                else:
+                    base_list.append(None)
+
         records.append(record)
 
     return records
@@ -144,19 +184,21 @@ class FileCompareOperator(StockOperator):
 
         # read data from csv
         csv_records = get_csv_data(path)
+        print("csv_records.length is {}".format(csv_records.__len__()))
 
         # Get the datas from mongodb to compare
         cursor = self.mongo_hk.get_collection('test_result').distinct('runnerID', {'jobID': self.jobID})
         runnerIDs = list(cursor)
         runnerID = runnerIDs[0]
-        sdk_records = self.get_mongo_data(runnerID)
-        # prefix = '/media/young/学习/My Programs/Python Programs/Dev Testworkflow/TestWorkflow/testcases/'
-        # sdk_records = load_records(prefix + 'records1.json')
+        # sdk_records = self.get_mongo_data(runnerID)
+        prefix = '/media/young/学习/My Programs/Python Programs/Dev Testworkflow/TestWorkflow/testcases/'
+        sdk_records = load_records(prefix + 'records1.json')
 
         # preprocess data and distinguish by datetime Todo: can use mongodb's aggregate?
-        results = [item['resultData'] for item in sdk_records]
-        results = unique_datetime(results)
+        results_sdk = [item['resultData'] for item in sdk_records]
+        results_sdk = unique_datetime(results_sdk)
         results_csv = unique_datetime(csv_records)
+        print("results_csv.length is {}".format(results_csv.__len__()))
 
         # Data Compare
         compare_record = CompareResultRecord(
@@ -165,9 +207,13 @@ class FileCompareOperator(StockOperator):
             id1=self.jobID,
             id2=self.file_name
         )
-        self.compare_csv_sdk(results, results_csv, compare_record)
+        self.compare_csv_sdk(results_sdk, results_csv, compare_record)
         result = compare_record.get_result()
 
         self.mongo_hk.get_collection('excel_result').insert_one(result)
 
-        return result
+        return {
+            'result':result,
+            'results_sdk':results_sdk,
+            'results_csv':results_csv
+        }

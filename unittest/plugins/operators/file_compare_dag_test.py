@@ -48,7 +48,8 @@ def test_file_compare():
             task_id='file_compare',
             provide_context=True,
             jobID='manual__2020-05-12T00:55:55.479340 00:00',
-            file_name='DispMD_5600000_20200512.csv'
+            # file_name='DispMD_5600000_20200512.csv'
+            file_name='5.12-600000.sh.csv'
         )
 
         runnerid_provider >> file_compare
