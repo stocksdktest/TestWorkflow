@@ -4,6 +4,7 @@ import sys
 import csv
 import pymongo
 import json
+import re
 from airflow.exceptions import AirflowException
 from airflow.utils.decorators import apply_defaults
 
@@ -13,7 +14,7 @@ from protos_gen import RunnerConfig
 
 from utils.mongo_hook import MongoHookWithDB
 from utils import *
-from collections import defaultdict
+from collections import defaultdict, Sequence
 
 # TODO:
 #  1. 代码.sh
@@ -40,26 +41,28 @@ csv_to_sdk = {
     '买盘数据': 'buyVolume',
     # '权证1':'buyPrices-buyVolumes',
     # '发卖盘数':'sellPrices-sellVolumes',
-    '买价1':'buyPrice1',
-    '买价2':'buyPrice2',
-    '买价3':'buyPrice3',
-    '买价4':'buyPrice4',
-    '买价5':'buyPrice5',
-    '买量1':'buyVolume1',
-    '买量2':'buyVolume2',
-    '买量3':'buyVolume3',
-    '买量4':'buyVolume4',
-    '买量5':'buyVolume5',
-    '卖价1': 'sellPrice1',
-    '卖价2': 'sellPrice2',
-    '卖价3': 'sellPrice3',
-    '卖价4': 'sellPrice4',
-    '卖价5': 'sellPrice5',
-    '卖量1': 'sellVolume1',
-    '卖量2': 'sellVolume2',
-    '卖量3': 'sellVolume3',
-    '卖量4': 'sellVolume4',
-    '卖量5': 'sellVolume5',
+    '发卖盘数': 'buyPrices-buyVolumes',
+    '权证1': 'sellPrices-sellVolumes',
+    # '买价1':'buyPrice1',
+    # '买价2':'buyPrice2',
+    # '买价3':'buyPrice3',
+    # '买价4':'buyPrice4',
+    # '买价5':'buyPrice5',
+    # '买量1':'buyVolume1',
+    # '买量2':'buyVolume2',
+    # '买量3':'buyVolume3',
+    # '买量4':'buyVolume4',
+    # '买量5':'buyVolume5',
+    # '卖价1': 'sellPrice1',
+    # '卖价2': 'sellPrice2',
+    # '卖价3': 'sellPrice3',
+    # '卖价4': 'sellPrice4',
+    # '卖价5': 'sellPrice5',
+    # '卖量1': 'sellVolume1',
+    # '卖量2': 'sellVolume2',
+    # '卖量3': 'sellVolume3',
+    # '卖量4': 'sellVolume4',
+    # '卖量5': 'sellVolume5',
 }
 
 
@@ -76,11 +79,13 @@ def get_csv_data(csvname):
     cols = labels.__len__()
     rows = lines.__len__()
 
+    number_set = dict()
+
     for i in range(1, rows):
         record = dict()
         line = lines[i]
         for j in range(0, cols):
-            label = labels[j]
+            label = labels[j].replace(' ','') # remove space
             if label in target_labels:
                 value = line[j]
                 if value == '0':
@@ -89,26 +94,47 @@ def get_csv_data(csvname):
         if 'datetime' in record.keys():
             record['datetime'] = record['datetime'].split('.')[0].replace('-', '').replace(':', '')
 
-        # process buyPrices buyVolumes sellPrices sellVolumes
         base_lists = ['buyPrices', 'buyVolumes', 'sellPrices', 'sellVolumes']
-        base_keys = ['buyPrice', 'buyVolume', 'sellPrice', 'sellVolume']
-
         for key in base_lists:
             record[key] = list()
 
-        record_keys = record.keys()
+        # V2: 自己解析权证
+        # '权证1': 'buyPrices-buyVolumes',
+        # '发卖盘数': 'sellPrices-sellVolumes',
+        # TODO: 自己解析权证1和发卖盘数
+        # TODO: STEP1: 用 re 匹配连续空格并分割
+        buyPrices_buyVolumes = re.split(pattern=" +", string=record['buyPrices-buyVolumes'])
+        sellPrices_sellVolumes = re.split(pattern=" +", string=record['sellPrices-sellVolumes'])
+        # print(buyPrices_buyVolumes)
+        # print(sellPrices_sellVolumes)
+        # TODO: STEP2: 分别解析权证1和发卖盘数
+        base_number = 10 # 如果没有数据的记录
+        n = buyPrices_buyVolumes.__len__()
+        if n not in number_set.keys():
+            number_set[n] = buyPrices_buyVolumes
 
-        for i in range(base_lists.__len__()):
-            base_list = record[base_lists[i]] # list to append
-            for j in range(1,6):
-                key = base_keys[i] + str(j)
-                if key in record_keys:
-                    base_list.append(record[key])
-                    record.pop(key)
-                else:
-                    base_list.append(None)
+        cnt = n - base_number
+        base_x = 0
+        base_y = 0
+        for i in range(0, base_number//2):
+            x = 2*i + base_x
+            y = 2*i+1 + base_y
+            record['buyPrices'].append(buyPrices_buyVolumes[x])
+            record['buyVolumes'].append(buyPrices_buyVolumes[y])
+            record['sellPrices'].append(sellPrices_sellVolumes[x])
+            record['sellVolumes'].append(sellPrices_sellVolumes[y])
+            if cnt > 0:
+                cnt = cnt - 1
+                base_x = base_x + 1
+                base_y = base_y + 1
+
+        record['buyPrices'].reverse()
+        record['buyVolumes'].reverse()
 
         records.append(record)
+
+    for n in number_set.keys():
+        print("n is ", n, ":", number_set[n])
 
     return records
 
@@ -129,6 +155,57 @@ def unique_datetime(results: list):
                 res[time] = result
     return res
 
+def to_float(data, type=None):
+    res = data
+    try:
+        res = float(data)
+        if type is not None:
+            if type == '/100':
+                res = res/100
+    except ValueError as e:
+        pass
+    except TypeError as e:
+        pass
+    finally:
+        return res
+
+def data_to_float(item:dict, key, is_sdk = True, type = None):
+    if key in item.keys():
+        if is_sdk:
+            item[key] = to_float(item[key], type=type)
+        else:
+            item[key] = to_float(item[key])
+
+
+
+def data_proprocess(item: dict, is_sdk = True):
+    print("Process process, is_sdk is {}".format(is_sdk))
+    print("item is {}".format(item))
+
+    data_to_float(item, 'volume', is_sdk = is_sdk, type = '/100')
+    data_to_float(item, 'nowVolume', is_sdk = is_sdk, type = '/100')
+    data_to_float(item, 'sellVolume', is_sdk = is_sdk, type = '/100')
+    data_to_float(item, 'buyVolume', is_sdk = is_sdk, type = '/100')
+    data_to_float(item, 'turnoverRate')
+    data_to_float(item, 'amplitudeRate')
+
+    if item.get('sellVolumes') is not None and isinstance(item.get('sellVolumes'), list):
+        sellVolumes = item.get('sellVolumes')
+        n = sellVolumes.__len__()
+        for i in range(n):
+            if is_sdk:
+                sellVolumes[i] = to_float(sellVolumes[i], type='/100')
+            else:
+                sellVolumes[i] = to_float(sellVolumes[i])
+
+    if item.get('buyVolumes') is not None and isinstance(item.get('buyVolumes'), list):
+        buyVolumes = item.get('buyVolumes')
+        n = buyVolumes.__len__()
+        for i in range(n):
+            if is_sdk:
+                buyVolumes[i] = to_float(buyVolumes[i], type='/100')
+            else:
+                buyVolumes[i] = to_float(buyVolumes[i])
 
 class FileCompareOperator(StockOperator):
     @apply_defaults
@@ -163,6 +240,8 @@ class FileCompareOperator(StockOperator):
             item_csv = data_csv[time]
             item_sdk = data_sdk[time]
             comparator.save_same_key(item_csv, item_sdk)
+            data_proprocess(item_csv, is_sdk= False)
+            data_proprocess(item_sdk, is_sdk= True)
             res = comparator.compare_deep_diff(item_csv, item_sdk)
             if res['result']:
                 compare_record.append_compare_true(res)
