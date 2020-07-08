@@ -16,8 +16,8 @@ with DAG(
         runner_conf=RunnerConfig(),
         task_id='file_compare',
         provide_context=True,
-        jobID='manual__2020-05-12T00:55:55.479340 00:00',
-        file_name='DispMD_5600000_20200512.csv'
+        jobID='manual__2020-06-24T01:03:08.609581 00:00',
+        file_name = 'DispMD_5688001_20200629.csv'
     )
 
 if __name__ == "__main__":
