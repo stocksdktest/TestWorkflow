@@ -55,7 +55,7 @@ class TestCrawlerRunnerOperator(unittest.TestCase):
         runner_conf.storeConfig.dbName = 'stockSdkTest'
         runner_conf.storeConfig.collectionName = 'test_result'
         case_conf = TestcaseConfig()
-        case_conf.testcaseID = 'QUOTEDETAIL_1'
+        case_conf.testcaseID = 'CRAWLER_QUOTEDETAIL_1'
         case_conf.continueWhenFailed = True
         case_conf.roundIntervalSec = 3
         case_conf.paramStrs.extend([

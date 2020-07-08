@@ -90,7 +90,7 @@ def get_csv_data(csvname):
                 value = line[j]
                 if value == '0':
                     value = '-'
-                record[csv_to_sdk[label]] = value
+                record[csv_to_sdk[label]] = value.strip(' ')
         if 'datetime' in record.keys():
             record['datetime'] = record['datetime'].split('.')[0].replace('-', '').replace(':', '')
 
@@ -113,16 +113,24 @@ def get_csv_data(csvname):
         if n not in number_set.keys():
             number_set[n] = buyPrices_buyVolumes
 
+        if record['datetime'] == '20200624092429':
+            print('buyPrices-buyVolumes', record['buyPrices-buyVolumes'])
+            print(buyPrices_buyVolumes)
+            print('sellPrices-sellVolumes', record['sellPrices-sellVolumes'])
+            print(sellPrices_sellVolumes)
+
         cnt = n - base_number
         base_x = 0
         base_y = 0
         for i in range(0, base_number//2):
             x = 2*i + base_x
             y = 2*i+1 + base_y
-            record['buyPrices'].append(buyPrices_buyVolumes[x])
-            record['buyVolumes'].append(buyPrices_buyVolumes[y])
-            record['sellPrices'].append(sellPrices_sellVolumes[x])
-            record['sellVolumes'].append(sellPrices_sellVolumes[y])
+            if buyPrices_buyVolumes[x] != '0' and buyPrices_buyVolumes[y] != '0':
+                record['buyPrices'].append(buyPrices_buyVolumes[x])
+                record['buyVolumes'].append(buyPrices_buyVolumes[y])
+            if sellPrices_sellVolumes[x] != '0' and sellPrices_sellVolumes[y] != '0':
+                record['sellPrices'].append(sellPrices_sellVolumes[x])
+                record['sellVolumes'].append(sellPrices_sellVolumes[y])
             if cnt > 0:
                 cnt = cnt - 1
                 base_x = base_x + 1
@@ -130,6 +138,21 @@ def get_csv_data(csvname):
 
         record['buyPrices'].reverse()
         record['buyVolumes'].reverse()
+
+        # TODO: 整理异常数据
+        abnormal_table = ['一', '-']
+        refs = [record['buyPrices'], record['buyVolumes'], record['sellPrices'], record['sellVolumes']]
+        for ref in refs:
+            for i in range(ref.__len__()):
+                if ref[i] in abnormal_table:
+                    ref[i] = 0.0
+
+
+        if record['datetime'] == '20200624092429':
+            print('record[buyPrices]', record['buyPrices'])
+            print('record[buyVolumes]', record['buyVolumes'])
+            print('record[sellPrices]', record['sellPrices'])
+            print('record[sellVolumes]', record['sellVolumes'])
 
         records.append(record)
 
@@ -145,6 +168,11 @@ def load_records(file):
 
 
 def unique_datetime(results: list):
+    '''
+    @param results: list of resultData in records
+    @return: a dict, key is datetime, value is resultData
+    To filter the redundant resultData by unique datetime.
+    '''
     times = set()
     res = dict()
     for result in results:
@@ -162,6 +190,8 @@ def to_float(data, type=None):
         if type is not None:
             if type == '/100':
                 res = res/100
+            if type == '*100':
+                res = round(res*100, 2)
     except ValueError as e:
         pass
     except TypeError as e:
@@ -179,15 +209,19 @@ def data_to_float(item:dict, key, is_sdk = True, type = None):
 
 
 def data_proprocess(item: dict, is_sdk = True):
-    print("Process process, is_sdk is {}".format(is_sdk))
-    print("item is {}".format(item))
+    # print("Process process, is_sdk is {}".format(is_sdk))
+    # print("item is {}".format(item))
 
-    data_to_float(item, 'volume', is_sdk = is_sdk, type = '/100')
+    # data_to_float(item, 'volume', is_sdk = is_sdk, type = '/100')
     data_to_float(item, 'nowVolume', is_sdk = is_sdk, type = '/100')
     data_to_float(item, 'sellVolume', is_sdk = is_sdk, type = '/100')
     data_to_float(item, 'buyVolume', is_sdk = is_sdk, type = '/100')
+    # data_to_float(item, 'volume')
+    # data_to_float(item, 'nowVolume')
+    # data_to_float(item, 'sellVolume')
+    # data_to_float(item, 'buyVolume')
     data_to_float(item, 'turnoverRate')
-    data_to_float(item, 'amplitudeRate')
+    data_to_float(item, 'amplitudeRate', is_sdk=is_sdk, type='*100')
 
     if item.get('sellVolumes') is not None and isinstance(item.get('sellVolumes'), list):
         sellVolumes = item.get('sellVolumes')
@@ -217,19 +251,34 @@ class FileCompareOperator(StockOperator):
         self.conn = self.mongo_hk.get_conn()
 
     def get_mongo_data(self, runnerID):
+        '''
+        @param runnerID: runnerID of sdk records
+        @return: a list of resultData with runnerID
+        use json.dump and load for cache
+        '''
         print("get data from mongodb with runnerID = {}".format(runnerID))
-        col = self.mongo_hk.get_collection('test_result')
-        records = list()
-        cnts = 0
-        all = col.find({'runnerID': runnerID}).count()
-        print("There are {} records".format(all))
-        cursor = col.find({'runnerID': runnerID})
-        for record in cursor:
-            cnts = cnts + 1
-            print("get_mongo_data of runnerID {} is to {}%".format(runnerID, cnts / all))
-            record['_id'] = record['_id'].__str__()
-            records.append(record)
-        return records
+        path = '/tmp/sdks/{}.json'.format(runnerID)
+        if os.path.exists(path):
+            print("Get from local cache")
+            return load_records(path)
+        else:
+            print("Get from remote mongodb")
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            col = self.mongo_hk.get_collection('test_result')
+            records = list()
+            cnts = 0
+            all = col.find({'runnerID': runnerID}).count()
+            print("There are {} records".format(all))
+            cursor = col.find({'runnerID': runnerID})
+            for record in cursor:
+                cnts = cnts + 1
+                if cnts % 100 == 0 or cnts == all:
+                    print("get_mongo_data of runnerID {} is to {}%".format(runnerID, cnts / all))
+                record['_id'] = record['_id'].__str__()
+                records.append(record)
+            with open(path, "w", encoding="UTF-8") as f:
+                json.dump(records, f, ensure_ascii=False)
+            return records
 
     def compare_csv_sdk(self, data_csv: dict, data_sdk: dict, compare_record: CompareResultRecord):
         time_csv = set(data_csv.keys())
@@ -252,8 +301,8 @@ class FileCompareOperator(StockOperator):
 
     def execute(self, context):
 
-        url = 'csv/{}'.format(self.file_name)
-        path = '/tmp/csv/{}'.format(self.file_name)
+        url = 'csv/{}'.format(self.file_name) # remote url in ftp sever
+        path = '/tmp/csv/{}'.format(self.file_name) # filepath in local file system
 
         if not os.path.exists(path):
             # if not cache, download csv file from ftp
@@ -268,10 +317,9 @@ class FileCompareOperator(StockOperator):
         # Get the datas from mongodb to compare
         cursor = self.mongo_hk.get_collection('test_result').distinct('runnerID', {'jobID': self.jobID})
         runnerIDs = list(cursor)
+        print('jobID is {}, runnerIDs is {}'.format(self.jobID, runnerIDs))
         runnerID = runnerIDs[0]
-        # sdk_records = self.get_mongo_data(runnerID)
-        prefix = '/media/young/学习/My Programs/Python Programs/Dev Testworkflow/TestWorkflow/testcases/'
-        sdk_records = load_records(prefix + 'records1.json')
+        sdk_records = self.get_mongo_data(runnerID)
 
         # preprocess data and distinguish by datetime Todo: can use mongodb's aggregate?
         results_sdk = [item['resultData'] for item in sdk_records]

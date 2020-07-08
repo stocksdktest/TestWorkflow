@@ -29,9 +29,20 @@ def test_file_compare():
     collectionName = 'test_result'
     runner_conf = get_test_runer_config(dbName=dbName, collectionName=collectionName)
     task_id_list = ['a', 'b']
-    id1 = 'RUN--52fb7f41-aa24-496c-9e19-faa49d2780f7'
-    id2 = 'RUN--df2dbe1c-bcee-4724-a207-3def57f2fcb4'
-
+    id1 = 'a' # useless
+    id2 = 'b' # useless
+    # 5.12 original version
+    # jobID = 'manual__2020-05-12T00:55:55.479340 00:00',
+    # file_name = '5.12-600000.sh.csv'
+    # 688001.sh
+    # jobID = 'manual__2020-06-24T01:03:08.609581 00:00'
+    # file_name = 'DispMD_5688001_20200629.csv'
+    # 600000.sh
+    # jobID = 'manual__2020-06-24T01:03:16.349728 00:00'
+    # file_name = 'DispMD_5600000_20200629.csv'
+    # 900905.sh
+    jobID = 'manual__2020-06-24T01:03:44.519576 00:00'
+    file_name = 'DispMD_5900905_20200629.csv'
     with DAG(dag_id='any_dag', start_date=datetime.now()) as dag:
         def push_function(**kwargs):
             kwargs['ti'].xcom_push(key=task_id_list[0], value=id1)
@@ -47,9 +58,8 @@ def test_file_compare():
             runner_conf = runner_conf,
             task_id='file_compare',
             provide_context=True,
-            jobID='manual__2020-05-12T00:55:55.479340 00:00',
-            # file_name='DispMD_5600000_20200512.csv'
-            file_name='5.12-600000.sh.csv'
+            jobID=jobID,
+            file_name=file_name
         )
 
         runnerid_provider >> file_compare

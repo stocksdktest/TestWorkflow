@@ -117,6 +117,13 @@ class RecordComparator(object):
                 # print("record_b pop {}".format(key))
                 record_b.pop(key)
 
+        abnormal_table = ['-','——','','一', None] # 去除异常数据
+
+        for key in keys:
+            if record_a[key] in abnormal_table and record_b[key] in abnormal_table:
+                record_a.pop(key)
+                record_b.pop(key)
+
     def compare(self, record_a, record_b):
         """
         :param record_a:

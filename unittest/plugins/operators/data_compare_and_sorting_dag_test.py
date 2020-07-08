@@ -30,8 +30,8 @@ def test_data_compare():
     runner_conf = get_test_runer_config(dbName=dbName, collectionName=collectionName)
     task_id_list = ['a', 'b']
     sort_id_list = ['sort1', 'sort2']
-    id1 = 'RUN--52fb7f41-aa24-496c-9e19-faa49d2780f7'
-    id2 = 'RUN--df2dbe1c-bcee-4724-a207-3def57f2fcb4'
+    id1 = 'RUN--3a52c1ce-162a-4dbb-9c2d-a86d05717fec'
+    id2 = 'RUN--9c36d016-ff25-4bfb-a4d2-3cde074b2ab9'
 
     with DAG(dag_id='any_dag', start_date=datetime.now()) as dag:
         def push_function(**kwargs):
@@ -80,21 +80,21 @@ def test_data_compare():
         sorter1_instance = TaskInstance(task=sorter1, execution_date=execution_date)
         context_sorter1 = sorter1_instance.get_template_context()
         context_sorter1['run_id'] = 'fake-run'
-        context_sorter1['expectation'] = 3
+        context_sorter1['expectation'] = 46
         context_sorter1['unit_test'] = True
         sorter1.execute(context_sorter1)
 
         sorter2_instance = TaskInstance(task=sorter2, execution_date=execution_date)
         context_sorter2 = sorter2_instance.get_template_context()
         context_sorter2['run_id'] = 'fake-run'
-        context_sorter2['expectation'] = 3
+        context_sorter2['expectation'] = 46
         context_sorter2['unit_test'] = True
         sorter2.execute(context_sorter2)
 
         compare_instance = TaskInstance(task=data_compare, execution_date=execution_date)
         context = compare_instance.get_template_context()
         context['run_id'] = 'fake-run'
-        context['expectation'] = 3
+        context['expectation'] = 46
         context['unit_test'] = True
         if context.get('expectation') is not None:
             expectation = context.get('expectation')
