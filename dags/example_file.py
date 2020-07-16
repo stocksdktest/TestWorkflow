@@ -17,7 +17,11 @@ with DAG(
         task_id='file_compare',
         provide_context=True,
         jobID='manual__2020-06-24T01:03:08.609581 00:00',
-        file_name = 'DispMD_5688001_20200629.csv'
+        file_name = 'DispMD_5688001_20200629.csv',
+        date_time='20200702',
+        market_type = 'sh',
+        pre_close_price = 45380,
+        circulating_share_capital = 38451196
     )
 
 if __name__ == "__main__":
