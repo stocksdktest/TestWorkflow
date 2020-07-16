@@ -430,7 +430,7 @@ class FileCompareOperator(StockOperator):
         self.compare_csv_sdk(results_sdk, results_csv, compare_record)
         result = compare_record.get_result()
 
-        # self.mongo_hk.get_collection('excel_result').insert_one(result)
+        self.mongo_hk.get_collection('excel_result').insert_one(result)
 
         return {
             'result': result,
