@@ -246,8 +246,8 @@ class DataCompareOperator(StockOperator):
                         res['datetime'] = time
                         res['recordID1'] = record1['recordID']
                         res['recordID2'] = record2['recordID']
-                        res['resultData1'] = r1
-                        res['resultData2'] = r2
+                        # res['resultData1'] = r1
+                        # res['resultData2'] = r2
                         # print("At time {}".format(time,))
                         # print("r1 is {}".format(r1))
                         # print("r2 is {}".format(r2))

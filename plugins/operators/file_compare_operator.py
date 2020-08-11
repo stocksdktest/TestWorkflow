@@ -333,6 +333,14 @@ class FileCompareOperator(StockOperator):
         self.circulating_share_capital = circulating_share_capital
         self.date_time = date_time
 
+    def parse_csv_result(self, csv_result):
+        '''
+        根据 market_type 对csv的结果进行预处理
+        @param csv_result:
+        @return:
+        '''
+        return csv_result
+
     def get_mongo_data(self, runnerID):
         '''
         @param runnerID: runnerID of sdk records
@@ -392,28 +400,30 @@ class FileCompareOperator(StockOperator):
 
     def execute(self, context):
 
-        url = 'csv/{}'.format(self.file_name)  # remote url in ftp sever
-        path = '/tmp/csv/{}'.format(self.file_name)  # filepath in local file system
+        url = 'csv/{}'.format(self.file_name)  # ftp远程csv目录
+        path = '/tmp/csv/{}'.format(self.file_name)  # 本地csv缓存目录
 
         if not os.path.exists(path):
-            # if not cache, download csv file from ftp
+            # 如果没有缓存，就从ftp下载csv文件
             os.makedirs(os.path.dirname(path), exist_ok=True)
             downloader = FTP_Downloader()
             downloader.download(remote_path=url, local_path=path)
 
-        # read data from csv
+        # 从csv读取文件
         csv_records = get_csv_data(csvname=path, market_type=self.market_type, date_time=self.date_time,
                                    pre_close_price=self.pre_close_price,
                                    circulating_share_capital=self.circulating_share_capital)
         print("csv_records.length is {}".format(csv_records.__len__()))
 
-        # Get the datas from mongodb to compare
+        # 从mongodb获取sdk数据
         cursor = self.mongo_hk.get_collection('test_result').distinct('runnerID', {'jobID': self.jobID})
-        runnerIDs = list(cursor)
+        runnerIDs = list(cursor) # 获取 runnerIDs（一般会有全真和测试2个环境）
         print('jobID is {}, runnerIDs is {}'.format(self.jobID, runnerIDs))
+        # TODO: 确定要与全真环境对比还是测试环境
         runnerID = runnerIDs[0]
         sdk_records = self.get_mongo_data(runnerID)
 
+        # 根据时间戳 datetime 对
         # preprocess data and distinguish by datetime Todo: can use mongodb's aggregate?
         results_sdk = [item['resultData'] for item in sdk_records]
         results_sdk = unique_datetime(results_sdk)

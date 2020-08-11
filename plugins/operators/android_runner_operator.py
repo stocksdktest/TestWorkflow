@@ -37,7 +37,7 @@ from utils import *
 class AndroidRunnerOperator(StockOperator):
 
 	@apply_defaults
-	def __init__(self, apk_id, apk_version, runner_conf, run_times=1,target_device=None, release_xcom_key = "android_release", config_file = False, *args, **kwargs):
+	def __init__(self, apk_id, apk_version, runner_conf, run_times=1,target_device=None, release_xcom_key = "android_release", config_file = False, tcp_times = -1, *args, **kwargs):
 		super(AndroidRunnerOperator, self).__init__(queue='android', runner_conf=runner_conf, run_times=run_times,*args, **kwargs)
 		self.apk_id = apk_id
 		self.apk_version = apk_version
@@ -46,6 +46,7 @@ class AndroidRunnerOperator(StockOperator):
 		self.serial = target_device
 		self.release_xcom_key = release_xcom_key
 		self.config_file = config_file
+		self.tcp_times = tcp_times
 		self.mongo_hk = MongoHookWithDB(conn_id='stocksdktest_mongo')
 		self.conn = self.mongo_hk.get_conn()
 
@@ -117,6 +118,9 @@ class AndroidRunnerOperator(StockOperator):
 		timeout = self.get_runner_conf_cases() * 3
 		if timeout < 300:
 			timeout = 300
+		if self.tcp_times != -1:
+			timeout = max(timeout, self.tcp_times)
+
 		print("Process Timeout is set in {} seconds".format(timeout))
 		print("RunnerID is {}".format(self.runner_conf.runnerID))
 		def check_test_result(line):
