@@ -5,6 +5,9 @@ from operators.release_ci_operator import ReleaseCIOperator
 class AndroidReleaseOperator(ReleaseCIOperator):
     @apply_defaults
     def __init__(self, repo_name, tag_id, tag_sha, runner_conf, release_xcom_key='android_release',*args, **kwargs):
+        """
+        从GitHub获取Android SDK测试的AndroidTestRunner信息，并通过Xcom传递给AndroidRunnerOperator
+        """
         super(AndroidReleaseOperator, self).__init__(
             repo_name=repo_name,
             tag_id=tag_id,

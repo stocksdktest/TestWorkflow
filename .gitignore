@@ -3,6 +3,10 @@
 plugins/java_gen/
 plugins/swift_gen/
 
+# Testcases by ouyang
+testcases
+testcases/bak
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

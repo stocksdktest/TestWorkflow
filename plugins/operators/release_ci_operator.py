@@ -8,7 +8,7 @@ from utils import *
 
 import os
 import hashlib
-# TODO: 试着去获得filetype
+# TODO: @Deprecated 试着去获得filetype
 FILE_TYPE_FAKE = 'application/vnd.android.package-archive'
 
 class ReleaseFile(object):
@@ -16,7 +16,7 @@ class ReleaseFile(object):
         if not name:
             return
         self.name = name
-        self.type = type
+        self.type = type # 过时不用了
         self.filepath = filepath
         self.md5sum = None
 
@@ -30,6 +30,17 @@ class ReleaseFile(object):
 class ReleaseCIOperator(StockOperator):
     @apply_defaults
     def __init__(self, repo_name, tag_id, tag_sha, release_xcom_key, queue, runner_conf, *args, **kwargs):
+        """
+        Release相关Operator的基类，从GitHub获取SDK测试的TestRunner信息，并通过Xcom传递给RunnerOperator
+        @param repo_name: TestRunner源码的GitHub仓库名，值有'stocksdktest/AndroidTestRunner'和'stocksdktest/IOSTestRunner'
+        @param tag_id: TestRunner测试代码的某次commit的tag，形如'release-20200103-0.0.3'，也对应在ftp上的目录名
+        @param tag_sha: 与tag_id对应commit的sha散列值
+        @param release_xcom_key: TestRunner在Xcom中绑定的键，RunnerOperator与之对应
+        @param queue:
+        @param runner_conf:
+        @param args:
+        @param kwargs:
+        """
         super(ReleaseCIOperator, self).__init__(queue=queue, runner_conf=runner_conf, *args, **kwargs)
         self.repo_name = repo_name
         self.tag_id = tag_id
@@ -55,6 +66,14 @@ class ReleaseCIOperator(StockOperator):
         raise NotImplementedError()
 
     def execute(self, context):
+        """
+        将ReleaseFile通过XCom传给对应的RunnerOperator，基本逻辑如下：
+        1. 从ftp的remote_path获取CI生成的文件，并进行校验
+        2. 从md5sum.txt中得到各个文件对应的md5sum值
+        3. 将每个release文件的文件名，md5sum，ftp路径通过XCom传给对应的RunnerOperator
+        @param context:
+        @return:
+        """
         ftp_client = FTPHook(ftp_conn_id='ftp_default')
         conn = ftp_client.get_conn()
 
@@ -100,9 +119,4 @@ class ReleaseCIOperator(StockOperator):
         import pprint
         pprint.pprint(release_files)
 
-        # TODO: ANNOTATE
         self.xcom_push(context, key=self.release_xcom_key, value=release_files)
-        # for file in release_files:
-        #     path = '/tmp/%s/%s' % (file.md5sum, file.name)
-        #     download_file(url=file.filepath, file_path=path, md5=file.md5sum)
-        # conn.close()

@@ -1,4 +1,5 @@
 import re
+import json
 import sys
 import datetime
 
@@ -38,6 +39,18 @@ class AndroidRunnerOperator(StockOperator):
 
 	@apply_defaults
 	def __init__(self, apk_id, apk_version, runner_conf, run_times=1,target_device=None, release_xcom_key = "android_release", config_file = False, tcp_times = -1, *args, **kwargs):
+		"""
+		@param apk_id: apk_id，基本是`com.chi.ssetest`
+		@param apk_version: 对应ReleaseOperator中的tag_id，例如`release-20200103-0.0.3`
+		@param runner_conf: 测试计划的运行参数
+		@param run_times: 测试计划中单个用例执行的次数，默认值为1
+		@param target_device: [DEBUG] 指定运行该测试计划的设备，默认为None，系统会自动分配。调试时可以指定。
+		@param release_xcom_key: TestRunner在Xcom中绑定的键，RunnerOperator与之对应，从该键获得TestRunner的信息
+		@param config_file: 是否将运行参数通过脚本形式push入adb并执行。为保证兼容，默认为False。但是后续使用应该用True
+		@param tcp_times: TCP相关的测试计划等待的时间 TODO: 待讨论
+		@param args:
+		@param kwargs:
+		"""
 		super(AndroidRunnerOperator, self).__init__(queue='android', runner_conf=runner_conf, run_times=run_times,*args, **kwargs)
 		self.apk_id = apk_id
 		self.apk_version = apk_version
@@ -112,14 +125,23 @@ class AndroidRunnerOperator(StockOperator):
 		for x in col.find(rule):
 			print(x)
 
+	def get_tcp_total_times(self):
+		tcp_total_times = 0
+		for casesConfig in self.runner_conf.casesConfig:
+			for paramStrs in casesConfig.paramStrs:
+				params = json.loads(paramStrs)
+				tcp_total_times = tcp_total_times + int(params['SECONDS'])
+		return tcp_total_times
+
 	def execute(self, context):
 
 		test_status_code = []
+		# TODO: adb进程等待多少时间就返回（tcp的需要特殊处理）
 		timeout = self.get_runner_conf_cases() * 3
 		if timeout < 300:
 			timeout = 300
 		if self.tcp_times != -1:
-			timeout = max(timeout, self.tcp_times)
+			timeout = max(timeout, self.get_tcp_total_times())
 
 		print("Process Timeout is set in {} seconds".format(timeout))
 		print("RunnerID is {}".format(self.runner_conf.runnerID))

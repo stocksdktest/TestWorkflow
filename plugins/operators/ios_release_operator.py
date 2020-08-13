@@ -5,6 +5,9 @@ from operators.release_ci_operator import ReleaseCIOperator
 class IOSReleaseOperator(ReleaseCIOperator):
     @apply_defaults
     def __init__(self, repo_name, tag_id, tag_sha, runner_conf, release_xcom_key='ios_release',*args, **kwargs):
+        """
+        从GitHub获取Android SDK测试的IOSTestRunner信息，并通过Xcom传递给IOSRunnerOperator
+        """
         super(IOSReleaseOperator, self).__init__(
             repo_name=repo_name,
             tag_id=tag_id,
@@ -24,7 +27,7 @@ class IOSReleaseOperator(ReleaseCIOperator):
 
         return True
 
-        # TODO: type check and md5 check
+        # TODO: @Deprecated type check and md5 check
         expected_type='application/vnd.android.package-archive'
         expected_names=['IOSTestRunner.app.zip']
 
