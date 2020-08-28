@@ -14,6 +14,16 @@ class DataCompareOperator(StockOperator):
     @apply_defaults
     def __init__(self, runner_conf, task_id_list, run_times=1, quote_detail=False, sort_id_list=None,
                  sort_and_comprae=False, *args, **kwargs):
+        """
+        @param runner_conf: 测试计划的运行参数
+        @param task_id_list: 以哪些task的运行结果作为比较的输入
+        @param run_times: 测试计划中单个用例执行的次数，默认值为1
+        @param quote_detail: 是否是行情快照
+        @param sort_id_list: 是否整合排序接口的结果，若非None，则获取排序任务的结果
+        @param sort_and_comprae: 是否整合排序接口的结果
+        @param args:
+        @param kwargs:
+        """
         super(DataCompareOperator, self).__init__(queue='worker', runner_conf=runner_conf, *args, **kwargs)
         self.task_id_list = task_id_list
         self.sort_id_list = sort_id_list
@@ -26,6 +36,257 @@ class DataCompareOperator(StockOperator):
         self.comparator = RecordComparator()
         self.TICK_LIST = ['CRAWLER_TICK_2']
 
+        self.id1 = None
+        self.id2 = None
+        self.compare_record = None
+
+    def data_synchronizer(self, context):
+        print("-----------------------------Synchronize MongoDB--------------------------------")
+        expectation = self.get_runner_conf_records()
+        sleep_time = 30
+        if context.get('expectation') is not None:  # For Debug
+            expectation = context.get('expectation')
+            sleep_time = 5
+        timeout = expectation * 5  # 一个case最多给10s的时间
+        if timeout < 300:
+            timeout = 300
+        print('Timeout(records to return) is {}'.format(timeout))
+        self.mongo_reader.synchronizer(
+            runnerID1=self.id1,
+            runnerID2=self.id2,
+            dbName=self.runner_conf.storeConfig.dbName,
+            collectionName=self.runner_conf.storeConfig.collectionName,
+            timeout=timeout,
+            expectation=expectation,
+            sleep_time=sleep_time
+        )
+
+    def data_prepare(self):
+        print("-----------------------------Prepare for paramData to paramStr--------------------------------")
+        self.mongo_reader.prepare_param(
+            runnerID1=self.id1,
+            runnerID2=self.id2,
+            dbName=self.runner_conf.storeConfig.dbName,
+            collectionName=self.runner_conf.storeConfig.collectionName
+        )
+
+    def pre_execute(self, context):
+        super(DataCompareOperator, self).pre_execute(context)
+        self.runner_conf = self.runner_conf_replicate(runner_conf=self.runner_conf,
+                                                      replicate_numbers=self.run_times - 1)
+
+        self.id1 = self.xcom_pull(context, key=self.task_id_list[0])
+        self.id2 = self.xcom_pull(context, key=self.task_id_list[1])
+        print('xcom_pull', self.id1)
+        print('xcom_pull', self.id2)
+
+        self.data_synchronizer(context=context)
+        self.data_prepare()
+
+        self.compare_record = CompareResultRecord(
+            jobID=self.runner_conf.jobID,
+            dagID=self.dag_id,
+            id1=self.id1,
+            id2=self.id2
+        )
+
+    def collect_exception(self):
+        print("----------------------------- Test Failure --------------------------------")
+        result_exception = self.mongo_reader.get_exception(
+            runnerID1=self.id1,
+            runnerID2=self.id2,
+            dbName=self.runner_conf.storeConfig.dbName,
+            collectionName=self.runner_conf.storeConfig.collectionName
+        )
+        if result_exception.__len__() != 0:
+            for error_and_empty in result_exception:
+                for x in error_and_empty['record']:
+                    if not x['isPass']:
+                        self.compare_record.append_error(x)
+                    else:
+                        self.compare_record.append_empty(x)
+
+
+    def collect_success(self):
+        print("----------------------------- Test Success --------------------------------")
+        if not self.quote_detail:
+            self.collect_normal_success()
+        else:
+            self.collect_quote_detail_success()
+
+
+    def collect_quote_detail_success(self):
+        print("----------------------------- Compare Quote --------------------------------")
+        group_resharp = self.mongo_reader.get_quote_results(
+            runnerID1=self.id1,
+            runnerID2=self.id2,
+            dbName=self.runner_conf.storeConfig.dbName,
+            collectionName=self.runner_conf.storeConfig.collectionName
+        )
+        print("----------------------------- Get Group Resharp OK--------------------------------")
+        if group_resharp.__len__() != 0:
+            for res in group_resharp:
+                param = res['param']
+                results = res['records']
+                keys = list(results.keys())  # runnerID
+                print("keys is {}".format(keys))
+                if keys.__len__() < 2:
+                    print("for param {} , no enough data to compare".format(param))
+                    continue
+                # TODO: 如果加上竞品，就得Cn2了
+                list1 = results[keys[0]]
+                list2 = results[keys[1]]
+                x = list(list1.keys())
+                y = list(list2.keys())
+                times = list(set(x + y))
+                times.sort()
+
+                if 'paramData' in res.keys():
+                    paramData = res['paramData']
+                else:
+                    paramData = param['paramStr']
+
+                # prepare for res_item
+                quote_item = QuoteDetaiItemRecord(
+                    testcaseID=param['testcaseID'],
+                    paramData=paramData,
+                    times_cnts=times.__len__(),
+                    recordID=param['paramStr']
+                )
+                match_cnt = 0
+                print("In runnerIDs in {}".format(keys))
+
+                # import pprint
+                # print("list1 is ")
+                # pprint.pprint(list1)
+
+                for time in times:
+                    record1 = list1.get(time)
+                    record2 = list2.get(time)
+                    if record1 is None:
+                        # print("r1 at time {} is None".format(time))
+                        quote_item.missing(time)
+                        continue
+                    if record2 is None:
+                        # print("r2 at time {} is None".format(time))
+                        quote_item.missing(time)
+                        continue
+
+                    r1 = record1['resultData']
+                    r2 = record2['resultData']
+
+                    res = self.comparator.compare_deep_diff(r1, r2)
+                    res['datetime'] = time
+                    res['recordID1'] = record1['recordID']
+                    res['recordID2'] = record2['recordID']
+                    # res['resultData1'] = r1
+                    # res['resultData2'] = r2
+                    # print("At time {}".format(time,))
+                    # print("r1 is {}".format(r1))
+                    # print("r2 is {}".format(r2))
+                    if res['result'] == True:
+                        # print("--------------------------------")
+                        match_cnt = match_cnt + 1
+                        quote_item.matching(time)
+                    if res['result'] == False:
+                        quote_item.append_dismatch(res)
+                        # print("result is {}".format(res['result']))
+                        # print("detial is {}".format(res))
+
+                quote_item.caucalute(match_cnt=match_cnt)
+                item = quote_item.get_item()
+                if quote_item.is_mismatch():
+                    self.compare_record.append_mismatch(item, is_quote=True)
+                elif quote_item.is_dismatch():
+                    self.compare_record.append_compare_true(item)
+                else:
+                    self.compare_record.append_compare_false(item)
+
+    def collect_normal_success(self):
+        print("----------------------------- Compare Normal --------------------------------")
+        # TODO: 这里有数据量过大的隐患，可以通过先获取id再整理解决，不过暂时只在Quote出现
+        result_group = self.mongo_reader.get_results(
+            runnerID1=self.id1,
+            runnerID2=self.id2,
+            dbName=self.runner_conf.storeConfig.dbName,
+            collectionName=self.runner_conf.storeConfig.collectionName
+        )
+        if result_group.__len__() != 0:
+            for res in result_group:
+                if res['record'].__len__() == 1:
+                    self.compare_record.append_mismatch(res['record'][0])
+                    continue
+                # TODO: 如果加上竞品，就得Cn2了
+                x = res['record'][0]
+                y = res['record'][1]
+
+                compare_item = CompareItemRecord(records=[x, y])
+
+                r1 = x['resultData']
+                r2 = y['resultData']
+                rs = [r1, r2]
+
+                # for sorting add ids
+                if self.sort_and_compare:
+                    # reformat r1 and r2:
+                    try:
+                        key_lists = [list(r1.keys()).copy(), list(r2.keys()).copy()]
+                        for i in range(2):
+                            key_list = key_lists[i]
+                            r = rs[i]
+                            for key in key_list:
+                                item = r[key]
+                                if 'id' in item.keys():
+                                    id_key = 'id'
+                                elif 'ID' in item.keys():
+                                    id_key = 'ID'
+                                else:
+                                    continue
+                                id = item[id_key].replace('.', "")
+                                r[id] = r.pop(key)
+
+                    except KeyError as e:
+                        print("Error when reformat sort records", e)
+
+                    # record code_list
+                    code_list1 = list()
+                    code_list2 = list()
+
+                    try:
+                        code_lists = [code_list1, code_list2]
+                        for i in range(2):
+                            code_list = code_lists[i]
+                            for r in rs[i].values():
+                                if isinstance(r, dict):
+                                    if 'id' in r.keys():
+                                        code_list.append(r['id'])
+                                    elif 'ID' in r.keys():
+                                        code_list.append(r['ID'])
+
+                    except KeyError as e:
+                        print("Error when id", e)
+                    finally:
+                        compare_item.add_sort_code_list([code_list1, code_list2])
+
+                try:
+                    testcaseID = x['testcaseID']
+                except KeyError as e:
+                    testcaseID = None
+
+                if testcaseID in self.TICK_LIST:
+                    res = self.comparator.compare_same_key(r1, r2)
+                else:
+                    res = self.comparator.compare_deep_diff(r1, r2)
+
+                if res['result'] == True:
+                    item = compare_item.get_item()
+                    self.compare_record.append_compare_true(item)
+                else:
+                    compare_item.append_results(results=[r1, r2], details=res['details'])
+                    item = compare_item.get_item()
+                    self.compare_record.append_compare_false(item)
+
+
     def close_connection(self):
         self.mongo_hk.close_conn()
 
@@ -36,243 +297,14 @@ class DataCompareOperator(StockOperator):
         return 0
 
     def execute(self, context):
-        self.runner_conf = self.runner_conf_replicate(runner_conf=self.runner_conf,
-                                                      replicate_numbers=self.run_times - 1)
-        id1 = self.xcom_pull(context, key=self.task_id_list[0])
-        id2 = self.xcom_pull(context, key=self.task_id_list[1])
-        print('xcom_pull', id1)
-        print('xcom_pull', id2)
-        print("-----------------------------Synchronize MongoDB--------------------------------")
-        expectation = self.get_runner_conf_records()
-        sleep_time = 30
-        if context.get('expectation') is not None:
-            expectation = context.get('expectation')
-            sleep_time = 5
-        timeout = expectation * 5  # 一个case最多给10s的时间
-        if timeout < 300:
-            timeout = 300
-        print('timeout(records to return) is {}'.format(timeout))
-        self.mongo_reader.synchronizer(
-            runnerID1=id1,
-            runnerID2=id2,
-            dbName=self.runner_conf.storeConfig.dbName,
-            collectionName=self.runner_conf.storeConfig.collectionName,
-            timeout=timeout,
-            expectation=expectation,
-            sleep_time=sleep_time
-        )
-        print("-----------------------------Prepare for paramData to paramStr--------------------------------")
-        self.mongo_reader.prepare_param(
-            runnerID1=id1,
-            runnerID2=id2,
-            dbName=self.runner_conf.storeConfig.dbName,
-            collectionName=self.runner_conf.storeConfig.collectionName
-        )
         print("-----------------------------Now Get Data From Mongo Directly--------------------------------")
-        compare_record = CompareResultRecord(
-            jobID=self.runner_conf.jobID,
-            dagID=self.dag_id,
-            id1=id1,
-            id2=id2
-        )
+        self.collect_exception()
+        self.collect_success()
+        result = self.compare_record.get_result()
 
-        result_exception = self.mongo_reader.get_exception(
-            runnerID1=id1,
-            runnerID2=id2,
-            dbName=self.runner_conf.storeConfig.dbName,
-            collectionName=self.runner_conf.storeConfig.collectionName
-        )
+        result_size = get_obj_real_size(result)
 
-        print("----------------------------- Test Failure --------------------------------")
-        if result_exception.__len__() != 0:
-            for error_and_empty in result_exception:
-                for x in error_and_empty['record']:
-                    if x['isPass'] == False:
-                        compare_record.append_error(x)
-                    else:
-                        compare_record.append_empty(x)
-
-        print("----------------------------- Test Success --------------------------------")
-        if not self.quote_detail:
-            result_group = self.mongo_reader.get_results(
-                runnerID1=id1,
-                runnerID2=id2,
-                dbName=self.runner_conf.storeConfig.dbName,
-                collectionName=self.runner_conf.storeConfig.collectionName
-            )
-            if result_group.__len__() != 0:
-                for res in result_group:
-                    if res['record'].__len__() == 1:
-                        compare_record.append_mismatch(res['record'][0])
-                        continue
-                    # TODO: 如果加上竞品，就得Cn2了
-                    x = res['record'][0]
-                    y = res['record'][1]
-
-                    compare_item = CompareItemRecord(records=[x, y])
-
-                    r1 = x['resultData']
-                    r2 = y['resultData']
-
-                    # for sorting add ids
-                    if self.sort_and_compare:
-                        # reformat r1 and r2:
-                        try:
-                            key_list_1 = list(r1.keys()).copy()
-                            key_list_2 = list(r2.keys()).copy()
-                            for key in key_list_1:
-                                item = r1[key]
-                                if 'id' in item.keys():
-                                    id_key = 'id'
-                                elif 'ID' in item.keys():
-                                    id_key = 'ID'
-                                else:
-                                    continue
-                                id = item[id_key].replace('.',"")
-                                r1[id] = r1.pop(key)
-                            for key in key_list_2:
-                                item = r2[key]
-                                if 'id' in item.keys():
-                                    id_key = 'id'
-                                elif 'ID' in item.keys():
-                                    id_key = 'ID'
-                                else:
-                                    continue
-                                id = item[id_key].replace('.',"")
-                                r2[id] = r2.pop(key)
-                        except KeyError as e:
-                            print("Error when reformat sort records", e)
-
-
-
-                        # record code_list
-                        code_list1 = list()
-                        code_list2 = list()
-
-                        try:
-                            for r in r1.values():
-                                if isinstance(r, dict):
-                                    if 'id' in r.keys():
-                                        code_list1.append(r['id'])
-                                    elif 'ID' in r.keys():
-                                        code_list1.append(r['ID'])
-                            for r in r2.values():
-                                if isinstance(r, dict):
-                                    if 'id' in r.keys():
-                                        code_list2.append(r['id'])
-                                    elif 'ID' in r.keys():
-                                        code_list2.append(r['ID'])
-
-                        except KeyError as e:
-                            print("Error when id", e)
-                        finally:
-                            compare_item.add_sort_code_list([code_list1, code_list2])
-
-                    try:
-                        testcaseID = x['testcaseID']
-                    except KeyError as e:
-                        testcaseID = None
-
-                    if testcaseID in self.TICK_LIST:
-                        res = self.comparator.compare_same_key(r1, r2)
-                    else:
-                        res = self.comparator.compare_deep_diff(r1, r2)
-
-                    if res['result'] == True:
-                        item = compare_item.get_item()
-                        compare_record.append_compare_true(item)
-                    else:
-                        compare_item.append_results(results=[r1, r2], details=res['details'])
-                        item = compare_item.get_item()
-                        compare_record.append_compare_false(item)
-        else:
-            group_resharp = self.mongo_reader.get_quote_results(
-                runnerID1=id1,
-                runnerID2=id2,
-                dbName=self.runner_conf.storeConfig.dbName,
-                collectionName=self.runner_conf.storeConfig.collectionName
-            )
-            if group_resharp.__len__() != 0:
-                for res in group_resharp:
-                    param = res['param']
-                    results = res['records']
-                    keys = list(results.keys())  # runnerID
-                    if keys.__len__() < 2:
-                        print("for param {} , no enough data to compare".format(param))
-                        continue
-                    # TODO: 如果加上竞品，就得Cn2了
-                    list1 = results[keys[0]]
-                    list2 = results[keys[1]]
-                    x = list(list1.keys())
-                    y = list(list2.keys())
-                    times = list(set(x + y))
-                    times.sort()
-
-                    if 'paramData' in res.keys():
-                        paramData = res['paramData']
-                    else:
-                        paramData = param['paramStr']
-
-                    # prepare for res_item
-                    quote_item = QuoteDetaiItemRecord(
-                        testcaseID=param['testcaseID'],
-                        paramData=paramData,
-                        times_cnts=times.__len__(),
-                        recordID=param['paramStr']
-                    )
-                    match_cnt = 0
-                    print("In runnerIDs in {}".format(keys))
-
-                    # import pprint
-                    # print("list1 is ")
-                    # pprint.pprint(list1)
-
-                    for time in times:
-                        record1 = list1.get(time)
-                        record2 = list2.get(time)
-                        if record1 is None:
-                            # print("r1 at time {} is None".format(time))
-                            quote_item.missing(time)
-                            continue
-                        if record2 is None:
-                            # print("r2 at time {} is None".format(time))
-                            quote_item.missing(time)
-                            continue
-
-                        r1 = record1['resultData']
-                        r2 = record2['resultData']
-
-                        res = self.comparator.compare_deep_diff(r1, r2)
-                        res['datetime'] = time
-                        res['recordID1'] = record1['recordID']
-                        res['recordID2'] = record2['recordID']
-                        # res['resultData1'] = r1
-                        # res['resultData2'] = r2
-                        # print("At time {}".format(time,))
-                        # print("r1 is {}".format(r1))
-                        # print("r2 is {}".format(r2))
-                        if res['result'] == True:
-                            print("--------------------------------")
-                            match_cnt = match_cnt + 1
-                            quote_item.matching(time)
-                        if res['result'] == False:
-                            quote_item.append_dismatch(res)
-                            # print("result is {}".format(res['result']))
-                            # print("detial is {}".format(res))
-
-                    quote_item.caucalute(match_cnt=match_cnt)
-                    item = quote_item.get_item()
-                    if quote_item.is_mismatch():
-                        compare_record.append_mismatch(item, is_quote=True)
-                    elif quote_item.is_dismatch():
-                        compare_record.append_compare_true(item)
-                    else:
-                        compare_record.append_compare_false(item)
-
-        result = compare_record.get_result()
-
-        print("------------------The Size(sys) of result is {}".format(sys.getsizeof(result)))
-        print("------------------The Size(val) of result is {}".format(result.__sizeof__()))
+        print("------------------The Size(sys) of result is {}".format(result_size))
 
         dbName = self.runner_conf.storeConfig.dbName
         collectionName = 'compare_result'

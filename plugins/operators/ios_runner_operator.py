@@ -35,6 +35,15 @@ IOS_REPO_PATH = '/Users/test-env/stocksdktest/IOSTestRunner'
 class IOSRunnerOperator(StockOperator):
 	@apply_defaults
 	def __init__(self, app_version, runner_conf, project_path=None, run_times=1, release_xcom_key = "ios_release",*args, **kwargs):
+		"""
+		@param app_version: 对应ReleaseOperator中的tag_id，例如`release-20200103-0.0.3`
+		@param runner_conf: 测试计划的运行参数
+		@param project_path: 暂时无用，设计时对应IOSTestRunner.app的目录，后直接默认
+		@param run_times: 测试计划中单个用例执行的次数，默认值为1
+		@param release_xcom_key: TestRunner在Xcom中绑定的键，RunnerOperator与之对应，从该键获得TestRunner的信息
+		@param args:
+		@param kwargs:
+		"""
 		super(IOSRunnerOperator, self).__init__(queue='osx', runner_conf=runner_conf, run_times=run_times, *args,
 												**kwargs)
 		self.ssh_key_path = '/root/.ssh/id_rsa'

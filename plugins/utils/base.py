@@ -1,3 +1,4 @@
+import sys
 import uuid
 import base64
 import re
@@ -65,6 +66,12 @@ def file_md5(file_path):
 
 
 def download_file(url, file_path, md5=None):
+    """
+    @param url: FTP服务器的文件路径
+    @param file_path: 本地存储目录
+    @param md5: 期望的md5值
+    @return:
+    """
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     if md5 is not None and os.path.exists(file_path) and file_md5(file_path) == md5:
         print("file(%s) exist, md5(%s) match" % (file_path, md5))
@@ -169,6 +176,25 @@ class WatchdogTimer(Thread):
     def cancel(self):
         self.cancelled.set()
 
+def get_obj_real_size(obj, seen=None):
+    """Recursively finds size of objects"""
+    size = sys.getsizeof(obj)
+    if seen is None:
+        seen = set()
+    obj_id = id(obj)
+    if obj_id in seen:
+        return 0
+    # Important mark as seen *before* entering recursion to gracefully handle
+    # self-referential objects
+    seen.add(obj_id)
+    if isinstance(obj, dict):
+        size += sum([get_obj_real_size(v, seen) for v in obj.values()])
+        size += sum([get_obj_real_size(k, seen) for k in obj.keys()])
+    elif hasattr(obj, '__dict__'):
+        size += get_obj_real_size(obj.__dict__, seen)
+    elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, bytearray)):
+        size += sum([get_obj_real_size(i, seen) for i in obj])
+    return size
 
 def case_equal(case1, case2):
     if case1 == case2:

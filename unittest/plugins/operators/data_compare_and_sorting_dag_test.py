@@ -98,6 +98,7 @@ def test_data_compare():
         context['unit_test'] = True
         if context.get('expectation') is not None:
             expectation = context.get('expectation')
+        data_compare.pre_execute(context)
         result = data_compare.execute(context)
 
     return result

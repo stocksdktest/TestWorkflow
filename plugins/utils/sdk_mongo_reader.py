@@ -102,7 +102,7 @@ class SdkMongoReader(object):
             res.append(document)
         return res
 
-    def get_results(self, runnerID1, runnerID2, dbName='stockSdkTest', collectionName='test_result'):
+    def get_results(self, runnerID1, runnerID2, dbName='stockSdkTest', collectionName='test_result', push_item = '$$ROOT'):
         """
         Group by testcaseID and paramDatas,得到某次测试的非空非异常结果
         """
@@ -132,7 +132,7 @@ class SdkMongoReader(object):
             'paramStr': '$paramStr'
         }
         group['record'] = {
-            '$push': '$$ROOT'
+            '$push': push_item
         }
 
         pipeline = [
@@ -140,20 +140,40 @@ class SdkMongoReader(object):
             {'$group': group},
         ]
 
+        print("pipline is")
+        from pprint import pprint
+        pprint(pipeline)
+
         cursor = col.aggregate(pipeline, allowDiskUse=True)
         res = list()
         for document in cursor:
             res.append(document)
         return res
 
+    def get_records_by_id(self, ids, dbName='stockSdkTest', collectionName='test_result'):
+        col = self.client[dbName][collectionName]
+        records = list()
+        for id in ids:
+            cursor = col.find_one({'_id': id})
+            records.append(cursor)
+        return records
+
     def get_quote_results(self, runnerID1, runnerID2, dbName='stockSdkTest', collectionName='test_result'):
         """
         Group by testcaseID and paramDatas,得到某次测试的非空非异常结果,专门整形为适合行情快照的结果
         """
-        group = self.get_results(runnerID1,runnerID2,dbName,collectionName)
+        print("----------------------------- Get Quote Result Start--------------------------------")
+        # TODO: 更高效的算法（直接aggregate会大小超限，所以先返回_id，然后再find_one）
+        group = self.get_results(
+            runnerID1=runnerID1,
+            runnerID2=runnerID2,
+            dbName=dbName,
+            collectionName=collectionName,
+            push_item='$_id')
+        print("----------------------------- Get Quote Result OK--------------------------------")
         group_resharp = list()
         for res in group:
-            results = res['record']
+            results = self.get_records_by_id(ids = res['record'], dbName=dbName, collectionName=collectionName)
             param = res['_id']
             id_record_time_dict = defaultdict(dict)  # 存储每个runnerID对应的记录(默认是的行情快照),以runnerID为key，对应一个dict，dict以datetime为key
             id_time_dict = defaultdict(set)
@@ -172,7 +192,7 @@ class SdkMongoReader(object):
                 except:
                     print("record has no field paramData in {}".format(record))
 
-                try: 
+                try:
                     datetime = recordData['resultData']['datetime']
                 except KeyError as e:
                     print("record has no field datetime {}".format(record))
@@ -338,3 +358,19 @@ class SdkMongoReader(object):
             print('---------------------Synchronize MongoDB for %d Seconds---------------------' % timer)
 
         print("Synchronizer End, cnt1 is {}, cnt2 is {}".format(cnt1,cnt2))
+
+if __name__ == '__main__':
+    import pymongo
+    client = pymongo.MongoClient("mongodb://221.228.66.83:30617")  # 远程MongoDB服务器
+    mongo_reader = SdkMongoReader(client=client)
+
+    id1 = 'RUN--d6291833-2682-4233-b501-6b4480c8273f'  # TODO
+    id2 = 'RUN--da5f3a6e-2901-46cb-bfb8-1829a4e7ca4a'  # TODO
+    dbName = 'stockSdkTest'
+    collectionName = 'test_result'
+
+    group = mongo_reader.get_quote_results(
+        runnerID1 = id1,
+        runnerID2 = id2,
+        dbName = dbName,
+        collectionName = collectionName)
