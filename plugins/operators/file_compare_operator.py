@@ -435,7 +435,8 @@ class FileCompareOperator(StockOperator):
             jobID=self.runner_conf.jobID,
             dagID=self.dag_id,
             id1=self.jobID,
-            id2=self.file_name
+            id2=self.file_name,
+            rtype=StockResultTypes.File
         )
         self.compare_csv_sdk(results_sdk, results_csv, compare_record)
         result = compare_record.get_result()

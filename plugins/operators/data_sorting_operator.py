@@ -150,7 +150,8 @@ class DataSortingOperator(StockOperator):
         sort_record = SortResultRecord(
             jobID=self.runner_conf.jobID,
             dagID=self.dag_id,
-            id=id
+            id=id,
+            rtype=StockResultTypes.Sort
         )
 
         result_exception = self.mongo_reader.get_exception(

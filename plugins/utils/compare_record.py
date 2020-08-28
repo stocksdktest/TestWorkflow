@@ -1,6 +1,9 @@
 import pymongo
 import pprint
 from collections import defaultdict, Sequence
+from enum import Enum
+
+StockResultTypes = Enum('StockResultTypes', ('Default', 'Quote', 'Sort', 'File', 'DefaultSort', 'QuoteSort'))
 
 
 class TestResultMongoRecord(object):
@@ -23,7 +26,7 @@ class TestResultMongoRecord(object):
 
 class StockResultRecord(object):
 
-    def __init__(self, jobID, dagID) -> None:
+    def __init__(self, jobID, dagID, rtype:StockResultTypes) -> None:
         super().__init__()
 
         self.result = dict()  # 存储所有返回的结果
@@ -33,6 +36,7 @@ class StockResultRecord(object):
 
         self.result['jobID'] = jobID
         self.result['dagID'] = dagID
+        self.result['type'] = rtype
 
     def __str__(self) -> str:
         return self.result.__str__()
@@ -76,8 +80,8 @@ class StockResultRecord(object):
 
 class CompareResultRecord(StockResultRecord):
 
-    def __init__(self, jobID, dagID, id1, id2) -> None:
-        super().__init__(jobID, dagID)
+    def __init__(self, jobID, dagID, rtype, id1, id2) -> None:
+        super().__init__(jobID, dagID, rtype)
 
         self.compare = dict()  # 比较的结果
         self.compare['true'] = list()
@@ -100,8 +104,8 @@ class CompareResultRecord(StockResultRecord):
 
 class SortResultRecord(StockResultRecord):
 
-    def __init__(self, jobID, dagID, id) -> None:
-        super().__init__(jobID, dagID)
+    def __init__(self, jobID, dagID, rtype, id) -> None:
+        super().__init__(jobID, dagID, rtype)
         self.sort_result = dict()
         self.sort_result['true'] = list()
         self.sort_result['false'] = list()

@@ -83,11 +83,22 @@ class DataCompareOperator(StockOperator):
         self.data_synchronizer(context=context)
         self.data_prepare()
 
+        rtype = StockResultTypes.Default
+        if self.quote_detail:
+            if self.sort_and_compare:
+                rtype = StockResultTypes.QuoteSort
+            else:
+                rtype = StockResultTypes.Quote
+        else:
+            if self.sort_and_compare:
+                rtype = StockResultTypes.DefaultSort
+
         self.compare_record = CompareResultRecord(
             jobID=self.runner_conf.jobID,
             dagID=self.dag_id,
             id1=self.id1,
-            id2=self.id2
+            id2=self.id2,
+            rtype=rtype
         )
 
     def collect_exception(self):

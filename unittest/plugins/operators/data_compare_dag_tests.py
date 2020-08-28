@@ -75,3 +75,10 @@ def test_data_compare():
 
 if __name__ == '__main__':
     result = test_data_compare()
+
+    import pymongo
+    client = pymongo.MongoClient("mongodb://221.228.66.83:30617")  # 远程MongoDB服务器
+    sdk_writer = SdkMongoWriter(client)
+    result2 = sdk_writer.write_result_record(result)
+
+
