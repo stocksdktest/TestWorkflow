@@ -106,7 +106,7 @@ with DAG(
 	ios_1 = IOSRunnerOperator(
 		task_id=task_id_to_cmp_list1[0],
 		provide_context=False,
-		app_id="2",
+		app_version="2",
 		project_path="",
 		runner_conf=runner_conf_list[0]
 	)
@@ -114,7 +114,7 @@ with DAG(
 	ios_2 = IOSRunnerOperator(
 		task_id=task_id_to_cmp_list1[1],
 		provide_context=False,
-		app_id="2",
+		app_version="2",
 		project_path="",
 		runner_conf=runner_conf_list[0]
 	)

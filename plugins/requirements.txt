@@ -2,3 +2,7 @@ protobuf==3.9.1
 PyGithub==1.43.8
 paramiko==2.6.0
 pymongo==3.9.0
+pysftp==0.2.9
+sshtunnel==0.1.5
+jsonpatch==1.24
+deepdiff==4.3.2
