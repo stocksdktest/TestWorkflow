@@ -10,3 +10,4 @@ from .test_data import get_two_testresult
 from .work_config import sort_map
 from .compare_record import CompareResultRecord, SortResultRecord, CompareItemRecord, QuoteDetaiItemRecord,StockResultTypes
 from .default_conf import default_conf, android_compare_conf
+from .restful_client import AirflowRestClient
