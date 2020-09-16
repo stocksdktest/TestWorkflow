@@ -44,16 +44,16 @@ class SdkMongoWriter(object):
         compare = result['result']
         ''' :type: dict'''
 
-        if rtype == StockResultTypes.Sort:
+        if rtype == 'Sort':
             self.write_sort_result_record(result=compare, dbName=dbName, collectionName=collectionName)
-        elif rtype == StockResultTypes.File:
+        elif rtype == 'File':
             pass
         else:
-            if rtype.name.__contains__('Sort'):
+            if rtype.__contains__('Sort'):
                 self.write_sort_result_record(result=compare['sort1'], dbName=dbName, collectionName=collectionName)
                 self.write_sort_result_record(result=compare['sort2'], dbName=dbName, collectionName=collectionName)
 
-            if rtype.name.__contains__('Default'):
+            if rtype.__contains__('Default'):
                 self.write_big_record(
                     result=compare,
                     keys=['true', 'false'],
@@ -61,7 +61,7 @@ class SdkMongoWriter(object):
                     collectionName=collectionName
                 )
 
-            if rtype.name.__contains__('Quote'):
+            if rtype.__contains__('Quote'):
                 self.write_big_record(
                     result=compare,
                     keys=['true'],
