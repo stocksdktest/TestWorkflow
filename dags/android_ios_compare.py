@@ -178,42 +178,42 @@ with DAG(
         },
         schedule_interval='@once',
 ) as dag:
-    conf = dag.get_dagrun(execution_date=dag.latest_execution_date).conf
-    # conf={
-    #         'collectionName': 'test_result',
-    #         'Level': '1',
-    #         'HKPerms': ['hk10'],
-    #         'roundIntervalSec': '3',
-    #         'tag': [
-    #              ['release-20200310-0.0.5', '9e2d1a04b6dba6e800cafadd5046b777326c8bfd'],
-    #              ['release-20200323-0.0.3', 'c5a5455c0060b286171cea7e4509a42a31351d1f']
-    #         ],
-    #         'run_times': '1',
-    #         'quote_detail': '1',
-    #         "AirflowMethod": [
-    #             {
-    #                 'testcaseID': 'CHARTV2TEST_1',
-    #                 'paramStrs': [
-    #                     {
-    #                         'CODE': '600000.sh',
-    #                         'TYPE': 'ChartTypeOneDay',
-    #                         'SUBTYPE': '1001'
-    #                     }
-    #                 ]}
-    #         ],
-    #         'server': [
-    #             {
-    #                 'serverSites1': [
-    #                     ["sh", "http://114.80.155.134:22016"],
-    #                     ["tcpsh", "http://114.80.155.134:22017"],
-    #                     ["shl2", "http://114.80.155.62:22016"],
-    #                 ]
-    #             },
-    #             {
-    #                 'serverSites2': []
-    #             }
-    #         ]
-    #     }
+    # conf = dag.get_dagrun(execution_date=dag.latest_execution_date).conf
+    conf={
+            'collectionName': 'test_result',
+            'Level': '1',
+            'HKPerms': ['hk10'],
+            'roundIntervalSec': '3',
+            'tag': [
+                 ['release-20200310-0.0.5', '9e2d1a04b6dba6e800cafadd5046b777326c8bfd'],
+                 ['release-20200323-0.0.3', 'c5a5455c0060b286171cea7e4509a42a31351d1f']
+            ],
+            'run_times': '1',
+            'quote_detail': '1',
+            "AirflowMethod": [
+                {
+                    'testcaseID': 'CHARTV2TEST_1',
+                    'paramStrs': [
+                        {
+                            'CODE': '600000.sh',
+                            'TYPE': 'ChartTypeOneDay',
+                            'SUBTYPE': '1001'
+                        }
+                    ]}
+            ],
+            'server': [
+                {
+                    'serverSites1': [
+                        ["sh", "http://114.80.155.134:22016"],
+                        ["tcpsh", "http://114.80.155.134:22017"],
+                        ["shl2", "http://114.80.155.62:22016"],
+                    ]
+                },
+                {
+                    'serverSites2': []
+                }
+            ]
+    }
     if conf is None:
         conf = default_conf
     start_task = DummyOperator(

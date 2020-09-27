@@ -161,7 +161,8 @@ if __name__ == '__main__':
                             'STOCKFIELDS': '-1',
                             'ADDVALUEFIELDS': '-1'
                         }
-        ]}
+                    ]
+                }
             ],
             'server': [
                 {

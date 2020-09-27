@@ -10,187 +10,195 @@ from protos_gen.config_pb2 import RunnerConfig, TestcaseConfig, Site
 from operators.android_runner_operator import AndroidRunnerOperator
 from operators.android_release_operator import AndroidReleaseOperator
 from sqlalchemy import Column, PickleType
+from init_config import initRunnerConfig
+from init_config import initRunConf
 
+params = {'CffLevel_tmp':"1", 'DceLevel_tmp':"2", 'CzceLevel_tmp':"2", 'FeLevel_tmp':"2", 'GILevel_tmp':"2", 'ShfeLevel_tmp':"2",
+            'IneLevel_tmp':"2", 'Level_tmp':"2", 'HKPerms_tmp':["hk10"], 'collectionName_tmp':"test_result",
+            'roundIntervalSec_tmp':3, 
+            'AirflowMethod':[{'testcaseID': 'L2TICKDETAILV2_1', 'paramStrs': [{'CODE': '000100.sz', 'SUBTYPE': '1001'},{'CODE': '000078.sz','SUBTYPE': '1001'},{'CODE': '002429.sz','SUBTYPE': '1001'}]}], 
+            'server':[{'serverSites1':[["sh", "http://114.80.155.134:22016"],["tcpsh", "http://114.80.155.134:22017"],["shl2", "http://114.80.155.62:22016"]]},{'serverSites2':[["sh", "http://114.80.155.134:22016"], ["tcpsh", "http://114.80.155.134:22017"], ["shl2", "http://114.80.155.62:22016"]]}],
+            'testcaseID':'L2TICKDETAILV2_1'}
 
-def initRunnerConfig(conf):
-    # 市场权限
-    CffLevel_tmp = conf.get('CffLevel')
-    if CffLevel_tmp is not None:
-        print('Get Param CffLevel:', CffLevel_tmp)
-    else:
-        CffLevel_tmp = "1"
-        print('Not Get Param CffLevel:', CffLevel_tmp)
-    DceLevel_tmp = conf.get('DceLevel')
-    if DceLevel_tmp is not None:
-        print('Get Param DceLevel:', DceLevel_tmp)
-    else:
-        DceLevel_tmp = "2"
-        print('Not Get Param DceLevel:', DceLevel_tmp)
-    CzceLevel_tmp = conf.get('CzceLevel')
-    if CzceLevel_tmp is not None:
-        print('Get Param CzceLevel:', CzceLevel_tmp)
-    else:
-        CzceLevel_tmp = "2"
-        print('Not Get Param CzceLevel:', CzceLevel_tmp)
-    FeLevel_tmp = conf.get('FeLevel')
-    if FeLevel_tmp is not None:
-        print('Get Param FeLevel:', FeLevel_tmp)
-    else:
-        FeLevel_tmp = "2"
-        print('Not Get Param FeLevel:', FeLevel_tmp)
-    GILevel_tmp = conf.get('GILevel')
-    if GILevel_tmp is not None:
-        print('Get Param GILevel:', GILevel_tmp)
-    else:
-        GILevel_tmp = "2"
-        print('Not Get Param GILevel:', GILevel_tmp)
-    ShfeLevel_tmp = conf.get('ShfeLevel')
-    if ShfeLevel_tmp is not None:
-        print('Get Param ShfeLevel:', ShfeLevel_tmp)
-    else:
-        ShfeLevel_tmp = "2"
-        print('Not Get Param ShfeLevel:', ShfeLevel_tmp)
-    IneLevel_tmp = conf.get('IneLevel')
-    if IneLevel_tmp is not None:
-        print('Get Param IneLevel:', IneLevel_tmp)
-    else:
-        IneLevel_tmp = "2"
-        print('Not Get Param IneLevel:', IneLevel_tmp)
-    Level_tmp = conf.get('Level')
-    if Level_tmp is not None:
-        print('Get Param Level:', Level_tmp)
-    else:
-        Level_tmp = "2"
-        print('Not Get Param Level:', Level_tmp)
-    HKPerms_tmp = conf.get('HKPerms')
-    if HKPerms_tmp is not None:
-        HKPerms_tmp=list(HKPerms_tmp)
-        print('Get Param HKPerms:', HKPerms_tmp)
-    else:
-        HKPerms_tmp=["hk10"]
-        print('Not Get Param HKPerms:', HKPerms_tmp)
-    collectionName_tmp = conf.get('collectionName')
-    if collectionName_tmp is not None:
-        print('Get Param collectionName:', collectionName_tmp)
-    else:
-        collectionName_tmp = "test_result"
-        print('Not Get Param collectionName:', collectionName_tmp)
-    #roundIntervalSec_tmp=3
-    roundIntervalSec_tmp = conf.get('roundIntervalSec')
-    if roundIntervalSec_tmp is not None:
-        roundIntervalSec_tmp = int(roundIntervalSec_tmp)
-        print('Get Param roundIntervalSec:', roundIntervalSec_tmp)
-    else:
-        roundIntervalSec_tmp = 3
-        print('Not Get Param roundIntervalSec:', roundIntervalSec_tmp)
-    AirflowMethod = conf.get('AirflowMethod')
-    if AirflowMethod is not None:
-        AirflowMethod = list(AirflowMethod)
-        print('Get Param AirflowMethod:',AirflowMethod)
-    else:
-        AirflowMethod=[
-                {
-                    'testcaseID': 'L2TICKDETAILV2_1',
-                    'paramStrs': [
-                        {
-                            'CODE': '000100.sz',
-                            'SUBTYPE': '1001'
-                        },
-                        {
-                            'CODE': '000078.sz',
-                            'SUBTYPE': '1001'
-                        },
-                        {
-                            'CODE': '002429.sz',
-                            'SUBTYPE': '1001'
-                        }
-                    ]
-                }
-            ]
-        print('Not Get Param AirflowMethod:',AirflowMethod)
-    server=conf.get('server')
-    if server is not None:
-        server=list(server)
-        print('Get Param server:', server)
-    else:
-        server=[
-                    {
-                        'serverSites1':[
-                            ["sh", "http://114.80.155.134:22016"],
-                            ["tcpsh", "http://114.80.155.134:22017"],
-                            ["shl2", "http://114.80.155.62:22016"],
-                        ]
-                    },
-                    {  
-                        'serverSites2':[
-                            ["sh", "http://114.80.155.134:22016"],
-                            ["tcpsh", "http://114.80.155.134:22017"],
-                            ["shl2", "http://114.80.155.62:22016"],
-                        ]
-                    }
-                ]
-        print('Not Get Param server:', server)
-    serverSites1=[]
-    serverSites2=[]
-    for i in range(2):
-        if i==0:
-            serverSites1.extend(list(server[0].get('serverSites1')))
-        if i==1:
-            serverSites2.extend(list(server[1].get('serverSites2')))
-            if len(serverSites2) == 0:
-                serverSites2.extend(serverSites1)
+# def initRunnerConfig(conf):
+#     # 市场权限
+#     CffLevel_tmp = conf.get('CffLevel')
+#     if CffLevel_tmp is not None:
+#         print('Get Param CffLevel:', CffLevel_tmp)
+#     else:
+#         CffLevel_tmp = "1"
+#         print('Not Get Param CffLevel:', CffLevel_tmp)
+#     DceLevel_tmp = conf.get('DceLevel')
+#     if DceLevel_tmp is not None:
+#         print('Get Param DceLevel:', DceLevel_tmp)
+#     else:
+#         DceLevel_tmp = "2"
+#         print('Not Get Param DceLevel:', DceLevel_tmp)
+#     CzceLevel_tmp = conf.get('CzceLevel')
+#     if CzceLevel_tmp is not None:
+#         print('Get Param CzceLevel:', CzceLevel_tmp)
+#     else:
+#         CzceLevel_tmp = "2"
+#         print('Not Get Param CzceLevel:', CzceLevel_tmp)
+#     FeLevel_tmp = conf.get('FeLevel')
+#     if FeLevel_tmp is not None:
+#         print('Get Param FeLevel:', FeLevel_tmp)
+#     else:
+#         FeLevel_tmp = "2"
+#         print('Not Get Param FeLevel:', FeLevel_tmp)
+#     GILevel_tmp = conf.get('GILevel')
+#     if GILevel_tmp is not None:
+#         print('Get Param GILevel:', GILevel_tmp)
+#     else:
+#         GILevel_tmp = "2"
+#         print('Not Get Param GILevel:', GILevel_tmp)
+#     ShfeLevel_tmp = conf.get('ShfeLevel')
+#     if ShfeLevel_tmp is not None:
+#         print('Get Param ShfeLevel:', ShfeLevel_tmp)
+#     else:
+#         ShfeLevel_tmp = "2"
+#         print('Not Get Param ShfeLevel:', ShfeLevel_tmp)
+#     IneLevel_tmp = conf.get('IneLevel')
+#     if IneLevel_tmp is not None:
+#         print('Get Param IneLevel:', IneLevel_tmp)
+#     else:
+#         IneLevel_tmp = "2"
+#         print('Not Get Param IneLevel:', IneLevel_tmp)
+#     Level_tmp = conf.get('Level')
+#     if Level_tmp is not None:
+#         print('Get Param Level:', Level_tmp)
+#     else:
+#         Level_tmp = "2"
+#         print('Not Get Param Level:', Level_tmp)
+#     HKPerms_tmp = conf.get('HKPerms')
+#     if HKPerms_tmp is not None:
+#         HKPerms_tmp=list(HKPerms_tmp)
+#         print('Get Param HKPerms:', HKPerms_tmp)
+#     else:
+#         HKPerms_tmp=["hk10"]
+#         print('Not Get Param HKPerms:', HKPerms_tmp)
+#     collectionName_tmp = conf.get('collectionName')
+#     if collectionName_tmp is not None:
+#         print('Get Param collectionName:', collectionName_tmp)
+#     else:
+#         collectionName_tmp = "test_result"
+#         print('Not Get Param collectionName:', collectionName_tmp)
+#     #roundIntervalSec_tmp=3
+#     roundIntervalSec_tmp = conf.get('roundIntervalSec')
+#     if roundIntervalSec_tmp is not None:
+#         roundIntervalSec_tmp = int(roundIntervalSec_tmp)
+#         print('Get Param roundIntervalSec:', roundIntervalSec_tmp)
+#     else:
+#         roundIntervalSec_tmp = 3
+#         print('Not Get Param roundIntervalSec:', roundIntervalSec_tmp)
+#     AirflowMethod = conf.get('AirflowMethod')
+#     if AirflowMethod is not None:
+#         AirflowMethod = list(AirflowMethod)
+#         print('Get Param AirflowMethod:',AirflowMethod)
+#     else:
+#         AirflowMethod=[
+#                 {
+#                     'testcaseID': 'L2TICKDETAILV2_1',
+#                     'paramStrs': [
+#                         {
+#                             'CODE': '000100.sz',
+#                             'SUBTYPE': '1001'
+#                         },
+#                         {
+#                             'CODE': '000078.sz',
+#                             'SUBTYPE': '1001'
+#                         },
+#                         {
+#                             'CODE': '002429.sz',
+#                             'SUBTYPE': '1001'
+#                         }
+#                     ]
+#                 }
+#             ]
+#         print('Not Get Param AirflowMethod:',AirflowMethod)
+#     server=conf.get('server')
+#     if server is not None:
+#         server=list(server)
+#         print('Get Param server:', server)
+#     else:
+#         server=[
+#                     {
+#                         'serverSites1':[
+#                             ["sh", "http://114.80.155.134:22016"],
+#                             ["tcpsh", "http://114.80.155.134:22017"],
+#                             ["shl2", "http://114.80.155.62:22016"],
+#                         ]
+#                     },
+#                     {  
+#                         'serverSites2':[
+#                             ["sh", "http://114.80.155.134:22016"],
+#                             ["tcpsh", "http://114.80.155.134:22017"],
+#                             ["shl2", "http://114.80.155.62:22016"],
+#                         ]
+#                     }
+#                 ]
+#         print('Not Get Param server:', server)
+#     serverSites1=[]
+#     serverSites2=[]
+#     for i in range(2):
+#         if i==0:
+#             serverSites1.extend(list(server[0].get('serverSites1')))
+#         if i==1:
+#             serverSites2.extend(list(server[1].get('serverSites2')))
+#             if len(serverSites2) == 0:
+#                 serverSites2.extend(serverSites1)
 
-    runner_conf_list = []
-    for i in range(2):
-        runner_conf = RunnerConfig()
+#     runner_conf_list = []
+#     for i in range(2):
+#         runner_conf = RunnerConfig()
 
-        runner_conf.sdkConfig.appKeyIOS = 'VVW0Fno7BEZt1a/y6KLM36uj9qcjw7CAHDwWZKDlWDs='
-        runner_conf.sdkConfig.appKeyAndroid = 'J6IPlk5AEU+2/Yi59rfYnsFQtdtOgAo9GAzysx8ciOM='
-        runner_conf.sdkConfig.marketPerm.Level = Level_tmp
-        runner_conf.sdkConfig.marketPerm.HKPerms.extend(HKPerms_tmp)
-        # mongoDB位置，存储的数据库位置
-        runner_conf.storeConfig.mongoUri = "mongodb://221.228.66.83:30617"
-        runner_conf.storeConfig.dbName = "stockSdkTest"
-        runner_conf.storeConfig.collectionName = collectionName_tmp        
-        if i == 0:
-            # 各个环境的站点配置
-            for i in serverSites1:
-                i = list(i)
-                runner_conf.sdkConfig.serverSites[i[0]].CopyFrom(Site(ips=i[1:]))
-            print('Get Param serverSites1:', serverSites1)
-        else:
-            # 生产站点
-            for i in serverSites2:
-                i = list(i)
-                runner_conf.sdkConfig.serverSites[i[0]].CopyFrom(Site(ips=i[1:]))
-            print('Get Param serverSites2:', serverSites2)
-        # 测试样例
-        # case_list = []
-        for case in AirflowMethod:
-            case_conf = TestcaseConfig()
-            case_conf.continueWhenFailed = True
-            case_conf.roundIntervalSec = roundIntervalSec_tmp
-            testcaseID = case.get('testcaseID')
-            paramStrs = case.get('paramStrs')
-            if testcaseID is not None:
-                case_conf.testcaseID = testcaseID
-                print('Get Param testcaseID:', testcaseID)
-            else:
-                case_conf.testcaseID = 'L2TICKDETAILV2_1'
-                print('Not Get Param testcaseID:', testcaseID)
-            if paramStrs is not None:
-                paramStrs_update = []
-                for i in paramStrs:
-                    paramStrs_update.append(json.dumps(i))
-                case_conf.paramStrs.extend(paramStrs_update)
-                print('Get Param paramStrs:', paramStrs_update)
-            else:
-                case_conf.paramStrs.extend([])
-                print('Not Get Param paramStrs:', paramStrs)
-            runner_conf.casesConfig.extend([case_conf])
-        # print('i,case_list.length is ', case_list.__len__())
-        runner_conf_list.append(runner_conf)
-    return runner_conf_list
+#         runner_conf.sdkConfig.appKeyIOS = 'VVW0Fno7BEZt1a/y6KLM36uj9qcjw7CAHDwWZKDlWDs='
+#         runner_conf.sdkConfig.appKeyAndroid = 'J6IPlk5AEU+2/Yi59rfYnsFQtdtOgAo9GAzysx8ciOM='
+#         runner_conf.sdkConfig.marketPerm.Level = Level_tmp
+#         runner_conf.sdkConfig.marketPerm.HKPerms.extend(HKPerms_tmp)
+#         # mongoDB位置，存储的数据库位置
+#         runner_conf.storeConfig.mongoUri = "mongodb://221.228.66.83:30617"
+#         runner_conf.storeConfig.dbName = "stockSdkTest"
+#         runner_conf.storeConfig.collectionName = collectionName_tmp        
+#         if i == 0:
+#             # 各个环境的站点配置
+#             for i in serverSites1:
+#                 i = list(i)
+#                 runner_conf.sdkConfig.serverSites[i[0]].CopyFrom(Site(ips=i[1:]))
+#             print('Get Param serverSites1:', serverSites1)
+#         else:
+#             # 生产站点
+#             for i in serverSites2:
+#                 i = list(i)
+#                 runner_conf.sdkConfig.serverSites[i[0]].CopyFrom(Site(ips=i[1:]))
+#             print('Get Param serverSites2:', serverSites2)
+#         # 测试样例
+#         # case_list = []
+#         for case in AirflowMethod:
+#             case_conf = TestcaseConfig()
+#             case_conf.continueWhenFailed = True
+#             case_conf.roundIntervalSec = roundIntervalSec_tmp
+#             testcaseID = case.get('testcaseID')
+#             paramStrs = case.get('paramStrs')
+#             if testcaseID is not None:
+#                 case_conf.testcaseID = testcaseID
+#                 print('Get Param testcaseID:', testcaseID)
+#             else:
+#                 case_conf.testcaseID = 'L2TICKDETAILV2_1'
+#                 print('Not Get Param testcaseID:', testcaseID)
+#             if paramStrs is not None:
+#                 paramStrs_update = []
+#                 for i in paramStrs:
+#                     paramStrs_update.append(json.dumps(i))
+#                 case_conf.paramStrs.extend(paramStrs_update)
+#                 print('Get Param paramStrs:', paramStrs_update)
+#             else:
+#                 case_conf.paramStrs.extend([])
+#                 print('Not Get Param paramStrs:', paramStrs)
+#             runner_conf.casesConfig.extend([case_conf])
+#         # print('i,case_list.length is ', case_list.__len__())
+#         runner_conf_list.append(runner_conf)
+#     return runner_conf_list
 
 with DAG(
         dag_id='android_compare1',  # 测试计划名称
@@ -200,50 +208,50 @@ with DAG(
         },
         schedule_interval='@once',
 ) as dag:
-    conf = dag.get_dagrun(execution_date=dag.latest_execution_date).conf
-    # conf={
-	# 		'collectionName': 'compare_result',  
-	# 		'Level': '2',
-	# 		'HKPerms': ['hk10'],			
-	# 		'roundIntervalSec': 3,                             
-	# 		'tag':[
-	# 				['release-20200103-0.0.3','53fcc717d954e01d88bc9bd70eaab9ac9a0acb67'],
-	# 				['release-20200103-0.0.3','53fcc717d954e01d88bc9bd70eaab9ac9a0acb67']
-	# 			],
-	# 		'AirflowMethod':[
-	# 							{
-	# 								'testcaseID': 'L2TICKDETAILV2_1', 
-	# 								'paramStrs': [
-	# 								{
-	# 										'CODE': '000100.sz',
-	# 										'SUBTYPE': '1001'
-	# 										}								
-	# 								]
-	# 							}
-	# 						],
-	# 		'server':[
-	# 					{
-	# 						'serverSites1': [
-	# 							["sh","http://114.80.155.134:22016"],
-	# 							["tcpsh","http://114.80.155.134:22017"],
-	# 							["shl2","http://114.80.155.62:22016"],
-	# 							["tcpshl2","http://114.80.155.62:22017"],
+    # conf = dag.get_dagrun(execution_date=dag.latest_execution_date).conf
+    conf={
+			'collectionName': 'compare_result',  
+			'Level': '2',
+			'HKPerms': ['hk10'],			
+			'roundIntervalSec': 3,                             
+			'tag':[
+					['release-20200103-0.0.3','53fcc717d954e01d88bc9bd70eaab9ac9a0acb67'],
+					['release-20200103-0.0.3','53fcc717d954e01d88bc9bd70eaab9ac9a0acb67']
+				],
+			'AirflowMethod':[
+								{
+									'testcaseID': 'L2TICKDETAILV2_1', 
+									'paramStrs': [
+									{
+											'CODE': '000100.sz',
+											'SUBTYPE': '1001'
+											}								
+									]
+								}
+							],
+			'server':[
+						{
+							'serverSites1': [
+								["sh","http://114.80.155.134:22016"],
+								["tcpsh","http://114.80.155.134:22017"],
+								["shl2","http://114.80.155.62:22016"],
+								["tcpshl2","http://114.80.155.62:22017"],
 								
-	# 						]
-	# 					},
-	# 					{
-	# 						'serverSites2': [  
-	# 							["sh","http://117.184.225.151:22016"],
-	# 							["sz","http://117.184.225.151:22016"],
-	# 							["bj","http://117.184.225.151:22016"],
+							]
+						},
+						{
+							'serverSites2': [  
+								["sh","http://117.184.225.151:22016"],
+								["sz","http://117.184.225.151:22016"],
+								["bj","http://117.184.225.151:22016"],
 								
-	# 						]
-	# 					}
-	# 				],			
-	# 		'run_times':'1',
-	# 		'quote_detail':'1',	
-	# 		'plan_type':'1'  			
-    #     }
+							]
+						}
+					],			
+			'run_times':'1',
+			'quote_detail':'1',	
+			'plan_type':'1'  			
+        }
     
     start_task = DummyOperator(
         task_id='run_this_first',
@@ -260,7 +268,7 @@ with DAG(
         queue='worker'
     )
 
-    runner_conf_list = initRunnerConfig(conf)
+    runner_conf_list = initRunnerConfig(conf, params)
 
     task_id_to_cmp_list = ['android_cmp_a', 'android_cmp_b']
     # sdk版本配置

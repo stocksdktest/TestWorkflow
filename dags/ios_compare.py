@@ -191,50 +191,52 @@ with DAG(
         },
         schedule_interval='@once',
 ) as dag:
-    conf = dag.get_dagrun(execution_date=dag.latest_execution_date).conf
-    # conf={
-	# 		'collectionName': 'compare_result',  
-	# 		'Level': '2',
-	# 		'HKPerms': ['hk10'],			
-	# 		'roundIntervalSec': 3,                             
-	# 		'tag':[
-	# 				['release-20200103-0.0.3','53fcc717d954e01d88bc9bd70eaab9ac9a0acb67'],
-	# 				['release-20200103-0.0.3','53fcc717d954e01d88bc9bd70eaab9ac9a0acb67']
-	# 			],
-	# 		'AirflowMethod':[
-	# 							{
-	# 								'testcaseID': 'L2TICKDETAILV2_1', 
-	# 								'paramStrs': [
-	# 								{
-	# 										'CODE': '000100.sz',
-	# 										'SUBTYPE': '1001'
-	# 										}								
-	# 								]
-	# 							}
-	# 						],
-	# 		'server':[
-	# 					{
-	# 						'serverSites1': [
-	# 							["sh","http://114.80.155.134:22016"],
-	# 							["tcpsh","http://114.80.155.134:22017"],
-	# 							["shl2","http://114.80.155.62:22016"],
-	# 							["tcpshl2","http://114.80.155.62:22017"],
+    # Returns the dag run for a given execution date if it exists, otherwise none.  
+    # Execution_date is the execution date of the DagRun to find.
+    # conf = dag.get_dagrun(execution_date=dag.latest_execution_date).conf
+    conf={
+			'collectionName': 'compare_result',  
+			'Level': '2',
+			'HKPerms': ['hk10'],			
+			'roundIntervalSec': 3,                             
+			'tag':[
+					['release-20200103-0.0.3','53fcc717d954e01d88bc9bd70eaab9ac9a0acb67'],
+					['release-20200103-0.0.3','53fcc717d954e01d88bc9bd70eaab9ac9a0acb67']
+				],
+			'AirflowMethod':[
+								{
+									'testcaseID': 'L2TICKDETAILV2_1', 
+									'paramStrs': [
+									{
+											'CODE': '000100.sz',
+											'SUBTYPE': '1001'
+											}								
+									]
+								}
+							],
+			'server':[
+						{
+							'serverSites1': [
+								["sh","http://114.80.155.134:22016"],
+								["tcpsh","http://114.80.155.134:22017"],
+								["shl2","http://114.80.155.62:22016"],
+								["tcpshl2","http://114.80.155.62:22017"],
 								
-	# 						]
-	# 					},
-	# 					{
-	# 						'serverSites2': [  
-	# 							["sh","http://117.184.225.151:22016"],
-	# 							["sz","http://117.184.225.151:22016"],
-	# 							["bj","http://117.184.225.151:22016"],
+							]
+						},
+						{
+							'serverSites2': [  
+								["sh","http://117.184.225.151:22016"],
+								["sz","http://117.184.225.151:22016"],
+								["bj","http://117.184.225.151:22016"],
 								
-	# 						]
-	# 					}
-	# 				],			
-	# 		'run_times':'1',
-	# 		'quote_detail':'1',	
-	# 		'plan_type':'1'  			
-    #     }
+							]
+						}
+					],			
+			'run_times':'1',
+			'quote_detail':'1',	
+			'plan_type':'1'  			
+    }
     start_task = DummyOperator(
         task_id='run_this_first',
         queue='worker'
@@ -293,7 +295,8 @@ with DAG(
         repo_name='stocksdktest/IOSTestRunner',
         tag_id=tag_id_1,
         tag_sha=tag_sha_1,
-        runner_conf=runner_conf_list[0]
+        runner_conf=runner_conf_list[0],
+        release_xcom_key = "ios_release_a"
     )
     ios_release_b = IOSReleaseOperator(
         task_id='ios_release_b',
@@ -301,7 +304,8 @@ with DAG(
         repo_name='stocksdktest/IOSTestRunner',
         tag_id=tag_id_2,
         tag_sha=tag_sha_2,
-        runner_conf=runner_conf_list[1]
+        runner_conf=runner_conf_list[1],
+        release_xcom_key = "ios_release_b"
     )
 
     ios_a = IOSRunnerOperator(
@@ -310,7 +314,8 @@ with DAG(
 		app_version=tag_id_1,
         config_file=True,
         runner_conf=runner_conf_list[0],
-        run_times=run_times_tmp
+        run_times=run_times_tmp,
+        release_xcom_key = "ios_release_a"
     )
 
     ios_b = IOSRunnerOperator(
@@ -319,7 +324,8 @@ with DAG(
 		app_version=tag_id_2,
         config_file=True,
         runner_conf=runner_conf_list[1],
-        run_times=run_times_tmp
+        run_times=run_times_tmp,
+        release_xcom_key = "ios_release_b"
     )
 
     runner_conf_cmp = runner_conf_list[0]

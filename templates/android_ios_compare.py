@@ -11,7 +11,37 @@ from operators.ios_release_operator import IOSReleaseOperator
 from operators.ios_runner_operator import IOSRunnerOperator
 from operators.android_release_operator import AndroidReleaseOperator
 from protos_gen.config_pb2 import RunnerConfig, TestcaseConfig, Site
+from init_config import initRunnerConfig
+from init_config import initRunConf
 #import pymongo
+
+params = {'Level_tmp':"1", 'HKPerms_tmp':["hk10"], 'collectionName_tmp':"test_result", 'roundIntervalSec_tmp':3, 'AirflowMethod':[
+                {
+                    'testcaseID': 'CHARTV2TEST_1',
+                    'paramStrs': [
+                        {
+                            'CODE': '600000.sh',
+                            'TYPE': 'ChartTypeOneDay',
+                            'SUBTYPE': '1001'
+                        }
+                    ]
+                }
+            ], 'server':[
+                {
+                    'serverSites1':[
+                        ["sh", "http://114.80.155.134:22016"],
+                        ["tcpsh", "http://114.80.155.134:22017"],
+                        ["shl2", "http://114.80.155.62:22016"],
+                    ]
+                },
+                {
+                    'serverSites2':[
+                        ["sh", "http://114.80.155.134:22016"],
+                        ["tcpsh", "http://114.80.155.134:22017"],
+                        ["shl2", "http://114.80.155.62:22016"],
+                    ]
+                }
+            ], 'testcaseID':"CHARTV2TEST_1"}
 
 
 def on_failure_callback(context):
@@ -39,130 +69,130 @@ def on_failure_callback(context):
     col.insert_one(res)
 
 
-def initRunnerConfig(conf):
-    # 市场权限
-    Level_tmp = conf.get('Level')
-    if Level_tmp is not None:
-        print('Get Param Level:', Level_tmp)
-    else:
-        Level_tmp = "1"
-        print('Not Get Param Level:', Level_tmp)
-    HKPerms_tmp = list(conf.get('HKPerms'))
-    if HKPerms_tmp is not None:
-        print('Get Param HKPerms:', HKPerms_tmp)
-    else:
-        HKPerms_tmp=["hk10"]
-        print('Not Get Param HKPerms:', HKPerms_tmp)
-    collectionName_tmp = conf.get('collectionName')
-    if collectionName_tmp is not None:
-        print('Get Param collectionName:', collectionName_tmp)
-    else:
-        collectionName_tmp = "test_result"
-        print('Not Get Param collectionName:', collectionName_tmp)
-    roundIntervalSec_tmp = int(conf.get('roundIntervalSec'))
-    if roundIntervalSec_tmp is not None:
-        print('Get Param roundIntervalSec:', roundIntervalSec_tmp)
-    else:
-        roundIntervalSec_tmp = 3
-        print('Not Get Param roundIntervalSec:', roundIntervalSec_tmp)
-    AirflowMethod = list(conf.get('AirflowMethod'))
-    if AirflowMethod is not None:
-        print('Get Param AirflowMethod:',AirflowMethod)
-    else:
-        AirflowMethod=[
-                {
-                    'testcaseID': 'CHARTV2TEST_1',
-                    'paramStrs': [
-                        {
-                            'CODE': '600000.sh',
-                            'TYPE': 'ChartTypeOneDay',
-                            'SUBTYPE': '1001'
-                        }
-                    ]
-                }
-            ]
-        print('Not Get Param AirflowMethod:',AirflowMethod)
-    server=list(conf.get('server'))
-    if server is not None:
-        print('Get Param server:', server)
-    else:
-        server=[
-                    {
-                        serverSites1:[
-                            ["sh", "http://114.80.155.134:22016"],
-                            ["tcpsh", "http://114.80.155.134:22017"],
-                            ["shl2", "http://114.80.155.62:22016"],
-                        ]
-                    },
-                    {
-                        serverSites2:[
-                            ["sh", "http://114.80.155.134:22016"],
-                            ["tcpsh", "http://114.80.155.134:22017"],
-                            ["shl2", "http://114.80.155.62:22016"],
-                        ]
-                    }
-                ]
-        print('Not Get Param server:', server)
-    for i in range(2):
-        if i==0:
-            serverSites1=list(server[0].get('serverSites1'))
-        if i==1:
-            serverSites2=list(server[1].get('serverSites2'))
-            if len(serverSites2) == 0:
-                serverSites2=serverSites1
+# def initRunnerConfig(conf):
+#     # 市场权限
+#     Level_tmp = conf.get('Level')
+#     if Level_tmp is not None:
+#         print('Get Param Level:', Level_tmp)
+#     else:
+#         Level_tmp = "1"
+#         print('Not Get Param Level:', Level_tmp)
+#     HKPerms_tmp = list(conf.get('HKPerms'))
+#     if HKPerms_tmp is not None:
+#         print('Get Param HKPerms:', HKPerms_tmp)
+#     else:
+#         HKPerms_tmp=["hk10"]
+#         print('Not Get Param HKPerms:', HKPerms_tmp)
+#     collectionName_tmp = conf.get('collectionName')
+#     if collectionName_tmp is not None:
+#         print('Get Param collectionName:', collectionName_tmp)
+#     else:
+#         collectionName_tmp = "test_result"
+#         print('Not Get Param collectionName:', collectionName_tmp)
+#     roundIntervalSec_tmp = int(conf.get('roundIntervalSec'))
+#     if roundIntervalSec_tmp is not None:
+#         print('Get Param roundIntervalSec:', roundIntervalSec_tmp)
+#     else:
+#         roundIntervalSec_tmp = 3
+#         print('Not Get Param roundIntervalSec:', roundIntervalSec_tmp)
+#     AirflowMethod = list(conf.get('AirflowMethod'))
+#     if AirflowMethod is not None:
+#         print('Get Param AirflowMethod:',AirflowMethod)
+#     else:
+#         AirflowMethod=[
+#                 {
+#                     'testcaseID': 'CHARTV2TEST_1',
+#                     'paramStrs': [
+#                         {
+#                             'CODE': '600000.sh',
+#                             'TYPE': 'ChartTypeOneDay',
+#                             'SUBTYPE': '1001'
+#                         }
+#                     ]
+#                 }
+#             ]
+#         print('Not Get Param AirflowMethod:',AirflowMethod)
+#     server=list(conf.get('server'))
+#     if server is not None:
+#         print('Get Param server:', server)
+#     else:
+#         server=[
+#                     {
+#                         serverSites1:[
+#                             ["sh", "http://114.80.155.134:22016"],
+#                             ["tcpsh", "http://114.80.155.134:22017"],
+#                             ["shl2", "http://114.80.155.62:22016"],
+#                         ]
+#                     },
+#                     {
+#                         serverSites2:[
+#                             ["sh", "http://114.80.155.134:22016"],
+#                             ["tcpsh", "http://114.80.155.134:22017"],
+#                             ["shl2", "http://114.80.155.62:22016"],
+#                         ]
+#                     }
+#                 ]
+#         print('Not Get Param server:', server)
+#     for i in range(2):
+#         if i==0:
+#             serverSites1=list(server[0].get('serverSites1'))
+#         if i==1:
+#             serverSites2=list(server[1].get('serverSites2'))
+#             if len(serverSites2) == 0:
+#                 serverSites2=serverSites1
 
-    runner_conf_list = []
-    for i in range(2):
-        runner_conf = RunnerConfig()
+#     runner_conf_list = []
+#     for i in range(2):
+#         runner_conf = RunnerConfig()
 
-        runner_conf.jobID = 'TJ-1'
-        runner_conf.runnerID = generate_id('RUN-A')
-        runner_conf.sdkConfig.appKeyIOS = 'VVW0Fno7BEZt1a/y6KLM36uj9qcjw7CAHDwWZKDlWDs='
-        runner_conf.sdkConfig.appKeyAndroid = 'J6IPlk5AEU+2/Yi59rfYnsFQtdtOgAo9GAzysx8ciOM='
-        runner_conf.sdkConfig.marketPerm.Level = Level_tmp
-        runner_conf.sdkConfig.marketPerm.HKPerms.extend(HKPerms_tmp)
-        # mongoDB位置，存储的数据库位置
-        runner_conf.storeConfig.mongoUri = 'mongodb://221.228.66.83:30617'
-        runner_conf.storeConfig.dbName = 'stockSdkTest'
-        runner_conf.storeConfig.collectionName = collectionName_tmp
-        runner_conf.storeConfig.restEndpoint = 'http://mongo-python-eve.sdk-test.svc.cluster.local:80'
-        if i == 0:
-            # 各个环境的站点配置
-            for i in serverSites1:
-                i = list(i)
-                runner_conf.sdkConfig.serverSites[i[0]].CopyFrom(Site(ips=[i[1]]))
-            print('Get Param serverSites1:', serverSites1)
-        else:
-            # 生产站点
-            for i in serverSites2:
-                i = list(i)
-                runner_conf.sdkConfig.serverSites[i[0]].CopyFrom(Site(ips=[i[1]]))
-            print('Get Param serverSites2:', serverSites2)
-        # 测试样例
-        for case in AirflowMethod:
-            case_conf = TestcaseConfig()
-            case_conf.continueWhenFailed = True
-            case_conf.roundIntervalSec = roundIntervalSec_tmp
-            testcaseID = case.get('testcaseID')
-            paramStrs = case.get('paramStrs')
-            if testcaseID is not None:
-                case_conf.testcaseID = testcaseID
-                print('Get Param testcaseID:', testcaseID)
-            else:
-                case_conf.testcaseID = 'CHARTV2TEST_1'
-                print('Not Get Param testcaseID:', testcaseID)
-            if paramStrs is not None:
-                paramStrs_update = []
-                for i in paramStrs:
-                    paramStrs_update.append(json.dumps(i))
-                case_conf.paramStrs.extend(paramStrs_update)
-                print('Get Param paramStrs:', paramStrs_update)
-            else:
-                case_conf.paramStrs.extend([])
-                print('Not Get Param paramStrs:', paramStrs)
-            runner_conf.casesConfig.extend([case_conf])
-        runner_conf_list.append(runner_conf)
-    return runner_conf_list
+#         runner_conf.jobID = 'TJ-1'
+#         runner_conf.runnerID = generate_id('RUN-A')
+#         runner_conf.sdkConfig.appKeyIOS = 'VVW0Fno7BEZt1a/y6KLM36uj9qcjw7CAHDwWZKDlWDs='
+#         runner_conf.sdkConfig.appKeyAndroid = 'J6IPlk5AEU+2/Yi59rfYnsFQtdtOgAo9GAzysx8ciOM='
+#         runner_conf.sdkConfig.marketPerm.Level = Level_tmp
+#         runner_conf.sdkConfig.marketPerm.HKPerms.extend(HKPerms_tmp)
+#         # mongoDB位置，存储的数据库位置
+#         runner_conf.storeConfig.mongoUri = 'mongodb://221.228.66.83:30617'
+#         runner_conf.storeConfig.dbName = 'stockSdkTest'
+#         runner_conf.storeConfig.collectionName = collectionName_tmp
+#         runner_conf.storeConfig.restEndpoint = 'http://mongo-python-eve.sdk-test.svc.cluster.local:80'
+#         if i == 0:
+#             # 各个环境的站点配置
+#             for i in serverSites1:
+#                 i = list(i)
+#                 runner_conf.sdkConfig.serverSites[i[0]].CopyFrom(Site(ips=[i[1]]))
+#             print('Get Param serverSites1:', serverSites1)
+#         else:
+#             # 生产站点
+#             for i in serverSites2:
+#                 i = list(i)
+#                 runner_conf.sdkConfig.serverSites[i[0]].CopyFrom(Site(ips=[i[1]]))
+#             print('Get Param serverSites2:', serverSites2)
+#         # 测试样例
+#         for case in AirflowMethod:
+#             case_conf = TestcaseConfig()
+#             case_conf.continueWhenFailed = True
+#             case_conf.roundIntervalSec = roundIntervalSec_tmp
+#             testcaseID = case.get('testcaseID')
+#             paramStrs = case.get('paramStrs')
+#             if testcaseID is not None:
+#                 case_conf.testcaseID = testcaseID
+#                 print('Get Param testcaseID:', testcaseID)
+#             else:
+#                 case_conf.testcaseID = 'CHARTV2TEST_1'
+#                 print('Not Get Param testcaseID:', testcaseID)
+#             if paramStrs is not None:
+#                 paramStrs_update = []
+#                 for i in paramStrs:
+#                     paramStrs_update.append(json.dumps(i))
+#                 case_conf.paramStrs.extend(paramStrs_update)
+#                 print('Get Param paramStrs:', paramStrs_update)
+#             else:
+#                 case_conf.paramStrs.extend([])
+#                 print('Not Get Param paramStrs:', paramStrs)
+#             runner_conf.casesConfig.extend([case_conf])
+#         runner_conf_list.append(runner_conf)
+#     return runner_conf_list
 
 with DAG(
         dag_id='android_ios_compare',
@@ -190,7 +220,7 @@ with DAG(
         queue='worker'
     )
 
-    runner_conf_list = initRunnerConfig(conf)
+    runner_conf_list = initRunnerConfig(conf, params)
     task_id_to_cmp_list = ['android_cmp', 'android_cmpios_cmp']
     # sdk版本配置
     tag = list(conf.get('tag'))

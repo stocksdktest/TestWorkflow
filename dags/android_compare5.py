@@ -200,50 +200,50 @@ with DAG(
         },
         schedule_interval='@once',
 ) as dag:
-    conf = dag.get_dagrun(execution_date=dag.latest_execution_date).conf
-    # conf={
-	# 		'collectionName': 'compare_result',  
-	# 		'Level': '2',
-	# 		'HKPerms': ['hk10'],			
-	# 		'roundIntervalSec': 3,                             
-	# 		'tag':[
-	# 				['release-20200103-0.0.3','53fcc717d954e01d88bc9bd70eaab9ac9a0acb67'],
-	# 				['release-20200103-0.0.3','53fcc717d954e01d88bc9bd70eaab9ac9a0acb67']
-	# 			],
-	# 		'AirflowMethod':[
-	# 							{
-	# 								'testcaseID': 'L2TICKDETAILV2_1', 
-	# 								'paramStrs': [
-	# 								{
-	# 										'CODE': '000100.sz',
-	# 										'SUBTYPE': '1001'
-	# 										}								
-	# 								]
-	# 							}
-	# 						],
-	# 		'server':[
-	# 					{
-	# 						'serverSites1': [
-	# 							["sh","http://114.80.155.134:22016"],
-	# 							["tcpsh","http://114.80.155.134:22017"],
-	# 							["shl2","http://114.80.155.62:22016"],
-	# 							["tcpshl2","http://114.80.155.62:22017"],
+    # conf = dag.get_dagrun(execution_date=dag.latest_execution_date).conf
+    conf={
+			'collectionName': 'compare_result',  
+			'Level': '2',
+			'HKPerms': ['hk10'],			
+			'roundIntervalSec': 3,                             
+			'tag':[
+					['release-20200103-0.0.3','53fcc717d954e01d88bc9bd70eaab9ac9a0acb67'],
+					['release-20200103-0.0.3','53fcc717d954e01d88bc9bd70eaab9ac9a0acb67']
+				],
+			'AirflowMethod':[
+								{
+									'testcaseID': 'L2TICKDETAILV2_1', 
+									'paramStrs': [
+									{
+											'CODE': '000100.sz',
+											'SUBTYPE': '1001'
+											}								
+									]
+								}
+							],
+			'server':[
+						{
+							'serverSites1': [
+								["sh","http://114.80.155.134:22016"],
+								["tcpsh","http://114.80.155.134:22017"],
+								["shl2","http://114.80.155.62:22016"],
+								["tcpshl2","http://114.80.155.62:22017"],
 								
-	# 						]
-	# 					},
-	# 					{
-	# 						'serverSites2': [  
-	# 							["sh","http://117.184.225.151:22016"],
-	# 							["sz","http://117.184.225.151:22016"],
-	# 							["bj","http://117.184.225.151:22016"],
+							]
+						},
+						{
+							'serverSites2': [  
+								["sh","http://117.184.225.151:22016"],
+								["sz","http://117.184.225.151:22016"],
+								["bj","http://117.184.225.151:22016"],
 								
-	# 						]
-	# 					}
-	# 				],			
-	# 		'run_times':'1',
-	# 		'quote_detail':'1',	
-	# 		'plan_type':'1'  			
-    #     }
+							]
+						}
+					],			
+			'run_times':'1',
+			'quote_detail':'1',	
+			'plan_type':'1'  			
+    }
     
     start_task = DummyOperator(
         task_id='run_this_first',

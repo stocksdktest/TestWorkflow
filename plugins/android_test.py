@@ -10,6 +10,7 @@ from utils.base import  *
 from utils.adb import *
 
 serial = 'emulator-5554'
+# serial = '818fd179'
 
 if __name__ == '__main__':
     runner_conf = RunnerConfig()
