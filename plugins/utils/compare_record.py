@@ -36,7 +36,7 @@ class StockResultRecord(object):
 
         self.result['jobID'] = jobID
         self.result['dagID'] = dagID
-        self.result['type'] = rtype
+        self.result['type'] = rtype.name
 
     def __str__(self) -> str:
         return self.result.__str__()

@@ -16,6 +16,34 @@
 
 
 
+根据初步统计，目前前端通过传参执行的脚本有：
+
+- android_compare
+  - android_compare.py
+  - android_compare1.py
+  - android_compare2.py
+  - android_compare3.py
+  - android_compare4.py
+  - android_compare5.py
+- android_ios_compare
+- ios_compare
+  - ios_compare.py
+  - ios_compare1py
+  - ios_compare2.py
+  - ios_compare3.py
+  - ios_compare4.py
+  - ios_compare5.py
+- android_sort
+  - android_sort1.py
+  - android_sort2.py
+- crawler_compare_android
+- crawler_compare_ios
+- ios_sort
+
+一共有7种模板（未来有待补充）。实际上，7种模板对应7个dag脚本即可，这里会有这么多文件是因为前端那里理解不到位导致。
+
+
+
 ## 2. 测试计划模板
 
 目前测试计划模板有如下几种类型（先看通用测试计划模板v1.0.docx）
