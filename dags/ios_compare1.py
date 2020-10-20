@@ -62,8 +62,9 @@ def initRunnerConfig(conf):
     else:
         Level_tmp = "1"
         print('Not Get Param Level:', Level_tmp)
-    HKPerms_tmp = list(conf.get('HKPerms'))
+    HKPerms_tmp = conf.get('HKPerms')
     if HKPerms_tmp is not None:
+        HKPerms_tmp=list(HKPerms_tmp)
         print('Get Param HKPerms:', HKPerms_tmp)
     else:
         HKPerms_tmp=["hk10"]

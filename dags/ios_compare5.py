@@ -62,8 +62,9 @@ def initRunnerConfig(conf):
     else:
         Level_tmp = "1"
         print('Not Get Param Level:', Level_tmp)
-    HKPerms_tmp = list(conf.get('HKPerms'))
+    HKPerms_tmp = conf.get('HKPerms')
     if HKPerms_tmp is not None:
+        HKPerms_tmp=list(HKPerms_tmp)
         print('Get Param HKPerms:', HKPerms_tmp)
     else:
         HKPerms_tmp=["hk10"]
@@ -290,7 +291,8 @@ with DAG(
         repo_name='stocksdktest/IOSTestRunner',
         tag_id=tag_id_1,
         tag_sha=tag_sha_1,
-        runner_conf=runner_conf_list[0]
+        runner_conf=runner_conf_list[0],
+        release_xcom_key = "ios_release_a"
     )
     ios_release_b = IOSReleaseOperator(
         task_id='ios_release_b',
@@ -298,7 +300,8 @@ with DAG(
         repo_name='stocksdktest/IOSTestRunner',
         tag_id=tag_id_2,
         tag_sha=tag_sha_2,
-        runner_conf=runner_conf_list[1]
+        runner_conf=runner_conf_list[1],
+        release_xcom_key = "ios_release_b"
     )
 
     ios_a = IOSRunnerOperator(
@@ -307,7 +310,8 @@ with DAG(
 		app_version=tag_id_1,
         config_file=True,
         runner_conf=runner_conf_list[0],
-        run_times=run_times_tmp
+        run_times=run_times_tmp,
+        release_xcom_key = "ios_release_a"
     )
 
     ios_b = IOSRunnerOperator(
@@ -316,7 +320,8 @@ with DAG(
 		app_version=tag_id_2,
         config_file=True,
         runner_conf=runner_conf_list[1],
-        run_times=run_times_tmp
+        run_times=run_times_tmp,
+        release_xcom_key = "ios_release_b"
     )
 
     runner_conf_cmp = runner_conf_list[0]

@@ -115,14 +115,14 @@ def initRunnerConfig(conf):
     else:
         server=[
                     {
-                        serverSites1:[
+                        'serverSites1':[
                             ["sh", "http://114.80.155.134:22016"],
                             ["tcpsh", "http://114.80.155.134:22017"],
                             ["shl2", "http://114.80.155.62:22016"],
                         ]
                     },
                     {  
-                        serverSites2:[
+                        'serverSites2':[
                             ["sh", "http://114.80.155.134:22016"],
                             ["tcpsh", "http://114.80.155.134:22017"],
                             ["shl2", "http://114.80.155.62:22016"],
@@ -313,7 +313,8 @@ with DAG(
         repo_name='stocksdktest/AndroidTestRunner',
         tag_id=tag_id_1,
         tag_sha=tag_sha_1,
-        runner_conf=runner_conf_list[0]
+        runner_conf=runner_conf_list[0],
+        release_xcom_key = "android_release_a"
     )
     android_release_b = AndroidReleaseOperator(
         task_id='android_release_b',
@@ -321,7 +322,8 @@ with DAG(
         repo_name='stocksdktest/AndroidTestRunner',
         tag_id=tag_id_2,
         tag_sha=tag_sha_2,
-        runner_conf=runner_conf_list[1]
+        runner_conf=runner_conf_list[1],
+        release_xcom_key = "android_release_b"
     )
 
     android_a = AndroidRunnerOperator(
@@ -332,7 +334,8 @@ with DAG(
         config_file=True,
         runner_conf=runner_conf_list[0],
         tcp_times=tcp_times_tmp,
-        run_times=run_times_tmp
+        run_times=run_times_tmp,
+        release_xcom_key = "android_release_a"
     )
 
     android_b = AndroidRunnerOperator(
@@ -343,7 +346,8 @@ with DAG(
         config_file=True,
         runner_conf=runner_conf_list[1],
         tcp_times=tcp_times_tmp,
-        run_times=run_times_tmp
+        run_times=run_times_tmp,
+        release_xcom_key = "android_release_b"
     )
 
     runner_conf_cmp = runner_conf_list[0]

@@ -78,12 +78,11 @@ def initRunnerConfig(conf):
         print('Not Get Param collectionName:', collectionName_tmp)
     roundIntervalSec_tmp = conf.get('roundIntervalSec')
     if roundIntervalSec_tmp is not None:
-        roundIntervalSec_tmp=int(roundIntervalSec_tmp)
         print('Get Param roundIntervalSec:', roundIntervalSec_tmp)
     else:
-        roundIntervalSec_tmp = 3
+        roundIntervalSec_tmp = '3'
         print('Not Get Param roundIntervalSec:', roundIntervalSec_tmp)
-    
+    roundIntervalSec_tmp=int(roundIntervalSec_tmp)
 
     AirflowMethod = conf.get('AirflowMethod')
     if AirflowMethod is not None:
@@ -117,14 +116,14 @@ def initRunnerConfig(conf):
     else:
         server=[
                     {
-                        serverSites1:[
+                        'serverSites1':[
                             ["sh", "http://114.80.155.134:22016"],
                             ["tcpsh", "http://114.80.155.134:22017"],
                             ["shl2", "http://114.80.155.62:22016"],
                         ]
                     },
                     {  
-                        serverSites2:[
+                        'serverSites2':[
                             ["sh", "http://114.80.155.134:22016"],
                             ["tcpsh", "http://114.80.155.134:22017"],
                             ["shl2", "http://114.80.155.62:22016"],
@@ -248,7 +247,8 @@ with DAG(
 			'quote_detail':'1',	
 			'plan_type':'1'  			
     }
-
+    if conf is None:
+        conf  = default_conf
     start_task = DummyOperator(
         task_id='run_this_first',
         queue='worker'
@@ -316,7 +316,8 @@ with DAG(
         repo_name='stocksdktest/AndroidTestRunner',
         tag_id=tag_id_1,
         tag_sha=tag_sha_1,
-        runner_conf=runner_conf_list[0]
+        runner_conf=runner_conf_list[0],
+        release_xcom_key = "android_release_a"
     )
     android_release_b = AndroidReleaseOperator(
         task_id='android_release_b',
@@ -324,7 +325,8 @@ with DAG(
         repo_name='stocksdktest/AndroidTestRunner',
         tag_id=tag_id_2,
         tag_sha=tag_sha_2,
-        runner_conf=runner_conf_list[1]
+        runner_conf=runner_conf_list[1],
+        release_xcom_key = "android_release_b"
     )
 
     android_a = AndroidRunnerOperator(
@@ -335,7 +337,8 @@ with DAG(
         config_file=True,
         runner_conf=runner_conf_list[0],
         tcp_times=tcp_times_tmp,
-        run_times=run_times_tmp
+        run_times=run_times_tmp,
+        release_xcom_key = "android_release_a"
     )
 
     android_b = AndroidRunnerOperator(
@@ -346,7 +349,8 @@ with DAG(
         config_file=True,
         runner_conf=runner_conf_list[1],
         tcp_times=tcp_times_tmp,
-        run_times=run_times_tmp
+        run_times=run_times_tmp,
+        release_xcom_key = "android_release_b"
     )
 
     runner_conf_cmp = runner_conf_list[0]

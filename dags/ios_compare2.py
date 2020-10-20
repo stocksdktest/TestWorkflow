@@ -62,8 +62,9 @@ def initRunnerConfig(conf):
     else:
         Level_tmp = "1"
         print('Not Get Param Level:', Level_tmp)
-    HKPerms_tmp = list(conf.get('HKPerms'))
+    HKPerms_tmp = conf.get('HKPerms')
     if HKPerms_tmp is not None:
+        HKPerms_tmp = list(HKPerms_tmp)
         print('Get Param HKPerms:', HKPerms_tmp)
     else:
         HKPerms_tmp=["hk10"]
@@ -81,8 +82,9 @@ def initRunnerConfig(conf):
         roundIntervalSec_tmp = '3'
         print('Not Get Param roundIntervalSec:', roundIntervalSec_tmp)
     roundIntervalSec_tmp=int(roundIntervalSec_tmp)
-    AirflowMethod = list(conf.get('AirflowMethod'))
+    AirflowMethod = conf.get('AirflowMethod')
     if AirflowMethod is not None:
+        AirflowMethod = list(AirflowMethod)
         print('Get Param AirflowMethod:',AirflowMethod)
     else:
         AirflowMethod=[
@@ -254,8 +256,9 @@ with DAG(
 
     task_id_to_cmp_list = ['ios_cmp_a', 'ios_cmp_b']
     # sdk版本配置
-    tag = list(conf.get('tag'))
+    tag = conf.get('tag')
     if tag is not None:
+        tag = list(tag)
         print('Get Param tag:',tag)
     else:
         tag=[['release-20200324-0.0.2', '9175a6e9a1147c9b82ccaa57b484b2ba906a8363']]
@@ -292,7 +295,8 @@ with DAG(
         repo_name='stocksdktest/IOSTestRunner',
         tag_id=tag_id_1,
         tag_sha=tag_sha_1,
-        runner_conf=runner_conf_list[0]
+        runner_conf=runner_conf_list[0],
+        release_xcom_key = "ios_release_a"
     )
     ios_release_b = IOSReleaseOperator(
         task_id='ios_release_b',
@@ -300,7 +304,8 @@ with DAG(
         repo_name='stocksdktest/IOSTestRunner',
         tag_id=tag_id_2,
         tag_sha=tag_sha_2,
-        runner_conf=runner_conf_list[1]
+        runner_conf=runner_conf_list[1],
+        release_xcom_key = "ios_release_b"
     )
 
     ios_a = IOSRunnerOperator(
@@ -309,7 +314,8 @@ with DAG(
 		app_version=tag_id_1,
         config_file=True,
         runner_conf=runner_conf_list[0],
-        run_times=run_times_tmp
+        run_times=run_times_tmp,
+        release_xcom_key = "ios_release_a"
     )
 
     ios_b = IOSRunnerOperator(
@@ -318,7 +324,8 @@ with DAG(
 		app_version=tag_id_2,
         config_file=True,
         runner_conf=runner_conf_list[1],
-        run_times=run_times_tmp
+        run_times=run_times_tmp,
+        release_xcom_key = "ios_release_b"
     )
 
     runner_conf_cmp = runner_conf_list[0]
