@@ -48,7 +48,8 @@ with DAG(
         repo_name='stocksdktest/AndroidTestRunner',
         tag_id='release-20200310-0.0.3',
         tag_sha='2c0596339fdf5d09d0954efc7eb567fbeb70be3d',
-        runner_conf=runner_conf_list[0]
+        runner_conf=runner_conf_list[0],
+        release_xcom_key = "android_release_a"
     )
 
     android_release2 = AndroidReleaseOperator(
@@ -57,7 +58,8 @@ with DAG(
         repo_name='stocksdktest/AndroidTestRunner',
         tag_id='release-20200310-0.0.3',
         tag_sha='2c0596339fdf5d09d0954efc7eb567fbeb70be3d',
-        runner_conf=runner_conf_list[0]
+        runner_conf=runner_conf_list[0],
+        release_xcom_key = "android_release_b"
     )
 
     android_runner1 = AndroidRunnerOperator(
@@ -67,7 +69,8 @@ with DAG(
         apk_version='release-20200310-0.0.3',
         runner_conf=runner_conf_list[0],
         config_file=True,
-        run_times=100
+        run_times=100,
+        release_xcom_key = "android_release_a"
     )
 
     android_runner2 = AndroidRunnerOperator(
@@ -77,7 +80,8 @@ with DAG(
         apk_version='release-20200310-0.0.3',
         runner_conf=runner_conf_list[1],
         config_file=True,
-        run_times=100
+        run_times=100,
+        release_xcom_key = "android_release_b"
     )
 
     android_sort_1 = DataSortingOperator(
@@ -86,7 +90,8 @@ with DAG(
         retries=3,
         provide_context=False,
         runner_conf=runner_conf_default,
-        dag=dag
+        dag=dag,
+        release_xcom_key = "android_release_a"
     )
 
     android_sort_2 = DataSortingOperator(
@@ -95,7 +100,8 @@ with DAG(
         retries=3,
         provide_context=False,
         runner_conf=runner_conf_default,
-        dag=dag
+        dag=dag,
+        release_xcom_key = "android_release_b"
     )
 
     start_task >> [android_release1, android_release2]

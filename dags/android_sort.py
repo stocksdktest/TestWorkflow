@@ -309,7 +309,8 @@ with DAG(
         retries=3,
         provide_context=False,
         runner_conf=runner_conf_default,
-        dag=dag
+        dag=dag,
+        release_xcom_key = "android_release_a"
     )
 
     android_sort_b = DataSortingOperator(
@@ -319,7 +320,8 @@ with DAG(
         retries=3,
         provide_context=False,
         runner_conf=runner_conf_default,
-        dag=dag
+        dag=dag,
+        release_xcom_key = "android_release_b"
     )
 
     android_cmp = DataCompareOperator(

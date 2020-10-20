@@ -91,14 +91,14 @@ def initRunnerConfig(conf):
     else:
         server=[
                     {
-                        serverSites1:[
+                        'serverSites1':[
                             ["sh", "http://114.80.155.134:22016"],
                             ["tcpsh", "http://114.80.155.134:22017"],
                             ["shl2", "http://114.80.155.62:22016"],
                         ]
                     },
                     {
-                        serverSites2:[
+                        'serverSites2':[
                             ["sh", "http://114.80.155.134:22016"],
                             ["tcpsh", "http://114.80.155.134:22017"],
                             ["shl2", "http://114.80.155.62:22016"],

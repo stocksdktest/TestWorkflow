@@ -280,7 +280,8 @@ with DAG(
         repo_name='stocksdktest/IOSTestRunner',
         tag_id=tag_id_1,
         tag_sha=tag_sha_1,
-        runner_conf=runner_conf_list[0]
+        runner_conf=runner_conf_list[0],
+        release_xcom_key = "ios_release_a"
     )
 
     ios_release2 = IOSReleaseOperator(
@@ -289,7 +290,8 @@ with DAG(
         repo_name='stocksdktest/IOSTestRunner',
         tag_id=tag_id_2,
         tag_sha=tag_sha_2,
-        runner_conf=runner_conf_list[1]
+        runner_conf=runner_conf_list[1],
+        release_xcom_key = "ios_release_b"
     )
 
     ios_runner1 = IOSRunnerOperator(
@@ -299,7 +301,8 @@ with DAG(
         app_version=tag_id_1,
         runner_conf=runner_conf_list[0],
         config_file=True,
-        run_times=100
+        run_times=100,
+        release_xcom_key = "ios_release_a"
     )
 
     ios_runner2 = IOSRunnerOperator(
@@ -309,7 +312,8 @@ with DAG(
         app_version=tag_id_2,
         runner_conf=runner_conf_list[1],
         config_file=True,
-        run_times=100
+        run_times=100,
+        release_xcom_key = "ios_release_b"
     )
 
     ios_sort_1 = DataSortingOperator(
@@ -318,7 +322,8 @@ with DAG(
         retries=3,
         provide_context=False,
         runner_conf=runner_conf_default,
-        dag=dag
+        dag=dag,
+        release_xcom_key = "ios_release_a"
     )
 
     ios_sort_2 = DataSortingOperator(
@@ -327,7 +332,8 @@ with DAG(
         retries=3,
         provide_context=False,
         runner_conf=runner_conf_default,
-        dag=dag
+        dag=dag,
+        release_xcom_key = "ios_release_b"
     )
 
     start_task >> [ios_release1, ios_release2]

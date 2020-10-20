@@ -287,7 +287,8 @@ with DAG(
         retries=3,
         provide_context=False,
         runner_conf=runner_conf_default,
-        dag=dag
+        dag=dag,
+        release_xcom_key = "ios_release_a"
     )
 
     ios_sort_2 = DataSortingOperator(
@@ -296,7 +297,8 @@ with DAG(
         retries=3,
         provide_context=False,
         runner_conf=runner_conf_default,
-        dag=dag
+        dag=dag,
+        release_xcom_key = "ios_release_b"
     )
 
     start_task >> [ios_release1, ios_release2]
