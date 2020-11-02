@@ -123,9 +123,82 @@ curl -X POST \
 
 
 
-## 4.各类模板介绍与返回值格式
+## 4.返回值类型
 
-### 4.1 android_compare
+对于基本返回值，包含有如下字段：
+
+| 字段名    | 类型 | 解释                       |
+| --------- | ---- | -------------------------- |
+| jobID     | str  |                            |
+| dagID     | str  |                            |
+| type      | str  | 返回值类型                 |
+| runnerID1 | str  |                            |
+| runnerID2 | str  |                            |
+| result    | dict | 结果                       |
+| error     | list | 原始出错数据               |
+| mismatch  | list | 原始失配数据               |
+| empty     | list | 原始空数据                 |
+| error_msg | str  | 错误信息（由前端平台补充） |
+
+其中`type`字段表示返回值类型，根据返回值类型的不同，result有如下key
+
+#### 4.1 Default 默认类型
+
+默认比对
+
+- true: list
+- false: list
+
+#### 4.2 Quote 行情类型
+
+行情快照比对
+
+- true: list
+- false: list
+
+#### 4.3 Sort 排序类型
+
+排序比对
+
+- true: list
+- false: list
+- unknown: list
+
+#### 4.4 File 跟账类型
+
+#### 4.5 DefaultSort 默认排序类型
+
+先排序，后比对
+
+- true: list
+- false: list
+- sort1
+  - true: list
+  - false: list
+  - unknown: list
+- sort2
+  - true: list
+  - false: list
+  - unknown: list
+
+#### 4.6 QuoteSort 行情排序类型
+
+
+
+### 4.7 大文件存储策略
+
+若不采取大文件存储，则每个list中的元素都是具体数据。
+
+若采取大文件存储，则有：
+
+- error, mismatch, empty 三个list中存储的是recordID，根据recordID在数据库的test_result表查询
+- true, false, unknown, sort1.true, sort1.false, ... 等存储的是具体数据的ObjectId，具体数据将被转存到数据库的big_data表中
+
+
+
+## 5.各类模板介绍与返回值格式
+
+### 5.1 android_compare
 
 ### 介绍
 
@@ -134,10 +207,6 @@ curl -X POST \
 - tcp_times：默认值为-1。表示
 
 #### 返回值格式
-
-
-
-4.2 
 
 
 
