@@ -26,10 +26,10 @@ def get_test_runer_config(dbName, collectionName):
 
 def test_data_sorting():
     dbName = 'stockSdkTest'
-    collectionName = 'sort'
+    collectionName = 'test_result'
     runner_conf = get_test_runer_config(dbName=dbName, collectionName=collectionName)
     task_from = 'a'
-    id = 'RUN--d10c15c3-9f77-4e7d-a8cd-5c50ee838852'
+    id = 'RUN--0370e5a1-6863-4278-b9b3-0ff6e5d24d23'
 
     with DAG(dag_id='any_dag', start_date=datetime.now()) as dag:
         def push_function(**kwargs):
@@ -58,7 +58,7 @@ def test_data_sorting():
         sort_instance = TaskInstance(task=sorter, execution_date=execution_date)
         context = sort_instance.get_template_context()
         context['run_id'] = 'fake-run'
-        context['expectation'] = 61
+        context['expectation'] = 15
         context['unit_test'] = True
         if context.get('expectation') is not None:
             expectation = context.get('expectation')
@@ -73,7 +73,7 @@ def test_data_sorting():
 
 if __name__ == '__main__':
     result = test_data_sorting()
-    import pymongo
-    client = pymongo.MongoClient("mongodb://221.228.66.83:30617")  # 远程MongoDB服务器
-    sdk_writer = SdkMongoWriter(client)
-    result2 = sdk_writer.write_result_record(result)
+    # import pymongo
+    # client = pymongo.MongoClient("mongodb://221.228.66.83:30617")  # 远程MongoDB服务器
+    # sdk_writer = SdkMongoWriter(client)
+    # result2 = sdk_writer.write_result_record(result)

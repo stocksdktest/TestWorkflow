@@ -6,6 +6,40 @@ from datetime import timedelta
 from unittest.templates.helper import get_conf
 from utils import AirflowRestClient
 
+default_conf = {
+    'collectionName': 'test_result',
+    'Level': '1',
+    'HKPerms': ['hk10'],
+    'roundIntervalSec': '3',
+    'tag': [['release-20200414-0.0.2', '7ee476fdb9f915d9f97bc529d4a72e4c3249b4f3']],
+    'run_times': '1',
+    'quote_detail': '1',
+    "AirflowMethod": [
+        {
+            'testcaseID': 'CRAWLER_CHARTV2TEST_2',
+            'paramStrs': [
+                {
+                    'CODE_A': '600000.sh',
+                    'CODE_P': '600000.sh',
+                    'SUBTYPE': 'SH1001',
+                    'TYPE': 'ChartTypeBeforeData',
+                    'DURATION_SECONDS': 60,
+                },
+            ]}
+    ],
+    'server': [
+        {
+            'serverSites1': [
+                ["sh", "http://114.80.155.134:22016"],
+                ["tcpsh", "http://114.80.155.134:22017"],
+            ]
+        },
+        {
+            'serverSites2': []
+        }
+    ]
+},
+
 if __name__ == '__main__':
     DAG_ID = 'android_crawler_compare'
     execution_on_date = '2020-02-11T04:13:50'
@@ -17,39 +51,7 @@ if __name__ == '__main__':
         'conf': conf
     })
     # data = json.dumps({
-    #     'conf': {
-    #         'collectionName': 'test_result',
-    #         'Level': '1',
-    #         'HKPerms': ['hk10'],
-    #         'roundIntervalSec': '3',
-    #         'tag': [['release-20200414-0.0.2', '7ee476fdb9f915d9f97bc529d4a72e4c3249b4f3']],
-    #         'run_times': '1',
-    #         'quote_detail': '1',
-    #         "AirflowMethod": [
-    #             {
-    #                 'testcaseID': 'CRAWLER_CHARTV2TEST_2',
-    #                 'paramStrs': [
-    #                     {
-    #                         'CODE_A': '600000.sh',
-    #                         'CODE_P': '600000.sh',
-    #                         'SUBTYPE': 'SH1001',
-    #                         'TYPE': 'ChartTypeBeforeData',
-    #                         'DURATION_SECONDS': 60,
-    #                     },
-    #                 ]}
-    #         ],
-    #         'server': [
-    #             {
-    #                 'serverSites1': [
-    #                     ["sh", "http://114.80.155.134:22016"],
-    #                     ["tcpsh", "http://114.80.155.134:22017"],
-    #                 ]
-    #             },
-    #             {
-    #                 'serverSites2': []
-    #             }
-    #         ]
-    #     },
+    #     'conf': default_conf,
     #     #'execution_date': '2020-04-06 02:58:16'
     #     #'execution_date': datetime_string
     # })

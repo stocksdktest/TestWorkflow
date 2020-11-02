@@ -53,7 +53,41 @@ with DAG(
         schedule_interval='@once',
 ) as dag:
     conf = dag.get_dagrun(execution_date=dag.latest_execution_date).conf
-
+    print("Get conf :", conf)
+    # conf = {
+    #     'collectionName': 'test_result',
+    #     'Level': '1',
+    #     'HKPerms': ['hk10'],
+    #     'roundIntervalSec': '3',
+    #     'tag': [
+    #         ['release-20200504-0.0.2', '6707f368f5612ecbcc0067752bb0d73aed923740'],
+    #         ['release-20200525-0.0.0', '6394b5d191b18c1feb2d2519364141602af6b7cb']
+    #     ],
+    #     'run_times': '1',
+    #     'quote_detail': '1',
+    #     "AirflowMethod": [
+    #         {
+    #             'testcaseID': 'QUOTEDETAILTCPTEST_1',
+    #             'paramStrs': [
+    #                 {
+    #                     'CODE': '600000.sh',
+    #                     'SECONDS': '100'
+    #                 }
+    #             ]}
+    #     ],
+    #     'server': [
+    #         {
+    #             'serverSites1': [
+    #                 ["sh", "http://114.80.155.134:22016", "tcp://114.80.155.134:22017"],
+    #                 ["tcpsh", "http://114.80.155.134:22017"],
+    #                 ["sz", "http://114.80.155.134:22016"],
+    #             ]
+    #         },
+    #         {
+    #             'serverSites2': []
+    #         }
+    #     ]
+    # }
     start_task = DummyOperator(
         task_id='run_this_first',
         queue='worker'

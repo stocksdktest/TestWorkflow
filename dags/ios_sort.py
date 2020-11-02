@@ -57,7 +57,51 @@ with DAG(
 ) as dag:
     conf = dag.get_dagrun(execution_date=dag.latest_execution_date).conf
     print("Get conf :", conf)
-
+    # conf = {
+    #     'collectionName': 'test_result',
+    #     'Level': '1',
+    #     'HKPerms': ['hk10'],
+    #     'roundIntervalSec': '3',
+    #     'tag': [['release-20200310-0.0.5', '9e2d1a04b6dba6e800cafadd5046b777326c8bfd']],
+    #     "AirflowMethod": [
+    #         {
+    #             'testcaseID': 'CATESORTING_2',
+    #             'paramStrs': [
+    #                 {
+    #                     'CateType': 'SH1133',
+    #                     'param': '0,50,0,0,1',
+    #                     'STOCKFIELDS': '-1',
+    #                     'ADDVALUEFIELDS': '-1'
+    #                 },
+    #                 {
+    #                     'CateType': 'SH1133',
+    #                     'param': '0,50,0,1,1',
+    #                     'STOCKFIELDS': '-1',
+    #                     'ADDVALUEFIELDS': '-1'
+    #                 },
+    #                 {
+    #                     'CateType': 'SH1133',
+    #                     'param': '0,50,1,0,1',
+    #                     'STOCKFIELDS': '-1',
+    #                     'ADDVALUEFIELDS': '-1'
+    #                 }
+    #             ]}
+    #     ],
+    #     'server': [
+    #         {
+    #             'serverSites1': [
+    #                 ["sh", "http://114.80.155.134:22016"],
+    #                 ["tcpsh", "http://114.80.155.134:22017"],
+    #             ]
+    #         },
+    #         {
+    #             'serverSites2': [
+    #                 ["sh", "http://114.80.155.134:22016"],
+    #                 ["shl2", "http://114.80.155.62:22016"],
+    #             ]
+    #         }
+    #     ]
+    # }
     # sdk版本配置
     default_tag = [['release-20200324-0.0.2', '9175a6e9a1147c9b82ccaa57b484b2ba906a8363']]
     tag_id_1, tag_id_2, tag_sha_1, tag_sha_2 = init_dag_tags(conf, default_tag)

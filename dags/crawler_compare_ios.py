@@ -55,6 +55,40 @@ with DAG(
         schedule_interval='@once',
 ) as dag:
     conf = dag.get_dagrun(execution_date=dag.latest_execution_date).conf
+    print("Get conf :", conf)
+    # conf = {
+    #     'collectionName': 'test_result',
+    #     'Level': '1',
+    #     'HKPerms': ['hk10'],
+    #     'roundIntervalSec': '3',
+    #     'tag': [['release-20200324-0.0.2', '9175a6e9a1147c9b82ccaa57b484b2ba906a8363']],
+    #     'run_times': '1',
+    #     'quote_detail': '1',
+    #     "AirflowMethod": [
+    #         {
+    #             'testcaseID': 'CRAWLER_CHARTV2TEST_2',
+    #             'paramStrs': [
+    #                 {
+    #                     'CODE_A': '600000.sh',
+    #                     'CODE_P': '600000.sh',
+    #                     'SUBTYPE': 'SH1001',
+    #                     'TYPE': 'ChartTypeBeforeData',
+    #                     'DURATION_SECONDS': 60,
+    #                 },
+    #             ]}
+    #     ],
+    #     'server': [
+    #         {
+    #             'serverSites1': [
+    #                 ["sh", "http://114.80.155.134:22016"],
+    #                 ["tcpsh", "http://114.80.155.134:22017"],
+    #             ]
+    #         },
+    #         {
+    #             'serverSites2': []
+    #         }
+    #     ]
+    # }
 
     start_task = DummyOperator(
         task_id='run_this_first',

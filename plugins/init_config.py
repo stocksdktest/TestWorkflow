@@ -70,80 +70,67 @@ def initRunConf(Level_tmp, HKPerms_tmp, collectionName_tmp, roundIntervalSec_tmp
 
 # params：dict
 def initRunnerConfig(conf, params):
-    Level_tmp = conf.get('Level')
-    if Level_tmp is not None:
-        print('Get Param Level:', Level_tmp)
-    else:
+    if conf is None:
         Level_tmp = params['Level_tmp']
-        print('Not Get Param Level:', Level_tmp)
-    HKPerms_tmp = list(conf.get('HKPerms'))
-    if HKPerms_tmp is not None:
-        print('Get Param HKPerms:', HKPerms_tmp)
-    else:
         HKPerms_tmp = params['HKPerms_tmp']
-        print('Not Get Param HKPerms:', HKPerms_tmp)
-    collectionName_tmp = conf.get('collectionName')
-    if collectionName_tmp is not None:
-        print('Get Param collectionName:', collectionName_tmp)
-    else:
         collectionName_tmp = params['collectionName_tmp']
-        print('Not Get Param collectionName:', collectionName_tmp)
-    roundIntervalSec_tmp = conf.get('roundIntervalSec')
-    if roundIntervalSec_tmp is not None:
-        roundIntervalSec_tmp = int(roundIntervalSec_tmp)
-        print('Get Param roundIntervalSec:', roundIntervalSec_tmp)
-    else:
         roundIntervalSec_tmp = params['roundIntervalSec_tmp']
-        print('Not Get Param roundIntervalSec:', roundIntervalSec_tmp)
-    AirflowMethod = conf.get('AirflowMethod')
-    if AirflowMethod is not None:
-        AirflowMethod = list(AirflowMethod)
-        print('Get Param AirflowMethod:',AirflowMethod)
-    else:
-        # AirflowMethod=[
-        #         {
-        #             'testcaseID': 'CRAWLER_CHARTV2TEST_2',
-        #             'paramStrs': [
-        #                 {
-        #                     'CODE_A': '600000.sh',
-        #                     'CODE_P': '600000.sh',
-        #                     'SUBTYPE': 'SH1001',
-        #                     'TYPE': 'ChartTypeBeforeData',
-        #                     'DURATION_SECONDS': 60,
-        #                 }
-        #             ]
-        #         }
-        #     ]
         AirflowMethod = params['AirflowMethod']
-        print('Not Get Param AirflowMethod:',AirflowMethod)
-    server=conf.get('server')
-    if server is not None:
-        server = list(server)
-        print('Get Param server:', server)
-    else:
-        # server=[
-        #             {
-        #                 serverSites1:[
-        #                     ["sh", "http://114.80.155.134:22016"],
-        #                     ["tcpsh", "http://114.80.155.134:22017"],
-        #                     ["shl2", "http://114.80.155.62:22016"],
-        #                 ]
-        #             },
-        #             {
-        #                 serverSites2:[]
-        #             }
-        #         ]
         server = params['server']
-        print('Not Get Param server:', server)
+    else:
+        Level_tmp = conf.get('Level')
+        if Level_tmp is not None:
+            print('Get Param Level:', Level_tmp)
+        else:
+            Level_tmp = params['Level_tmp']
+            print('Not Get Param Level:', Level_tmp)
+        HKPerms_tmp = conf.get('HKPerms')
+        if HKPerms_tmp is not None:
+            HKPerms_tmp = list(conf.get('HKPerms'))
+            print('Get Param HKPerms:', HKPerms_tmp)
+        else:
+            HKPerms_tmp = params['HKPerms_tmp']
+            print('Not Get Param HKPerms:', HKPerms_tmp)
+        collectionName_tmp = conf.get('collectionName')
+        if collectionName_tmp is not None:
+            print('Get Param collectionName:', collectionName_tmp)
+        else:
+            collectionName_tmp = params['collectionName_tmp']
+            print('Not Get Param collectionName:', collectionName_tmp)
+        roundIntervalSec_tmp = conf.get('roundIntervalSec')
+        if roundIntervalSec_tmp is not None:
+            roundIntervalSec_tmp = int(roundIntervalSec_tmp)
+            print('Get Param roundIntervalSec:', roundIntervalSec_tmp)
+        else:
+            roundIntervalSec_tmp = params['roundIntervalSec_tmp']
+            print('Not Get Param roundIntervalSec:', roundIntervalSec_tmp)
+        AirflowMethod = conf.get('AirflowMethod')
+        if AirflowMethod is not None:
+            AirflowMethod = list(AirflowMethod)
+            print('Get Param AirflowMethod:',AirflowMethod)
+        else:
+            AirflowMethod = params['AirflowMethod']
+            print('Not Get Param AirflowMethod:',AirflowMethod)
+        server=conf.get('server')
+        if server is not None:
+            server = list(server)
+            print('Get Param server:', server)
+        else:
+            server = params['server']
+            print('Not Get Param server:', server)
 
     caseID = params['testcaseID']
     runner_conf_list = []
+
+    serverSites1 = params['server'][0].get('serverSites1')
+    serverSites2 = params['server'][0].get('serverSites1')
+
     if len(server) == 1:
         serverSites1 = list(server[0].get('serverSites1'))
         serverSites2=serverSites1
         runner_conf = initRunConf(Level_tmp, HKPerms_tmp, collectionName_tmp, roundIntervalSec_tmp, serverSites1, serverSites2, AirflowMethod, caseID, 0)
         return runner_conf
-    # elif len(server) == 2:
+    # elif len(server) == 2: TODO: 等中创关于sever数量重复的bug修复后，改回来
     else:
         for i in range(len(server)):
             if i==0:
@@ -157,37 +144,46 @@ def initRunnerConfig(conf, params):
     return runner_conf_list
 
 def init_dag_params(conf):
-    #run_times_tmp=1
-    run_times_tmp=conf.get('run_times')
-    if run_times_tmp is not None:
-        run_times_tmp=int(run_times_tmp)
-        print('Get Param run_times:',run_times_tmp)
+    if conf is None:
+        run_times_tmp = 1
+        quote_detail_tmp = 0
+        tcp_times_tmp = -1
     else:
-        run_times_tmp=1
-        print('Not Get Param run_times:',run_times_tmp)
+        #run_times_tmp=1
+        run_times_tmp=conf.get('run_times')
+        if run_times_tmp is not None:
+            run_times_tmp=int(run_times_tmp)
+            print('Get Param run_times:',run_times_tmp)
+        else:
+            run_times_tmp=1
+            print('Not Get Param run_times:',run_times_tmp)
 
-    #quote_detail_tmp=0
-    quote_detail_tmp=conf.get('quote_detail')
-    if quote_detail_tmp is not None:
-        quote_detail_tmp=int(quote_detail_tmp)
-        print('Get Param quote_detail:',quote_detail_tmp)
-    else:
-        quote_detail_tmp=0
-        print('Not Get Param quote_detail:',quote_detail_tmp)
+        #quote_detail_tmp=0
+        quote_detail_tmp=conf.get('quote_detail')
+        if quote_detail_tmp is not None:
+            quote_detail_tmp=int(quote_detail_tmp)
+            print('Get Param quote_detail:',quote_detail_tmp)
+        else:
+            quote_detail_tmp=0
+            print('Not Get Param quote_detail:',quote_detail_tmp)
 
-    #tcp_times=-1
-    tcp_times_tmp=conf.get('tcp_times')
-    if tcp_times_tmp is not None:
-        tcp_times_tmp=int(tcp_times_tmp)
-        print('Get Param tcp_times:',tcp_times_tmp)
-    else:
-        tcp_times_tmp=-1
-        print('Not Get Param tcp_times:',tcp_times_tmp)
+        #tcp_times=-1
+        tcp_times_tmp=conf.get('tcp_times')
+        if tcp_times_tmp is not None:
+            tcp_times_tmp=int(tcp_times_tmp)
+            print('Get Param tcp_times:',tcp_times_tmp)
+        else:
+            tcp_times_tmp=-1
+            print('Not Get Param tcp_times:',tcp_times_tmp)
 
     return run_times_tmp, quote_detail_tmp, tcp_times_tmp
 
 def init_dag_tags(conf, default_tag):
-    tag = conf.get('tag')
+    if conf is None:
+        tag = None
+    else:
+        tag = conf.get('tag')
+
     if tag is not None:
         tag = list(tag)
         print('Get Param tag:',tag)
