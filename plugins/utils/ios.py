@@ -8,9 +8,8 @@ from airflow.contrib.hooks.sftp_hook import SFTPHook
 from utils import base
 import paramiko
 
-OSX_HOSTNAME = '221.228.66.83'
-# OSX_HOSTNAME = '114.212.87.142'
-OSX_PORT = 30751
+OSX_HOSTNAME = '192.168.100.2'
+OSX_PORT = 22
 OSX_USER_ID = 'test-env'
 OSX_UESR_PWD = 'test-env'
 SSH_TIMEOUT = 20
