@@ -143,7 +143,8 @@ def initRunnerConfig(conf, params):
         serverSites2=serverSites1
         runner_conf = initRunConf(Level_tmp, HKPerms_tmp, collectionName_tmp, roundIntervalSec_tmp, serverSites1, serverSites2, AirflowMethod, caseID, 0)
         return runner_conf
-    elif len(server) == 2:
+    # elif len(server) == 2:
+    else:
         for i in range(len(server)):
             if i==0:
                 serverSites1=list(server[0].get('serverSites1'))
@@ -154,3 +155,53 @@ def initRunnerConfig(conf, params):
             runner_conf_list.append(runner_conf)
         return runner_conf_list
     return runner_conf_list
+
+def init_dag_params(conf):
+    #run_times_tmp=1
+    run_times_tmp=conf.get('run_times')
+    if run_times_tmp is not None:
+        run_times_tmp=int(run_times_tmp)
+        print('Get Param run_times:',run_times_tmp)
+    else:
+        run_times_tmp=1
+        print('Not Get Param run_times:',run_times_tmp)
+
+    #quote_detail_tmp=0
+    quote_detail_tmp=conf.get('quote_detail')
+    if quote_detail_tmp is not None:
+        quote_detail_tmp=int(quote_detail_tmp)
+        print('Get Param quote_detail:',quote_detail_tmp)
+    else:
+        quote_detail_tmp=0
+        print('Not Get Param quote_detail:',quote_detail_tmp)
+
+    #tcp_times=-1
+    tcp_times_tmp=conf.get('tcp_times')
+    if tcp_times_tmp is not None:
+        tcp_times_tmp=int(tcp_times_tmp)
+        print('Get Param tcp_times:',tcp_times_tmp)
+    else:
+        tcp_times_tmp=-1
+        print('Not Get Param tcp_times:',tcp_times_tmp)
+
+    return run_times_tmp, quote_detail_tmp, tcp_times_tmp
+
+def init_dag_tags(conf, default_tag):
+    tag = conf.get('tag')
+    if tag is not None:
+        tag = list(tag)
+        print('Get Param tag:',tag)
+    else:
+        tag=default_tag
+        print('Not Get Param tag:',tag)
+    if len(tag) == 1:
+        tag_id_1 = tag[0][0]
+        tag_id_2 = tag[0][0]
+        tag_sha_1 = tag[0][1]
+        tag_sha_2 = tag[0][1]
+    else:
+        tag_id_1 = tag[0][0]
+        tag_id_2 = tag[1][0]
+        tag_sha_1 = tag[0][1]
+        tag_sha_2 = tag[1][1]
+    return tag_id_1, tag_id_2, tag_sha_1, tag_sha_2
