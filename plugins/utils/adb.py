@@ -8,8 +8,8 @@ import binascii
 
 from utils import base
 
-# ADB_EXEC_PATH = '/usr/local/bin/adb' if platform.system() == 'Darwin' else '/usr/bin/adb'
-ADB_EXEC_PATH = '/usr/local/Caskroom/android-platform-tools/30.0.0/platform-tools/adb'
+ADB_EXEC_PATH = '/usr/local/bin/adb' if platform.system() == 'Darwin' else '/usr/bin/adb'
+# ADB_EXEC_PATH = '/usr/local/Caskroom/android-platform-tools/30.0.0/platform-tools/adb'
 
 def start_adb_server():
 	exec_adb_cmd(['adb', 'start-server'])

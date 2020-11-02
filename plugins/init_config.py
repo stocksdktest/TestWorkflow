@@ -199,9 +199,11 @@ def init_dag_tags(conf, default_tag):
         tag_id_2 = tag[0][0]
         tag_sha_1 = tag[0][1]
         tag_sha_2 = tag[0][1]
-    else:
+    elif len(tag) == 2:
         tag_id_1 = tag[0][0]
         tag_id_2 = tag[1][0]
         tag_sha_1 = tag[0][1]
         tag_sha_2 = tag[1][1]
+    else:
+        assert 0
     return tag_id_1, tag_id_2, tag_sha_1, tag_sha_2

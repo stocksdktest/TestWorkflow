@@ -2,8 +2,8 @@ from urllib3 import PoolManager
 import json
 from airflow.utils.timezone import datetime, parse as parse_datetime, utcnow
 from datetime import timedelta
-import pymongo
-from bson import ObjectId
+
+from unittest.templates.helper import get_conf
 from utils import AirflowRestClient
 
 if __name__ == '__main__':
@@ -13,10 +13,7 @@ if __name__ == '__main__':
     #execution_date = utcnow() + timedelta(minutes=1)
     execution_date = utcnow()
     datetime_string = execution_date.isoformat()
-    client = pymongo.MongoClient("mongodb://221.228.66.83:30617")
-    coll = client.get_database('stockSdkTest').get_collection('dagrun_record')
-    id = ObjectId("5f87e1e767a9cd0001e8c04c")
-    conf = coll.find_one({'_id':id}).get('conf')
+    conf = get_conf(obj_id="5f87e1e767a9cd0001e8c04c")
     data = json.dumps({
         'conf': conf
     })
