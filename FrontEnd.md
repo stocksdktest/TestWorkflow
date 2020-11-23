@@ -189,10 +189,25 @@ curl -X POST \
 
 若不采取大文件存储，则每个list中的元素都是具体数据。
 
-若采取大文件存储，则有：
+若采取大文件存储，则list中的元素是另一个collection中的ObjectId，根据`type`字段的值，有如下存储策略：
 
-- error, mismatch, empty 三个list中存储的是recordID，根据recordID在数据库的test_result表查询
-- true, false, unknown, sort1.true, sort1.false, ... 等存储的是具体数据的ObjectId，具体数据将被转存到数据库的big_data表中
+```
+Quote   
+    result: ref ObjectId in big_data
+    error & mismatch & empty: ref ObjectId in big_data
+
+Sort
+    result: ref ObjectId in big_data
+    error & mismatch & empty: ref ObjectId in test_result
+
+Default
+    result: ref ObjectId in big_data
+    error & mismatch & empty: ref ObjectId in big_data 
+
+DefaultSort
+    result: ref ObjectId in big_data
+    error & mismatch & empty: ref ObjectId in test_result
+```
 
 
 
