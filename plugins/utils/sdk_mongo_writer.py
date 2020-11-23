@@ -3,7 +3,11 @@ from collections import defaultdict
 
 from utils.compare_record import StockResultTypes
 
-DEFAULT_COLL = 'big_data'
+def is_empty(obj, key):
+  return key not in obj or len(obj[key]) == 0 
+
+def is_ref_id(obj):
+  return str(type(obj)) == "<class 'bson.objectid.ObjectId'>"
 
 class SdkMongoWriter(object):
     """
@@ -13,84 +17,162 @@ class SdkMongoWriter(object):
     3. 跟帐对比
     4. 排序结果
     5. 对比+排序
+
+    Quote   
+    result: ref in big_data
+    error & mismatch & empty: ref in big_data
+
+    Sort
+    result: ref in big_data
+    error & mismatch & empty: ref in test_result
+
+    Default
+    result: ref in big_data
+    error & mismatch & empty: ref in big_data 
+
+    DefaultSort
+    result: ref in big_data
+    error & mismatch & empty: ref in test_result 
     """
-    def __init__(self, client) -> None:
+    def __init__(self, client, db_name='stockSdkTest') -> None:
         """
         @param client: 传入一个Mongodb的client
         """
         super().__init__()
-        self.client = client
+        self.__client = client
+        self.__db = client[db_name]
 
-    def write_big_record(self, result:dict, keys:list, dbName='stockSdkTest', collectionName=DEFAULT_COLL):
-        col = self.client[dbName][collectionName]
-        for key in keys:
-            values = result.get(key)
-            if values is not None and len(values) != 0:
-                try:
-                    result[key] = col.insert_many(values).inserted_ids
-                except Exception as e:
-                    print("[DEBUG] Inserting Big Data of {} Error".format(key))
+    def __create_ref_object(self, collection, raw_object):
+        """
+        :return reference ObjectId in collection
+        """
+        try:
+            result = collection.insert_one(raw_object)
+            return result.inserted_id
+        except Exception as e:
+            print('insert error: %s' % raw_object)
+            return None
 
-    def write_sort_result_record(self, result, dbName='stockSdkTest', collectionName=DEFAULT_COLL):
-        self.write_big_record(
-            result=result,
-            keys=['true', 'false', 'unknown'],
-            dbName=dbName,
-            collectionName=collectionName
-        )
+    def __find_ref_object(self, collection, raw_object):
+        """
+        :return reference ObjectId in collection
+        """
+        try:
+            result = collection.find_one(raw_object)
+            return result['_id']
+        except Exception as e:
+            return None
 
-    def write_result_record(self, result, dbName='stockSdkTest', collectionName=DEFAULT_COLL):
-        rtype = result['type']
-        compare = result['result']
-        ''' :type: dict'''
+    def __docs_to_inserted_refs(self, collection, docs):
+        refs = list()
+        if docs is None or len(docs) == 0:
+            return refs
+        inserted_count = 0
+        for doc in docs:
+            if is_ref_id(doc):
+                refs.append(doc)
+                continue
+            ref = self.__create_ref_object(collection, doc)
+            if ref is None:
+                refs.append(doc)
+            else:
+                inserted_count += 1
+                refs.append(ref)
+        if inserted_count > 0:
+            print('inserted %d items to %s' % (inserted_count, collection.name))
+        return refs
 
-        if rtype == 'Sort':
-            self.write_sort_result_record(result=compare, dbName=dbName, collectionName=collectionName)
-        elif rtype == 'File':
-            pass
+    def __docs_to_found_refs(self, collection, docs, build_query_func):
+        refs = list()
+        if docs is None or len(docs) == 0:
+            return refs
+        found_count = 0
+        for doc in docs:
+            if is_ref_id(doc):
+                refs.append(doc)
+                continue
+            ref = self.__find_ref_object(collection, (doc if query_func is None else query_func(doc)))
+            if ref is None:
+                refs.append(doc)
+            else:
+                found_count += 1
+                refs.append(ref)
+        if found_count > 0:
+            print('find %d items at %s' % (found_count, collection.name))
+        return refs
+
+    def write_record(self, record, collection_name):
+        new_record = dict(record)
+        rtype = record['type']
+
+        final_col = self.__db[collection_name]
+        col_big_data = self.__db['big_data']
+        col_test_result = self.__db['test_result']
+
+        def build_query_by_record_id(item):
+            if not is_empty(item, 'recordID'):
+                return dict({ 'recordID': item.get('recordID') })
+            else:
+                query = dict(item)
+                del query['_id']
+                return query
+
+        if rtype == 'Quote':
+            new_record['result'] = dict({ 
+                'true': self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('result', {}).get('true', [])), 
+                'false': self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('result', {}).get('false', [])), 
+                'unknown': self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('result', {}).get('unknown', []))
+            })
+
+            new_record['error'] = self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('error', []))
+            new_record['mismatch'] = self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('mismatch', []))
+            new_record['empty'] = self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('empty', []))
+        elif rtype == 'Sort':
+            new_record['result'] = dict({ 
+                'true': self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('result', {}).get('true', [])), 
+                'false': self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('result', {}).get('false', [])), 
+                'unknown': self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('result', {}).get('unknown', []))
+            })
+
+            new_record['error'] = self.__docs_to_found_refs(collection=col_test_result, docs=record.get('error', []), build_query_func=build_query_by_record_id)
+            new_record['mismatch'] = self.__docs_to_found_refs(collection=col_test_result, docs=record.get('mismatch', []), build_query_func=build_query_by_record_id)
+            new_record['empty'] = self.__docs_to_found_refs(collection=col_test_result, docs=record.get('empty', []), build_query_func=build_query_by_record_id)
+        elif rtype == 'Default':
+            new_record['result'] = dict({ 
+                'true': self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('result', {}).get('true', [])), 
+                'false': self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('result', {}).get('false', [])), 
+                'unknown': self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('result', {}).get('unknown', []))
+            })
+
+            new_record['error'] = self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('error', []))
+            new_record['mismatch'] = self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('mismatch', []))
+            new_record['empty'] = self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('empty', []))
+        elif rtype == 'DefaultSort':
+            new_record['result'] = dict({ 
+                'true': self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('result', {}).get('true', [])), 
+                'false': self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('result', {}).get('false', [])), 
+                'unknown': self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('result', {}).get('unknown', [])),
+                'sort1': {
+                    'true': self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('result', {}).get('sort1', {}).get('true', [])),
+                    'false': self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('result', {}).get('sort1', {}).get('false', [])),
+                    'unknown': self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('result', {}).get('sort1', {}).get('unknown', []))
+                },
+                'sort2': {
+                    'true': self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('result', {}).get('sort2', {}).get('true', [])),
+                    'false': self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('result', {}).get('sort2', {}).get('false', [])),
+                    'unknown': self.__docs_to_inserted_refs(collection=col_big_data, docs=record.get('result', {}).get('sort2', {}).get('unknown', []))
+                }
+            })
+
+            new_record['error'] = self.__docs_to_found_refs(collection=col_test_result, docs=record.get('error', []), build_query_func=build_query_by_record_id)
+            new_record['mismatch'] = self.__docs_to_found_refs(collection=col_test_result, docs=record.get('mismatch', []), build_query_func=build_query_by_record_id)
+            new_record['empty'] = self.__docs_to_found_refs(collection=col_test_result, docs=record.get('empty', []), build_query_func=build_query_by_record_id)
         else:
-            if rtype.__contains__('Sort'):
-                self.write_sort_result_record(result=compare['sort1'], dbName=dbName, collectionName=collectionName)
-                self.write_sort_result_record(result=compare['sort2'], dbName=dbName, collectionName=collectionName)
+            raise Exception('unsupported type %s' % rtype)
 
-            if rtype.__contains__('Default'):
-                self.write_big_record(
-                    result=compare,
-                    keys=['true', 'false'],
-                    dbName=dbName,
-                    collectionName=collectionName
-                )
-
-            if rtype.__contains__('Quote'):
-                self.write_big_record(
-                    result=compare,
-                    keys=['true'],
-                    dbName=dbName,
-                    collectionName=collectionName
-                )
-                for item in compare['false']:
-                    self.write_big_record(
-                        result=item,
-                        keys=['result'],
-                        dbName=dbName,
-                        collectionName=collectionName
-                    )
-
-        return result
-
-
-
-
+        result = final_col.insert_one(new_record)
+        print('Final record inserted in %s _id is: %s' % (final_col.name, result.inserted_id))
 
 
     def write_file_result_record(self, result):
         pass
-
-
-
-
-
-
-
-
-

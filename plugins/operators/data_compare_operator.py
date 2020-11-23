@@ -332,17 +332,8 @@ class DataCompareOperator(StockOperator):
             self.close_connection()
             return result
 
-        col_res = self.mongo_hk.client[dbName][collectionName]
         try:
-            col_res.insert_one(result)
-        except TypeError as e:
+            db_writer = SdkMongoWriter(client=self.mongo_hk.client)
+            db_writer.write_record(record=result, collection_name=collectionName)
+        except Exception as e:
             print(e)
-        except DocumentTooLarge as e:
-            print("DocumentTooLarge Error")
-            # TODO: 如果Details也过大，应该怎么办
-            result['error_msg'] = "DocumentTooLarge"
-            result.pop('result')
-            result.pop('error')
-            result.pop('mismatch')
-            result.pop('empty')
-            col_res.insert_one(result)

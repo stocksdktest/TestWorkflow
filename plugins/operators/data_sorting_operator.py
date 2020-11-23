@@ -251,5 +251,8 @@ class DataSortingOperator(StockOperator):
                 self.close_connection()
                 return result, records
 
-            col = mydb[collectionName]
-            col.insert(result)
+            try:
+                db_writer = SdkMongoWriter(client=self.mongo_hk.client)
+                db_writer.write_record(record=result, collection_name=collectionName)
+            except Exception as e:
+                print(e)
