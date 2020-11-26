@@ -91,7 +91,7 @@ class SdkMongoWriter(object):
             if is_ref_id(doc):
                 refs.append(doc)
                 continue
-            ref = self.__find_ref_object(collection, (doc if query_func is None else query_func(doc)))
+            ref = self.__find_ref_object(collection, (doc if build_query_func is None else build_query_func(doc)))
             if ref is None:
                 refs.append(doc)
             else:
